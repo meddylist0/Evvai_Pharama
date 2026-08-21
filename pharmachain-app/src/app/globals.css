@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans', var(--font-plus-jakarta), system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', var(--font-plus-jakarta), -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+}
+
+.hero-card-gradient {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid #e2e8f0;
+}
+
+.dark-qa-banner {
+  background-color: #1e293b;
+}
+
+.qa-box {
+  background-color: #0f172a;
+  border: 1px solid #334155;
+  transition: all 0.2s ease;
+}
+
+.qa-box:hover {
+  border-color: #38bdf8;
+  transform: translateY(-2px);
+}
+
+.btn-navy {
+  background-color: #0b2545;
+  color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.btn-navy:hover {
+  background-color: #133a68;
+}
+
+.btn-outline {
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.btn-outline:hover {
+  background-color: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.product-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.08);
+}

@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PharmaChain - Quality Pharmaceutical Manufacturing & Healthcare Solutions</title>
+  <meta name="description" content="Reliable pharmaceutical products manufactured with unyielding quality, advanced technology, and absolute consistency for global distribution networks.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              navy: '#0b2341',
+              blue: '#1a56db',
+              accent: '#0284c7',
+              dark: '#0f172a',
+              light: '#f8fafc',
+              border: '#e2e8f0',
+              emerald: '#059669',
+              emeraldBg: '#ecfdf5'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: #1e293b;
+      background-color: #ffffff;
+      -webkit-font-smoothing: antialiased;
+    }
+    .hero-card {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      border: 1px solid #e2e8f0;
+    }
+    .badge-gmp {
+      background-color: #d1fae5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+    .btn-navy {
+      background-color: #0b2545;
+      color: #ffffff;
+      transition: all 0.2s ease;
+    }
+    .btn-navy:hover {
+      background-color: #133a68;
+    }
+    .btn-outline {
+      border: 1px solid #cbd5e1;
+      color: #334155;
+      background-color: #ffffff;
+      transition: all 0.2s ease;
+    }
+    .btn-outline:hover {
+      background-color: #f8fafc;
+      border-color: #94a3b8;
+    }
+    .dark-qa-banner {
+      background-color: #1e293b;
+      border-radius: 12px;
+    }
+    .qa-box {
+      background-color: #0f172a;
+      border: 1px solid #334155;
+      transition: border-color 0.2s ease;
+    }
+    .qa-box:hover {
+      border-color: #38bdf8;
+    }
+    .product-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .product-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+    }
+    .capability-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .capability-card:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header / Navigation -->
+  <header class="w-full border-b border-slate-100 py-4 px-6 md:px-12 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur z-50">
+    <div class="flex items-center space-x-2">
+      <!-- Logo Symbol -->
+      <div class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-800 font-bold text-xl">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+      </div>
+      <span class="text-xl font-bold tracking-tight text-slate-900">PharmaChain</span>
+    </div>
+
+    <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-600">
+      <a href="#manufacturing" class="hover:text-slate-900 transition-colors">Manufacturing</a>
+      <a href="#catalog" class="hover:text-slate-900 transition-colors">Catalog</a>
+      <a href="#trust" class="hover:text-slate-900 transition-colors">Trust</a>
+      <a href="#contact" class="hover:text-slate-900 transition-colors">Contact</a>
+    </nav>
+
+    <div class="flex items-center space-x-3">
+      <button onclick="toggleLoginModal()" class="btn-navy text-sm font-semibold px-4 py-2 rounded-lg flex items-center space-x-2">
+        <span>Login</span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+
+    <!-- HERO SECTION (2-Column Card Grid matching Stitch visual precisely) -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+      <!-- Hero Left Card -->
+      <div class="lg:col-span-7 hero-card rounded-2xl p-8 md:p-12 flex flex-col justify-between">
+        <div>
+          <!-- WHO-GMP Badge -->
+          <div class="inline-flex items-center space-x-2 badge-gmp px-3 py-1.5 rounded-full text-xs font-bold tracking-wide mb-6">
+            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span>WHO-GMP Certified Facility</span>
+          </div>
+
+          <!-- Hero Headline -->
+          <h1 class="text-3xl md:text-5xl font-extrabold text-slate-900 leading-tight mb-4">
+            Quality Pharmaceutical Manufacturing.<br/>
+            <span class="text-blue-900">Trusted Healthcare Solutions.</span>
+          </h1>
+
+          <!-- Hero Subtitle -->
+          <p class="text-slate-600 text-sm md:text-base leading-relaxed max-w-xl mb-8">
+            Reliable pharmaceutical products manufactured with unyielding quality, advanced technology, and absolute consistency for global distribution networks.
+          </p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap gap-4">
+          <a href="#catalog" class="btn-navy px-6 py-3 rounded-lg text-sm font-semibold shadow-sm inline-block">
+            Explore Products
+          </a>
+          <a href="#contact" class="btn-outline px-6 py-3 rounded-lg text-sm font-semibold inline-block">
+            Contact Us
+          </a>
+        </div>
+      </div>
+
+      <!-- Hero Right Image Card -->
+      <div class="lg:col-span-5 relative rounded-2xl overflow-hidden min-h-[360px] lg:min-h-[440px]">
+        <img 
+          src="https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=1200&q=80" 
+          alt="Pharmaceutical Automated Cleanroom Facility" 
+          class="w-full h-full object-cover rounded-2xl"
+        />
+        <div class="absolute inset-0 bg-slate-900/10 rounded-2xl"></div>
+      </div>
+    </section>
+
+    <!-- CORE CAPABILITIES SECTION -->
+    <section id="manufacturing" class="space-y-4">
+      <div>
+        <h2 class="text-xl font-bold text-slate-900">Core Capabilities</h2>
+        <p class="text-xs md:text-sm text-slate-500">Precision engineering across multiple dosage forms.</p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Capability 1 -->
+        <div class="capability-card p-5 bg-white">
+          <div class="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700 mb-4">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L5.6 15.072a2 2 0 00-1.874 1.258l-.19.476a2 2 0 001.258 2.531l2.387.955a6 6 0 003.86-.517l.318-.158a6 6 0 013.86-.517l2.387.955a2 2 0 002.531-1.258l.19-.476z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v10"/>
+            </svg>
+          </div>
+          <h3 class="text-sm font-bold text-slate-900 mb-1">Solid Oral Dosage</h3>
+          <p class="text-xs text-slate-500 leading-relaxed">
+            High-volume tablet compression and specialized film coating technologies.
+          </p>
+        </div>
+
+        <!-- Capability 2 -->
+        <div class="capability-card p-5 bg-white">
+          <div class="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700 mb-4">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+            </svg>
+          </div>
+          <h3 class="text-sm font-bold text-slate-900 mb-1">Encapsulation</h3>
+          <p class="text-xs text-slate-500 leading-relaxed">
+            Precision hard gelatin and HPMC capsule filling with integrated weight checking.
+          </p>
+        </div>
+
+        <!-- Capability 3 -->
+        <div class="capability-card p-5 bg-white">
+          <div class="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700 mb-4">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L5.6 15.072a2 2 0 00-1.874 1.258l-.19.476a2 2 0 001.258 2.531l2.387.955a6 6 0 003.86-.517l.318-.158a6 6 0 013.86-.517l2.387.955a2 2 0 002.531-1.258l.19-.476z"/>
+            </svg>
+          </div>
+          <h3 class="text-sm font-bold text-slate-900 mb-1">Liquid Orals</h3>
+          <p class="text-xs text-slate-500 leading-relaxed">
+            Automated compounding and bottling lines for syrups and suspensions.
+          </p>
+        </div>
+
+        <!-- Capability 4 -->
+        <div class="capability-card p-5 bg-white">
+          <div class="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700 mb-4">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L5.6 15.072a2 2 0 00-1.874 1.258l-.19.476a2 2 0 001.258 2.531l2.387.955a6 6 0 003.86-.517l.318-.158a6 6 0 013.86-.517l2.387.955a2 2 0 002.531-1.258l.19-.476z"/>
+            </svg>
+          </div>
+          <h3 class="text-sm font-bold text-slate-900 mb-1">Sterile Injectables</h3>
+          <p class="text-xs text-slate-500 leading-relaxed">
+            Aseptic filling environments for vials and ampoules meeting stringent global standards.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- UNCOMPROMISING QUALITY ASSURANCE BANNER (DARK STITCH STYLE) -->
+    <section id="trust" class="dark-qa-banner p-6 md:p-8 text-white flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="max-w-xl space-y-2">
+        <h3 class="text-lg md:text-xl font-bold tracking-tight">Uncompromising Quality Assurance</h3>
+        <p class="text-xs md:text-sm text-slate-300 leading-relaxed">
+          Our facilities operate under the strictest international guidelines. Every batch undergoes rigorous QA/QC analytical testing in our state-of-the-art laboratories before release.
+        </p>
+      </div>
+
+      <!-- Cert Badges -->
+      <div class="flex items-center space-x-3 w-full md:w-auto justify-start md:justify-end">
+        <div class="qa-box w-20 h-20 rounded-xl flex flex-col items-center justify-center p-2 text-center">
+          <svg class="w-5 h-5 text-emerald-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-200">WHO-GMP</span>
+        </div>
+
+        <div class="qa-box w-20 h-20 rounded-xl flex flex-col items-center justify-center p-2 text-center">
+          <svg class="w-5 h-5 text-teal-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-200">ISO 9001</span>
+        </div>
+
+        <div class="qa-box w-20 h-20 rounded-xl flex flex-col items-center justify-center p-2 text-center">
+          <svg class="w-5 h-5 text-sky-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L5.6 15.072a2 2 0 00-1.874 1.258l-.19.476a2 2 0 001.258 2.531l2.387.955a6 6 0 003.86-.517l.318-.158a6 6 0 013.86-.517l2.387.955a2 2 0 002.531-1.258l.19-.476z"/>
+          </svg>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-200">GLP Lab</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURED PIPELINE / PRODUCTS CATALOGUE -->
+    <section id="catalog" class="space-y-4">
+      <div class="flex items-end justify-between">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900">Featured Pipeline</h2>
+          <p class="text-xs md:text-sm text-slate-500">High-demand generic and specialized formulations.</p>
+        </div>
+        <a href="#" class="text-xs font-bold text-slate-900 hover:text-blue-700 transition-colors">
+          View Full Catalog &rarr;
+        </a>
+      </div>
+
+      <!-- 3-Product Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Product 1 -->
+        <div class="product-card">
+          <div class="h-44 overflow-hidden bg-slate-100 relative">
+            <img 
+              src="https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=600&q=80" 
+              alt="CardioVas XR" 
+              class="w-full h-full object-cover"
+            />
+          </div>
+          <div class="p-4 space-y-3">
+            <div>
+              <h3 class="text-base font-bold text-slate-900">CardioVas XR</h3>
+              <p class="text-xs text-slate-500">Extended-release formulation for cardiovascular health management.</p>
+            </div>
+            
+            <div class="border-t border-slate-100 pt-3 space-y-1 text-xs">
+              <div class="flex justify-between">
+                <span class="text-slate-400">Composition</span>
+                <span class="font-medium text-slate-800">Rosuvastatin 10mg</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">Pack Size</span>
+                <span class="font-medium text-slate-800">10 &times; 10 Blister</span>
+              </div>
+              <div class="flex justify-between items-center pt-2">
+                <div>
+                  <span class="text-[10px] uppercase text-slate-400 font-bold block">Distributor Price</span>
+                  <span class="text-sm font-extrabold text-slate-900">₹420.00</span>
+                </div>
+                <button class="btn-navy text-xs font-semibold px-3 py-1.5 rounded">Add to Order</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product 2 -->
+        <div class="product-card">
+          <div class="h-44 overflow-hidden bg-slate-100 relative">
+            <img 
+              src="https://images.unsplash.com/photo-1607613009820-a29f7bb81c04?auto=format&fit=crop&w=600&q=80" 
+              alt="RespiKlear Syrup" 
+              class="w-full h-full object-cover"
+            />
+          </div>
+          <div class="p-4 space-y-3">
+            <div>
+              <h3 class="text-base font-bold text-slate-900">RespiKlear Syrup</h3>
+              <p class="text-xs text-slate-500">Fast-acting bronchodilator and expectorant combination.</p>
+            </div>
+            
+            <div class="border-t border-slate-100 pt-3 space-y-1 text-xs">
+              <div class="flex justify-between">
+                <span class="text-slate-400">Composition</span>
+                <span class="font-medium text-slate-800">Ambroxol + Levosalbutamol</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">Pack Size</span>
+                <span class="font-medium text-slate-800">100ml PET Bottle</span>
+              </div>
+              <div class="flex justify-between items-center pt-2">
+                <div>
+                  <span class="text-[10px] uppercase text-slate-400 font-bold block">Distributor Price</span>
+                  <span class="text-sm font-extrabold text-slate-900">₹85.00</span>
+                </div>
+                <button class="btn-navy text-xs font-semibold px-3 py-1.5 rounded">Add to Order</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product 3 -->
+        <div class="product-card">
+          <div class="h-44 overflow-hidden bg-slate-100 relative">
+            <img 
+              src="https://images.unsplash.com/photo-1579165466541-71e226cecf14?auto=format&fit=crop&w=600&q=80" 
+              alt="NeuroTonic Inj." 
+              class="w-full h-full object-cover"
+            />
+          </div>
+          <div class="p-4 space-y-3">
+            <div>
+              <h3 class="text-base font-bold text-slate-900">NeuroTonic Inj.</h3>
+              <p class="text-xs text-slate-500">High-purity neurotropic vitamin complex for intramuscular use.</p>
+            </div>
+            
+            <div class="border-t border-slate-100 pt-3 space-y-1 text-xs">
+              <div class="flex justify-between">
+                <span class="text-slate-400">Composition</span>
+                <span class="font-medium text-slate-800">Methylcobalamin 1500mcg</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">Pack Size</span>
+                <span class="font-medium text-slate-800">5 &times; 2ml Ampoule</span>
+              </div>
+              <div class="flex justify-between items-center pt-2">
+                <div>
+                  <span class="text-[10px] uppercase text-slate-400 font-bold block">Distributor Price</span>
+                  <span class="text-sm font-extrabold text-slate-900">₹145.00</span>
+                </div>
+                <button class="btn-navy text-xs font-semibold px-3 py-1.5 rounded">Add to Order</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PORTAL ROLE SWAPPER DEMO (Customer vs Distributor vs Admin) -->
+    <section class="border border-slate-200 rounded-2xl p-6 bg-slate-50 space-y-4">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">PRD Role-Based Pricing Engine</span>
+          <h3 class="text-lg font-bold text-slate-900">Interactive Role Switcher</h3>
+        </div>
+        <div class="inline-flex p-1 bg-slate-200 rounded-lg text-xs font-semibold text-slate-700 space-x-1">
+          <button onclick="setRole('retail')" id="btn-retail" class="px-3 py-1.5 rounded-md bg-white shadow-sm text-slate-900 font-bold">Retail Customer</button>
+          <button onclick="setRole('distributor')" id="btn-distributor" class="px-3 py-1.5 rounded-md text-slate-600 hover:text-slate-900">Distributor (B2B)</button>
+          <button onclick="setRole('admin')" id="btn-admin" class="px-3 py-1.5 rounded-md text-slate-600 hover:text-slate-900">Admin Control</button>
+        </div>
+      </div>
+
+      <div id="role-display" class="bg-white border border-slate-200 rounded-xl p-4 text-xs text-slate-600 space-y-2">
+        <p><strong class="text-slate-900">Active Mode:</strong> Retail Customer View (C005)</p>
+        <p>Showing standard Retail Pricing (MRP) with promotional discount logic enabled.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer matching Stitch mockup -->
+  <footer id="contact" class="w-full border-t border-slate-200 py-8 px-6 md:px-12 mt-16 bg-white text-xs text-slate-500 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="flex items-center space-x-2">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+      </svg>
+      <span class="font-bold text-slate-800">PharmaChain</span>
+      <span class="text-slate-400 ml-2">&copy; 2026 PharmaChain Global Manufacturing. All rights reserved.</span>
+    </div>
+
+    <div class="flex items-center space-x-6">
+      <a href="#" class="hover:text-slate-800 transition-colors">Privacy Policy</a>
+      <a href="#" class="hover:text-slate-800 transition-colors">Terms of Service</a>
+      <a href="#" class="hover:text-slate-800 transition-colors">Compliance</a>
+      <a href="#" class="hover:text-slate-800 transition-colors">Global Distribution</a>
+    </div>
+  </footer>
+
+  <script>
+    function setRole(role) {
+      const display = document.getElementById('role-display');
+      const bRetail = document.getElementById('btn-retail');
+      const bDist = document.getElementById('btn-distributor');
+      const bAdmin = document.getElementById('btn-admin');
+
+      [bRetail, bDist, bAdmin].forEach(b => {
+        b.className = "px-3 py-1.5 rounded-md text-slate-600 hover:text-slate-900";
+      });
+
+      if (role === 'retail') {
+        bRetail.className = "px-3 py-1.5 rounded-md bg-white shadow-sm text-slate-900 font-bold";
+        display.innerHTML = '<p><strong class="text-slate-900">Active Mode:</strong> Retail Customer Portal (C001-C014)</p><p>Displays MRP & Retail promotional rates. Add to Cart / Instant Checkout supported.</p>';
+      } else if (role === 'distributor') {
+        bDist.className = "px-3 py-1.5 rounded-md bg-white shadow-sm text-slate-900 font-bold";
+        display.innerHTML = '<p><strong class="text-slate-900">Active Mode:</strong> Distributor B2B Portal (D001-D012)</p><p>Displays tiered distributor bulk pricing, HSN tax breakdowns, GST invoice generation & quick bulk order sheets.</p>';
+      } else if (role === 'admin') {
+        bAdmin.className = "px-3 py-1.5 rounded-md bg-white shadow-sm text-slate-900 font-bold";
+        display.innerHTML = '<p><strong class="text-slate-900">Active Mode:</strong> Admin Management Panel (A001-A017)</p><p>Enables product catalog CRUD, price level rule configuration, stock adjustment, KYC approvals, and order status transitions.</p>';
+      }
+    }
+  </script>
+
+</body>
+</html>
