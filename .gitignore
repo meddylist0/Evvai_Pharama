@@ -44,3 +44,4 @@ pnpm-debug.log*
 *.swo
 Thumbs.db
 backend/.env
+PharmaLink Enterprise application.zip
