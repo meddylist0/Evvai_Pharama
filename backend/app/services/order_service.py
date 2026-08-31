@@ -1,4 +1,5 @@
 import random
+import logging
 from datetime import datetime
 from typing import List, Tuple
 from fastapi import HTTPException, status
@@ -9,6 +10,8 @@ from app.models.order import Order, OrderItem, OrderStatus, PaymentStatus
 from app.schemas.order import OrderCreateRequest, OrderItemCreate
 from app.core.permissions import check_distributor_kyc_approved
 from app.services.audit_service import record_audit
+
+logger = logging.getLogger("pharmalink.orders")
 
 
 def generate_order_code() -> str:
@@ -212,6 +215,12 @@ def create_order(db: Session, order_in: OrderCreateRequest, current_user: User) 
         details=f"Order {order_code} placed by {current_user.email} (Role: {role_label}) for ₹{total_amount}",
         user=current_user
     )
+
+    try:
+        from app.services.notification_service import notify_order_created
+        notify_order_created(db=db, order=new_order, user=current_user)
+    except Exception as e:
+        logger.exception("Failed to dispatch order creation notification: %s", e)
 
     return new_order
 

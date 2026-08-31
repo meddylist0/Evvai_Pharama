@@ -194,11 +194,21 @@ def update_order_status(
     if new_status == OrderStatus.CANCELLED:
         release_reserved_stock(db, order)
 
-        if order.payment_status == PaymentStatus.PAID:
+        is_cod = (order.payment_method or "").upper() == "COD" or order.payment_status == PaymentStatus.COD
+        if is_cod or not order.razorpay_payment_id:
+            order.payment_status = PaymentStatus.REFUNDED
+            order.refund_status = "REFUNDED"
+            order.refund_id = f"COD_CANCEL_{order.id}"
+            cancel_note = "[COD CANCELLED]: COD order cancelled. No online gateway refund required."
+            order.admin_notes = f"{order.admin_notes}\n{cancel_note}" if order.admin_notes else cancel_note
+        elif order.payment_status == PaymentStatus.PAID:
             success, msg, refund_ref = initiate_razorpay_refund(db, order)
             refund_note = f"[REFUND]: {msg}"
             order.admin_notes = f"{order.admin_notes}\n{refund_note}" if order.admin_notes else refund_note
         elif order.payment_status == PaymentStatus.PENDING:
+            order.payment_status = PaymentStatus.REFUNDED
+            order.refund_status = "REFUNDED"
+            order.refund_id = f"CANCEL_VOID_{order.id}"
             cancel_note = "[CANCELLED]: Cancelled before payment completion. No refund required."
             order.admin_notes = f"{order.admin_notes}\n{cancel_note}" if order.admin_notes else cancel_note
 
@@ -207,11 +217,20 @@ def update_order_status(
 
     record_audit(
         db=db,
-        action="ORDER_STATUS_CHANGED",
+        action="ORDER_STATUS_UPDATED",
         module="ORDERS",
-        details=f"Order {order.order_code} status changed from {old_status.value} to {new_status.value}",
+        details=f"Order {order.order_code} status changed from {old_status} to {new_status} by Admin",
         user=admin_user
     )
+
+    try:
+        from app.services.notification_service import notify_order_status_update
+        from app.models.user import User
+        target_user = db.query(User).filter(User.id == order.user_id).first()
+        if target_user:
+            notify_order_status_update(db=db, order=order, user=target_user, new_status=new_status.value)
+    except Exception as e:
+        pass
 
     return order
 
@@ -304,7 +323,7 @@ def request_order_return(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Request Return & Refund for delivered orders with real Razorpay refund."""
+    """Request Return & Refund for delivered orders with support for Razorpay and COD/Offline."""
     order = db.query(Order).filter(Order.id == order_id).first()
     if not order:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
@@ -317,15 +336,23 @@ def request_order_return(
 
     order.order_status = OrderStatus.RETURNED
 
-    # Real refund
-    if order.payment_status == PaymentStatus.PAID:
+    is_cod = (order.payment_method or "").upper() == "COD" or order.payment_status == PaymentStatus.COD
+    reason_str = f" Reason: {reason}" if reason else ""
+
+    if is_cod or not order.razorpay_payment_id:
+        order.payment_status = PaymentStatus.REFUNDED
+        order.refund_status = "REFUNDED"
+        order.refund_id = f"COD_RETURN_{order.id}"
+        return_note = f"[COD RETURN PROCESSED]: Customer requested return.{reason_str} COD refund marked as completed."
+        order.admin_notes = f"{order.admin_notes}\n{return_note}" if order.admin_notes else return_note
+    elif order.payment_status == PaymentStatus.PAID:
         success, msg, refund_ref = initiate_razorpay_refund(db, order, reason=reason)
-        reason_str = f" Reason: {reason}" if reason else ""
         return_note = f"[RETURN & REFUND]: {msg}{reason_str}"
         order.admin_notes = f"{order.admin_notes}\n{return_note}" if order.admin_notes else return_note
     else:
         order.payment_status = PaymentStatus.REFUNDED
-        reason_str = f" Reason: {reason}" if reason else ""
+        order.refund_status = "REFUNDED"
+        order.refund_id = f"RETURN_VOID_{order.id}"
         return_note = f"[RETURN PROCESSED]: Order returned.{reason_str} No online payment to refund."
         order.admin_notes = f"{order.admin_notes}\n{return_note}" if order.admin_notes else return_note
 
@@ -355,7 +382,7 @@ def admin_issue_refund(
     db: Session = Depends(get_db),
     admin_user: User = Depends(require_admin)
 ):
-    """Directly issue Razorpay gateway refund for an order by Administrator."""
+    """Directly issue refund (Razorpay Gateway or Manual COD/Offline) for an order by Administrator."""
     order = db.query(Order).filter(Order.id == order_id).with_for_update().first()
     if not order:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
@@ -366,13 +393,56 @@ def admin_issue_refund(
             detail=f"Order {order.order_code} has already been refunded (Refund ID: {order.refund_id})."
         )
 
-    if order.payment_status != PaymentStatus.PAID:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Cannot refund order with payment status '{order.payment_status.value}'."
-        )
+    is_cod = (order.payment_method or "").upper() == "COD" or order.payment_status == PaymentStatus.COD
+    refund_amount = req.amount if req.amount is not None else order.total_amount
 
-    # Trigger real Razorpay refund
+    # Case A: Cash On Delivery (COD) or Offline Order (No Razorpay payment ID)
+    if is_cod or not order.razorpay_payment_id:
+        if order.payment_status == PaymentStatus.PAID:
+            order.refund_id = f"COD_MANUAL_REFUND_{order.id}"
+            refund_note = f"[COD MANUAL REFUND]: Admin processed cash refund of ₹{refund_amount:,.2f}. Reason: {req.reason}"
+        else:
+            order.refund_id = f"COD_VOID_{order.id}"
+            refund_note = f"[COD CANCELLED / VOIDED]: Admin voided COD payment of ₹{refund_amount:,.2f}. Reason: {req.reason}"
+
+        order.payment_status = PaymentStatus.REFUNDED
+        order.refund_status = "REFUNDED"
+
+        # Update order status to CANCELLED or RETURNED
+        if order.order_status == OrderStatus.DELIVERED:
+            order.order_status = OrderStatus.RETURNED
+        elif order.order_status not in [OrderStatus.CANCELLED, OrderStatus.RETURNED]:
+            order.order_status = OrderStatus.CANCELLED
+            release_reserved_stock(db, order)
+
+        order.admin_notes = f"{order.admin_notes}\n{refund_note}" if order.admin_notes else refund_note
+        db.commit()
+        db.refresh(order)
+
+        record_audit(
+            db=db,
+            action="ORDER_COD_REFUNDED",
+            module="ORDERS",
+            details=f"Admin {admin_user.email} issued COD refund/void for order {order.order_code}.",
+            user=admin_user
+        )
+        return order
+
+    # Case B: Online Razorpay order but not marked PAID
+    if order.payment_status != PaymentStatus.PAID:
+        order.payment_status = PaymentStatus.REFUNDED
+        order.refund_status = "REFUNDED"
+        order.refund_id = f"MANUAL_VOID_{order.id}"
+        refund_note = f"[OFFLINE VOID]: Order payment was '{order.payment_status.value}'. Marked as refunded by Admin. Reason: {req.reason}"
+        order.admin_notes = f"{order.admin_notes}\n{refund_note}" if order.admin_notes else refund_note
+        if order.order_status not in [OrderStatus.CANCELLED, OrderStatus.RETURNED]:
+            order.order_status = OrderStatus.CANCELLED
+            release_reserved_stock(db, order)
+        db.commit()
+        db.refresh(order)
+        return order
+
+    # Case C: Online Razorpay order with valid payment
     success, msg, refund_ref = initiate_razorpay_refund(db, order, amount_inr=req.amount, reason=req.reason)
     
     refund_note = f"[ADMIN REFUND]: {msg}"

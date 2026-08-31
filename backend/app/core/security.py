@@ -21,11 +21,18 @@ def create_access_token(subject: Union[str, Any], role: str, expires_delta: Opti
     if expires_delta:
         expire = now + expires_delta
     else:
-        expire = now + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        # Shorter lifetime for Admin (60 min), longer for standard roles (1440 min)
+        if str(role).upper() in ("ADMIN", "USERROLE.ADMIN"):
+            expire = now + timedelta(minutes=settings.ADMIN_ACCESS_TOKEN_EXPIRE_MINUTES)
+        else:
+            expire = now + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     
     to_encode = {
         "sub": str(subject),
         "role": str(role),
+        "type": "access",
+        "iss": settings.JWT_ISSUER,
+        "aud": settings.JWT_AUDIENCE,
         "iat": now,
         "exp": expire,
     }
@@ -34,13 +41,34 @@ def create_access_token(subject: Union[str, Any], role: str, expires_delta: Opti
 
 
 def decode_access_token(token: str) -> Optional[dict]:
+    """
+    Strict Production JWT Validation:
+    - Enforces allowed algorithm (HS256 only)
+    - Enforces issuer and audience claims
+    - Enforces expiration and issue timestamp verification
+    - Enforces token_type == 'access'
+    - Completely eliminates legacy fallback decodes
+    """
     try:
         payload = jwt.decode(
             token,
             settings.SECRET_KEY,
-            algorithms=[settings.ALGORITHM]
+            algorithms=[settings.ALGORITHM],
+            audience=settings.JWT_AUDIENCE,
+            issuer=settings.JWT_ISSUER,
+            options={
+                "verify_signature": True,
+                "verify_aud": True,
+                "verify_iss": True,
+                "verify_exp": True,
+                "verify_iat": True,
+                "require_exp": True,
+                "require_iat": True,
+            }
         )
+        # Enforce token type is 'access'
+        if payload.get("type") != "access":
+            return None
         return payload
     except (JWTError, Exception):
         return None
-

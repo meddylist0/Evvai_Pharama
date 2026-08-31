@@ -29,6 +29,16 @@ export default function CustomerProfilePage() {
     pincode: "500033",
   });
 
+  const [passwordForm, setPasswordForm] = useState({
+    current_password: "",
+    new_password: "",
+    confirm_password: "",
+  });
+  const [passwordMsg, setPasswordMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+
   useEffect(() => {
     const stored = getStoredUser();
     if (stored) {
@@ -78,6 +88,7 @@ export default function CustomerProfilePage() {
     try {
       await authAPI.updateProfile({
         full_name: form.full_name,
+        email: form.email,
         phone: form.phone,
         company_name: form.company_name,
         avatar: selectedAvatar,
@@ -97,6 +108,47 @@ export default function CustomerProfilePage() {
       setStatusMsg({ type: "error", text: err.message || "Failed to update profile." });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordMsg(null);
+
+    if (!passwordForm.current_password) {
+      setPasswordMsg({ type: "error", text: "Please enter your current password." });
+      return;
+    }
+
+    if (passwordForm.new_password.length < 6) {
+      setPasswordMsg({ type: "error", text: "New password must be at least 6 characters long." });
+      return;
+    }
+
+    if (passwordForm.new_password !== passwordForm.confirm_password) {
+      setPasswordMsg({ type: "error", text: "New password and confirmation password do not match." });
+      return;
+    }
+
+    if (passwordForm.current_password === passwordForm.new_password) {
+      setPasswordMsg({ type: "error", text: "New password cannot be identical to current password." });
+      return;
+    }
+
+    setChangingPassword(true);
+    try {
+      const res = await authAPI.changePassword(passwordForm.current_password, passwordForm.new_password);
+      setPasswordMsg({ type: "success", text: `✓ ${res.message || "Password updated successfully!"}` });
+      setPasswordForm({
+        current_password: "",
+        new_password: "",
+        confirm_password: "",
+      });
+      setTimeout(() => setPasswordMsg(null), 5000);
+    } catch (err: any) {
+      setPasswordMsg({ type: "error", text: err.message || "Failed to update password. Please check your current password." });
+    } finally {
+      setChangingPassword(false);
     }
   };
 
@@ -122,11 +174,10 @@ export default function CustomerProfilePage() {
 
       {statusMsg && (
         <div
-          className={`p-4 rounded-2xl text-xs font-bold border transition-all ${
-            statusMsg.type === "success"
-              ? "bg-emerald-50 text-emerald-800 border-emerald-200 shadow-2xs"
-              : "bg-rose-50 text-rose-800 border-rose-200 shadow-2xs"
-          }`}
+          className={`p-4 rounded-2xl text-xs font-bold border transition-all ${statusMsg.type === "success"
+            ? "bg-emerald-50 text-emerald-800 border-emerald-200 shadow-2xs"
+            : "bg-rose-50 text-rose-800 border-rose-200 shadow-2xs"
+            }`}
         >
           {statusMsg.text}
         </div>
@@ -193,11 +244,10 @@ export default function CustomerProfilePage() {
                       key={av.id}
                       type="button"
                       onClick={() => setSelectedAvatar(av.url)}
-                      className={`w-11 h-11 rounded-2xl overflow-hidden border-2 transition-all cursor-pointer ${
-                        selectedAvatar === av.url
-                          ? "border-blue-600 ring-2 ring-blue-400/50 scale-105"
-                          : "border-slate-200 hover:border-slate-400 opacity-75 hover:opacity-100"
-                      }`}
+                      className={`w-11 h-11 rounded-2xl overflow-hidden border-2 transition-all cursor-pointer ${selectedAvatar === av.url
+                        ? "border-blue-600 ring-2 ring-blue-400/50 scale-105"
+                        : "border-slate-200 hover:border-slate-400 opacity-75 hover:opacity-100"
+                        }`}
                       title={av.label}
                     >
                       <img src={av.url} alt={av.label} className="w-full h-full object-cover" />
@@ -227,12 +277,13 @@ export default function CustomerProfilePage() {
               />
             </div>
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Registered Email</label>
+              <label className="block font-bold text-slate-700 mb-1">Email Address *</label>
               <input
                 type="email"
-                disabled
+                required
                 value={form.email}
-                className="w-full border border-slate-200 rounded-xl p-3 bg-slate-100 text-slate-500 font-medium cursor-not-allowed"
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 font-medium focus:bg-white focus:outline-none focus:border-blue-600"
               />
             </div>
           </div>
@@ -304,6 +355,105 @@ export default function CustomerProfilePage() {
           </button>
         </div>
       </form>
+
+      {/* Change Password Card */}
+      <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-200/90 shadow-2xs space-y-6 text-xs">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+          <div>
+            <div className="flex items-center space-x-2">
+              <span className="text-base">🔒</span>
+              <h3 className="font-extrabold text-sm text-[#0b2341] uppercase tracking-wider">
+                Account Security & Change Password
+              </h3>
+            </div>
+            <p className="text-slate-500 text-[11px] mt-0.5">
+              Ensure your account remains safe with a strong password (minimum 6 characters).
+            </p>
+          </div>
+          <span className="hidden sm:inline-block text-[10px] font-mono text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
+            Encrypted SHA-256
+          </span>
+        </div>
+
+        {passwordMsg && (
+          <div
+            className={`p-4 rounded-2xl text-xs font-bold border transition-all ${passwordMsg.type === "success"
+              ? "bg-emerald-50 text-emerald-800 border-emerald-200 shadow-2xs"
+              : "bg-rose-50 text-rose-800 border-rose-200 shadow-2xs"
+              }`}
+          >
+            {passwordMsg.text}
+          </div>
+        )}
+
+        <form onSubmit={handlePasswordChange} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Current Password *</label>
+              <div className="relative">
+                <input
+                  type={showCurrentPassword ? "text" : "password"}
+                  required
+                  placeholder="Enter current password"
+                  value={passwordForm.current_password}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, current_password: e.target.value })}
+                  className="w-full border border-slate-200 rounded-xl p-3 pr-12 bg-slate-50 font-medium focus:bg-white focus:outline-none focus:border-blue-600"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-[11px] font-bold cursor-pointer select-none"
+                >
+                  {showCurrentPassword ? "Hide" : "Show"}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">New Password *</label>
+              <div className="relative">
+                <input
+                  type={showNewPassword ? "text" : "password"}
+                  required
+                  placeholder="Min 6 characters"
+                  value={passwordForm.new_password}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, new_password: e.target.value })}
+                  className="w-full border border-slate-200 rounded-xl p-3 pr-12 bg-slate-50 font-medium focus:bg-white focus:outline-none focus:border-blue-600"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-[11px] font-bold cursor-pointer select-none"
+                >
+                  {showNewPassword ? "Hide" : "Show"}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Confirm New Password *</label>
+              <input
+                type={showNewPassword ? "text" : "password"}
+                required
+                placeholder="Re-type new password"
+                value={passwordForm.confirm_password}
+                onChange={(e) => setPasswordForm({ ...passwordForm, confirm_password: e.target.value })}
+                className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 font-medium focus:bg-white focus:outline-none focus:border-blue-600"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-3 border-t border-slate-100">
+            <button
+              type="submit"
+              disabled={changingPassword}
+              className="bg-[#0b2341] hover:bg-[#1d4ed8] text-white px-6 py-2.5 rounded-xl font-extrabold shadow-2xs transition-all cursor-pointer disabled:opacity-50 flex items-center space-x-1.5"
+            >
+              <span>{changingPassword ? "Updating Password..." : "Update Password"}</span>
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

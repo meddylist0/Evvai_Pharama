@@ -20,6 +20,11 @@ class LoginRequest(BaseModel):
     password: str
 
 
+class PasswordChangeRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+
 class CustomerRegisterRequest(BaseModel):
     email: str
     password: str
@@ -60,10 +65,15 @@ class UserCreateAdminRequest(BaseModel):
     city: Optional[str] = None
     state: Optional[str] = None
     pincode: Optional[str] = None
+    credit_limit: Optional[float] = 500000.0
 
 
 class UserRoleUpdateRequest(BaseModel):
     role: UserRole
+
+
+class CreditLimitUpdateRequest(BaseModel):
+    credit_limit: float
 
 
 class CustomerProfileOut(BaseModel):
@@ -87,6 +97,7 @@ class DistributorProfileOut(BaseModel):
     pincode: str
     kyc_status: KYCStatus
     admin_remarks: Optional[str] = None
+    credit_limit: Optional[float] = 500000.0
 
     class Config:
         from_attributes = True
@@ -94,6 +105,7 @@ class DistributorProfileOut(BaseModel):
 
 class ProfileUpdateRequest(BaseModel):
     full_name: Optional[str] = None
+    email: Optional[str] = None
     phone: Optional[str] = None
     avatar: Optional[str] = None
     company_name: Optional[str] = None

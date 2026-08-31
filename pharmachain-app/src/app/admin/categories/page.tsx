@@ -43,6 +43,13 @@ export default function AdminCategoriesPage() {
 
   useEffect(() => {
     fetchCategoriesData();
+    const handleGlobalSearch = (e: any) => {
+      const q = typeof e.detail === "string" ? e.detail : "";
+      setSearchTerm(q);
+      setCurrentPage(1);
+    };
+    window.addEventListener("pharmalink_admin_search", handleGlobalSearch);
+    return () => window.removeEventListener("pharmalink_admin_search", handleGlobalSearch);
   }, []);
 
   const openCreateModal = () => {
@@ -180,11 +187,10 @@ export default function AdminCategoriesPage() {
 
       {statusMsg && (
         <div
-          className={`p-4 rounded-2xl text-xs font-bold border transition-all ${
-            statusMsg.type === "success"
-              ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-              : "bg-rose-50 text-rose-800 border-rose-200"
-          }`}
+          className={`p-4 rounded-2xl text-xs font-bold border transition-all ${statusMsg.type === "success"
+            ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+            : "bg-rose-50 text-rose-800 border-rose-200"
+            }`}
         >
           {statusMsg.text}
         </div>
@@ -255,7 +261,7 @@ export default function AdminCategoriesPage() {
                     return (
                       <tr key={c.id} className="hover:bg-slate-50/80 transition-colors">
                         <td className="py-4 px-5">
-                          <div className="font-mono font-bold text-blue-600">#CAT-{String(c.id).padStart(3, "0")}</div>
+                          <div className="font-mono font-bold text-[#0b2341]">#CAT-{String(c.id).padStart(3, "0")}</div>
                           <span className="text-[10px] text-slate-400 font-mono">{c.slug}</span>
                         </td>
                         <td className="py-4 px-5 font-bold text-[#0b2341] text-sm">{c.name}</td>
@@ -263,22 +269,21 @@ export default function AdminCategoriesPage() {
                           {c.description || "Standard therapeutic group"}
                         </td>
                         <td className="py-4 px-5 whitespace-nowrap">
-                          <span className="inline-flex items-center space-x-1.5 bg-blue-50/80 border border-blue-200/80 text-blue-900 px-3 py-1.5 rounded-xl text-xs font-black shadow-2xs whitespace-nowrap">
-                            <span className="bg-blue-600 text-white rounded-lg px-2 py-0.5 text-[11px] font-black">
+                          <span className="inline-flex items-center space-x-2 bg-[#f7f6f4] border border-[#e8e6e2] text-[#0b2341] px-3 py-1.5 rounded-xl text-xs font-extrabold shadow-2xs whitespace-nowrap">
+                            <span className="bg-[#0b2341] text-white rounded-lg px-2 py-0.5 text-[11px] font-black font-mono shadow-2xs">
                               {count}
                             </span>
-                            <span className="font-bold text-[11px] text-slate-700">
+                            <span className="font-extrabold text-[11px] text-[#0b2341]">
                               {count === 1 ? "Formulation" : "Formulations"}
                             </span>
                           </span>
                         </td>
                         <td className="py-4 px-5">
                           <span
-                            className={`font-extrabold px-3 py-1 rounded-full text-[10px] border ${
-                              c.is_active
-                                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                                : "bg-slate-100 text-slate-500 border-slate-200"
-                            }`}
+                            className={`font-extrabold px-3 py-1 rounded-full text-[10px] border ${c.is_active
+                              ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                              : "bg-slate-100 text-slate-500 border-slate-200"
+                              }`}
                           >
                             {c.is_active ? "Active" : "Disabled"}
                           </span>
@@ -286,7 +291,7 @@ export default function AdminCategoriesPage() {
                         <td className="py-4 px-5 text-right space-x-1.5 whitespace-nowrap">
                           <button
                             onClick={() => openEditModal(c)}
-                            className="bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 px-2.5 py-1.5 rounded-xl font-bold text-[11px] shadow-2xs transition-all cursor-pointer inline-flex items-center space-x-1"
+                            className="bg-slate-100 hover:bg-slate-200 text-[#0b2341] border border-slate-200 px-2.5 py-1.5 rounded-xl font-bold text-[11px] shadow-2xs transition-all cursor-pointer inline-flex items-center space-x-1"
                             title="Edit Category"
                           >
                             <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -296,11 +301,10 @@ export default function AdminCategoriesPage() {
                           </button>
                           <button
                             onClick={() => toggleCategoryStatus(c)}
-                            className={`border px-2.5 py-1.5 rounded-xl font-bold text-[11px] shadow-2xs transition-all cursor-pointer inline-flex items-center space-x-1 ${
-                              c.is_active
-                                ? "bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200"
-                                : "bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200"
-                            }`}
+                            className={`border px-2.5 py-1.5 rounded-xl font-bold text-[11px] shadow-2xs transition-all cursor-pointer inline-flex items-center space-x-1 ${c.is_active
+                              ? "bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200"
+                              : "bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200"
+                              }`}
                             title={c.is_active ? "Disable Category" : "Enable Category"}
                           >
                             <span>{c.is_active ? "Disable" : "Enable"}</span>
@@ -352,11 +356,10 @@ export default function AdminCategoriesPage() {
                     <button
                       key={pageNum}
                       onClick={() => setCurrentPage(pageNum)}
-                      className={`w-8 h-8 rounded-lg border text-xs font-black transition-all cursor-pointer flex items-center justify-center ${
-                        currentPage === pageNum
-                          ? "bg-[#0b2341] text-white border-[#0b2341] shadow-xs"
-                          : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
-                      }`}
+                      className={`w-8 h-8 rounded-lg border text-xs font-black transition-all cursor-pointer flex items-center justify-center ${currentPage === pageNum
+                        ? "bg-[#0b2341] text-white border-[#0b2341] shadow-xs"
+                        : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
+                        }`}
                     >
                       {pageNum}
                     </button>

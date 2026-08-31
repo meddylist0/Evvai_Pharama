@@ -20,7 +20,7 @@ def resolve_product_pricing(product: Product, current_user: Optional[User] = Non
         display_price = product.distributor_price
         role_label = "Distributor B2B Rate"
         distributor_price = product.distributor_price
-        customer_price = None
+        customer_price = product.customer_price
         bulk_price = product.bulk_price
         bulk_moq = product.bulk_moq
     elif is_admin:
@@ -34,10 +34,10 @@ def resolve_product_pricing(product: Product, current_user: Optional[User] = Non
         # Default / Retail Customer / Guest
         display_price = product.customer_price
         role_label = "Retail Customer Price"
-        distributor_price = None
+        distributor_price = product.distributor_price
         customer_price = product.customer_price
-        bulk_price = None
-        bulk_moq = None
+        bulk_price = product.bulk_price
+        bulk_moq = product.bulk_moq
 
     # Calculate discount percentage relative to MRP
     discount_pct = 0.0

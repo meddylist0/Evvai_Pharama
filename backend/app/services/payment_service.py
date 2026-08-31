@@ -1,11 +1,14 @@
 import hmac
 import hashlib
 import uuid
+import logging
 from datetime import datetime
 from typing import Optional, Dict, Any, Tuple
 import httpx
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
+
+logger = logging.getLogger("pharmalink.payments")
 
 from app.core.config import settings
 from app.models.payment import PaymentGatewaySetting, PaymentTransaction
@@ -323,6 +326,12 @@ def create_verified_paid_order(
         details=f"Payment verified via Razorpay ({verify_req.razorpay_payment_id}) for order {order_code} (₹{total_amount})",
         user=current_user
     )
+
+    try:
+        from app.services.notification_service import notify_order_created
+        notify_order_created(db=db, order=new_order, user=current_user)
+    except Exception as e:
+        logger.exception("Failed to dispatch order creation notification: %s", e)
 
     return new_order
 

@@ -1,0 +1,412 @@
+{
+  "total_test_cases": 28,
+  "passed_test_cases": 28,
+  "failed_test_cases": 0,
+  "total_assertions": 144,
+  "total_http_requests": 130,
+  "duration_seconds": 3.37,
+  "overall_security_gate": "PASS (AUTOMATED SECURITY VALIDATION PASSED)",
+  "compliance_verdict": "Automated security validation passed for the tested controls.",
+  "endpoint_inventory": {
+    "total_apis": 52,
+    "public_apis": 9,
+    "protected_apis": 43,
+    "admin_apis": 30,
+    "customer_apis": 12,
+    "distributor_apis": 1,
+    "object_sensitive_apis": 17,
+    "discovery_coverage_pct": 100.0,
+    "protected_coverage_pct": 100.0,
+    "admin_coverage_pct": 100.0
+  },
+  "dimension_metrics": {
+    "Priority 1: JWT Lifecycle & Alg Strictness": {
+      "tested": 7,
+      "passed": 7,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    },
+    "Priority 2: Private File & KYC Security": {
+      "tested": 5,
+      "passed": 5,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    },
+    "Priority 3: CORS & LAN Origin Defense": {
+      "tested": 2,
+      "passed": 2,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    },
+    "Priority 4: Secret Management & Validation": {
+      "tested": 1,
+      "passed": 1,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    },
+    "Priority 5: Error Security & 500 Sanitization": {
+      "tested": 1,
+      "passed": 1,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    },
+    "Priority 6: OWASP Security Headers": {
+      "tested": 1,
+      "passed": 1,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    },
+    "Priority 7: Rate Limiting & Anti-Brute Force": {
+      "tested": 1,
+      "passed": 1,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    },
+    "Priority 8: Payment Cryptographic Integrity": {
+      "tested": 1,
+      "passed": 1,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    },
+    "Priority 9: Business Logic & State Machine": {
+      "tested": 2,
+      "passed": 2,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    },
+    "Priority 10: Immutable Regulatory Audit Trail": {
+      "tested": 1,
+      "passed": 1,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    },
+    "Priority 11: API Fuzzing & Injection Defense": {
+      "tested": 3,
+      "passed": 3,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    },
+    "Priority 12: Dynamic Discovery & RBAC Gate": {
+      "tested": 1,
+      "passed": 1,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    },
+    "Priority 13: Semantic Response Verification": {
+      "tested": 2,
+      "passed": 2,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    }
+  },
+  "details": [
+    {
+      "dimension": "Priority 12: Dynamic Discovery & RBAC Gate",
+      "test_id": "DISC-001",
+      "test_name": "Dynamic API Discovery Integrity (52/52 APIs, 43 Protected)",
+      "passed": true,
+      "latency_ms": 2.25,
+      "telugu_desc": "మొత్తం 52 ఎండ్‌పాయింట్లు మరియు 43 ప్రొటెక్టెడ్ రూట్లు డైనమిక్‌గా కనుగొనబడ్డాయి.",
+      "details": "",
+      "requests_made": 0,
+      "assertions_made": 3
+    },
+    {
+      "dimension": "Priority 1: JWT Lifecycle & Alg Strictness",
+      "test_id": "JWT-001",
+      "test_name": "Strict JWT Claims Verification (iss, aud, type=access)",
+      "passed": true,
+      "latency_ms": 11.09,
+      "telugu_desc": "టోకెన్‌లో issuer, audience, మరియు access type సరిగ్గా ధృవీకరించబడ్డాయి.",
+      "details": "",
+      "requests_made": 0,
+      "assertions_made": 4
+    },
+    {
+      "dimension": "Priority 1: JWT Lifecycle & Alg Strictness",
+      "test_id": "JWT-002",
+      "test_name": "Multi-Role Session Ingestion (Admin, Dist A/B, Cust A/B)",
+      "passed": true,
+      "latency_ms": 1531.9,
+      "telugu_desc": "అన్ని రోల్స్ కోసం సురక్షితమైన సెషన్ టోకెన్లు జారీ చేయబడ్డాయి.",
+      "details": "",
+      "requests_made": 5,
+      "assertions_made": 5
+    },
+    {
+      "dimension": "Priority 1: JWT Lifecycle & Alg Strictness",
+      "test_id": "JWT-003",
+      "test_name": "Expired JWT Token Rejection (HTTP 401)",
+      "passed": true,
+      "latency_ms": 17.41,
+      "telugu_desc": "గడువు ముగిసిన టోకెన్ వెంటనే 401 తో తిరస్కరించబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Priority 1: JWT Lifecycle & Alg Strictness",
+      "test_id": "JWT-004",
+      "test_name": "Cryptographic alg=none Attack Rejection (HTTP 401)",
+      "passed": true,
+      "latency_ms": 11.71,
+      "telugu_desc": "alg=none అటాక్ పేలోడ్ సురక్షితంగా తిరస్కరించబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Priority 1: JWT Lifecycle & Alg Strictness",
+      "test_id": "JWT-005",
+      "test_name": "Forged / Tampered Signature Rejection (HTTP 401)",
+      "passed": true,
+      "latency_ms": 10.97,
+      "telugu_desc": "మార్ఫింగ్ చేసిన టోకెన్ సంతకం నిరోధించబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Priority 1: JWT Lifecycle & Alg Strictness",
+      "test_id": "JWT-006",
+      "test_name": "JWT Role Tampering Blocked by DB-Backed Authorization (HTTP 403)",
+      "passed": true,
+      "latency_ms": 15.42,
+      "telugu_desc": "టోకెన్‌లో రోల్ మార్చినా డేటాబేస్ రోల్ చెక్ ద్వారా అడ్మిన్ యాక్సెస్ 403 తో నిరోధించబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Priority 1: JWT Lifecycle & Alg Strictness",
+      "test_id": "JWT-007",
+      "test_name": "Suspended Account Rejection with Valid JWT (HTTP 401)",
+      "passed": true,
+      "latency_ms": 15.34,
+      "telugu_desc": "డీయాక్టివేట్ చేయబడిన ఖాతా చెల్లుబాటు అయ్యే టోకెన్‌తో కూడా యాక్సెస్ చేయకుండా 401 తో నిరోధించబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Priority 2: Private File & KYC Security",
+      "test_id": "DOC-001",
+      "test_name": "Anonymous Private Document Download Blocked (HTTP 401)",
+      "passed": true,
+      "latency_ms": 11.64,
+      "telugu_desc": "లాగిన్ అవ్వకుండా ప్రైవేట్ డాక్యుమెంట్‌ను చూడటానికి చేసిన ప్రయత్నం 401 తో బ్లాక్ చేయబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Priority 2: Private File & KYC Security",
+      "test_id": "DOC-002",
+      "test_name": "Customer Forbidden from Viewing Distributor KYC Document (HTTP 403)",
+      "passed": true,
+      "latency_ms": 13.72,
+      "telugu_desc": "కస్టమర్ డిస్ట్రిబ్యూటర్ ప్రైవేట్ లైసెన్స్‌ను చూడకుండా 403 తో నిరోధించబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Priority 2: Private File & KYC Security",
+      "test_id": "DOC-003",
+      "test_name": "Distributor B Forbidden from Accessing Distributor A KYC Doc (HTTP 403)",
+      "passed": true,
+      "latency_ms": 12.94,
+      "telugu_desc": "మరొక డిస్ట్రిబ్యూటర్ ప్రైవేట్ డాక్యుమెంట్‌ను చూడకుండా IDOR రక్షణ 403 తో నిరోధించింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Priority 2: Private File & KYC Security",
+      "test_id": "DOC-004",
+      "test_name": "Authorized Document Owner (Distributor A) Allowed Access (HTTP 200)",
+      "passed": true,
+      "latency_ms": 13.84,
+      "telugu_desc": "అసలైన డాక్యుమెంట్ యజమాని విజయవంతంగా ఫైల్‌ను యాక్సెస్ చేసారు.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Priority 2: Private File & KYC Security",
+      "test_id": "DOC-005",
+      "test_name": "Chief Administrator Authorized Review Access (HTTP 200)",
+      "passed": true,
+      "latency_ms": 15.09,
+      "telugu_desc": "అడ్మినిస్ట్రేటర్ సమీక్ష కోసం డాక్యుమెంట్ యాక్సెస్ అనుమతించబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Priority 3: CORS & LAN Origin Defense",
+      "test_id": "CORS-001",
+      "test_name": "Whitelisted Origin Preflight Allowed (http://localhost:3000)",
+      "passed": true,
+      "latency_ms": 5.3,
+      "telugu_desc": "అనుమతించబడిన డొమైన్‌కి CORS ప్రీ-ఫ్లైట్ హెడర్లు సరిగ్గా జారీ అయ్యాయి.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Priority 3: CORS & LAN Origin Defense",
+      "test_id": "CORS-002",
+      "test_name": "Untrusted Hacker Origin CORS Blocked",
+      "passed": true,
+      "latency_ms": 6.48,
+      "telugu_desc": "హ్యాకర్ వెబ్‌సైట్ నుండి వచ్చిన CORS రిక్వెస్ట్ తిరస్కరించబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Priority 4: Secret Management & Validation",
+      "test_id": "SEC-001",
+      "test_name": "Production Startup Secret Validation & Key Strength Check",
+      "passed": true,
+      "latency_ms": 0.0,
+      "telugu_desc": "ప్రొడక్షన్ సీక్రెట్ కీ 32 క్యారెక్టర్ల కనీస పొడవు మరియు వాలిడేషన్ తనిఖీ చేయబడింది.",
+      "details": "",
+      "requests_made": 0,
+      "assertions_made": 2
+    },
+    {
+      "dimension": "Priority 5: Error Security & 500 Sanitization",
+      "test_id": "ERR-001",
+      "test_name": "Safe Generic Error Responses (Zero Stack Traces / SQL Leakage)",
+      "passed": true,
+      "latency_ms": 19.3,
+      "telugu_desc": "ఎర్రర్ రెస్పాన్స్‌లో స్టాక్ ట్రేస్ లేదా డేటాబేస్ వివరాలు ఏవీ లీక్ కావడం లేదు.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 2
+    },
+    {
+      "dimension": "Priority 6: OWASP Security Headers",
+      "test_id": "HDR-001",
+      "test_name": "OWASP Security Headers (nosniff, DENY, CSP frame-ancestors, Referrer-Policy)",
+      "passed": true,
+      "latency_ms": 8.35,
+      "telugu_desc": "అన్ని కీలకమైన OWASP సెక్యూరిటీ హెడర్లు సరిగ్గా రెస్పాన్స్‌లో ఉన్నాయి.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 4
+    },
+    {
+      "dimension": "Priority 7: Rate Limiting & Anti-Brute Force",
+      "test_id": "RAT-001",
+      "test_name": "Anti-Brute Force: Failed Authentication Blocked (HTTP 401)",
+      "passed": true,
+      "latency_ms": 269.68,
+      "telugu_desc": "తప్పుడు పాస్‌వర్డ్ వెంటనే 401 తో నిరోధించబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Priority 8: Payment Cryptographic Integrity",
+      "test_id": "PAY-001",
+      "test_name": "Forged Payment Signature Rejection (HTTP 400)",
+      "passed": true,
+      "latency_ms": 12.38,
+      "telugu_desc": "నకిలీ పేమెంట్ సంతకంతో ఆర్డర్ పెట్టే ప్రయత్నం తిరస్కరించబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Priority 9: Business Logic & State Machine",
+      "test_id": "BUS-001",
+      "test_name": "Authoritative Server Price Override (Subtotal ₹63.0)",
+      "passed": true,
+      "latency_ms": 75.99,
+      "telugu_desc": "క్లయింట్ పంపిన తప్పుడు ధరను పట్టించుకోకుండా డేటాబేస్ ధరను సర్వర్ లెక్కించింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 2
+    },
+    {
+      "dimension": "Priority 9: Business Logic & State Machine",
+      "test_id": "BUS-002",
+      "test_name": "Illegal Order Jump Blocked: Pending -> Delivered (HTTP 400)",
+      "passed": true,
+      "latency_ms": 13.78,
+      "telugu_desc": "క్రమం తప్పి Pending నుండి నేరుగా Delivered చేయడానికి ప్రయత్నించినప్పుడు 400 తో తిరస్కరించబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Priority 10: Immutable Regulatory Audit Trail",
+      "test_id": "AUD-001",
+      "test_name": "Immutable Audit Trail Ingestion & Actor Attribution",
+      "passed": true,
+      "latency_ms": 19.67,
+      "telugu_desc": "మొత్తం 50 ఆడిట్ రికార్డులు డేటాబేస్‌లో యూజర్ ఐడీలతో భద్రపరచబడ్డాయి.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Priority 11: API Fuzzing & Injection Defense",
+      "test_id": "FUZ-001",
+      "test_name": "SQL Injection Resistance: Parameterized Query Shield (HTTP 200, No 500)",
+      "passed": true,
+      "latency_ms": 17.3,
+      "telugu_desc": "SQL ఇంజెక్షన్ శోధనలు పారామీటరైజ్డ్ క్వెరీలతో సురక్షితంగా హ్యాండిల్ అయ్యాయి.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Priority 11: API Fuzzing & Injection Defense",
+      "test_id": "FUZ-002",
+      "test_name": "Negative Number Fuzzing: Item Quantity Validation (HTTP 400/422)",
+      "passed": true,
+      "latency_ms": 13.0,
+      "telugu_desc": "నెగెటివ్ క్వాంటిటీ పేలోడ్ తిరస్కరించబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Priority 11: API Fuzzing & Injection Defense",
+      "test_id": "FUZ-003",
+      "test_name": "Path Traversal Fuzzing (../ & %2e%2e%2f Blocked)",
+      "passed": true,
+      "latency_ms": 3.52,
+      "telugu_desc": "పాత్ ట్రావర్సల్ అటాక్స్ నిరోధించబడ్డాయి.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Priority 13: Semantic Response Verification",
+      "test_id": "SEM-001",
+      "test_name": "100% Zero-Blind 401 Barrier across all 43 Protected Endpoints",
+      "passed": true,
+      "latency_ms": 452.2,
+      "telugu_desc": "టోకెన్ లేని అభ్యర్థనలు అన్ని 43 ప్రొటెక్టెడ్ ఎండ్‌పాయింట్లపై 401 తో నిరోధించబడ్డాయి.",
+      "details": "",
+      "requests_made": 43,
+      "assertions_made": 43
+    },
+    {
+      "dimension": "Priority 13: Semantic Response Verification",
+      "test_id": "SEM-002",
+      "test_name": "100% Zero-Blind Role Barrier on all 30 Admin Privileged Endpoints",
+      "passed": true,
+      "latency_ms": 698.55,
+      "telugu_desc": "అడ్మిన్ ఎండ్‌పాయింట్లపై కస్టమర్ & డిస్ట్రిబ్యూటర్లు 403 తో నిరోధించబడ్డారు.",
+      "details": "",
+      "requests_made": 60,
+      "assertions_made": 60
+    }
+  ]
+}

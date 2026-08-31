@@ -4,6 +4,7 @@ from app.models.order import Order, OrderItem, OrderStatus, PaymentStatus
 from app.models.kyc import DistributorKYC
 from app.models.audit import AuditLog
 from app.models.payment import PaymentGatewaySetting, PaymentTransaction
+from app.models.notification import NotificationSetting, NotificationLog
 
 __all__ = [
     "User",
@@ -20,6 +21,8 @@ __all__ = [
     "DistributorKYC",
     "AuditLog",
     "PaymentGatewaySetting",
-    "PaymentTransaction"
+    "PaymentTransaction",
+    "NotificationSetting",
+    "NotificationLog"
 ]
 

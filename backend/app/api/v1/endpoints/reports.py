@@ -25,21 +25,38 @@ def get_dashboard_summary(
     # Total all orders in DB
     total_orders = db.query(func.count(Order.id)).scalar() or 0
 
-    # Sales today (ONLY count confirmed PAID orders created today, excluding cancelled/refunded)
+    valid_order_filter = ~Order.order_status.in_([
+        OrderStatus.CANCELLED, OrderStatus.RETURNED, "Cancelled", "Returned", "CANCELLED", "RETURNED"
+    ])
+    paid_filter = Order.payment_status.in_([PaymentStatus.PAID, "Paid", "PAID"])
+    unpaid_filter = ~Order.payment_status.in_([PaymentStatus.PAID, "Paid", "PAID"])
+
+    # Strict Realized Revenue (ONLY confirmed cash-collected / paid orders)
     sales_today = db.query(func.sum(Order.total_amount))\
         .filter(
             func.date(Order.created_at) == today_str,
-            Order.payment_status.in_([PaymentStatus.PAID, "Paid", "PAID"]),
-            ~Order.order_status.in_([OrderStatus.CANCELLED, OrderStatus.RETURNED, "Cancelled", "Returned", "CANCELLED", "RETURNED"])
+            paid_filter,
+            valid_order_filter
         )\
         .scalar() or 0.0
 
-    # Sales all time (ONLY count confirmed PAID orders, excluding cancelled/refunded)
+    # Strict Realized Revenue all time
     sales_all_time = db.query(func.sum(Order.total_amount))\
+        .filter(paid_filter, valid_order_filter)\
+        .scalar() or 0.0
+
+    # Unsettled Credit Line & COD pipeline booked today (e.g. 30-Day B2B Credit POs)
+    pending_credit_today = db.query(func.sum(Order.total_amount))\
         .filter(
-            Order.payment_status.in_([PaymentStatus.PAID, "Paid", "PAID"]),
-            ~Order.order_status.in_([OrderStatus.CANCELLED, OrderStatus.RETURNED, "Cancelled", "Returned", "CANCELLED", "RETURNED"])
+            func.date(Order.created_at) == today_str,
+            unpaid_filter,
+            valid_order_filter
         )\
+        .scalar() or 0.0
+
+    # Total outstanding unsettled pipeline all time
+    pending_credit_total = db.query(func.sum(Order.total_amount))\
+        .filter(unpaid_filter, valid_order_filter)\
         .scalar() or 0.0
 
     # Orders count today
@@ -85,6 +102,8 @@ def get_dashboard_summary(
     return DashboardSummaryOut(
         total_sales_today=round(sales_today, 2),
         total_sales_all_time=round(sales_all_time, 2),
+        pending_credit_today=round(pending_credit_today, 2),
+        pending_credit_total=round(pending_credit_total, 2),
         total_orders=total_orders,
         orders_today=orders_today,
         orders_pending=orders_pending,
@@ -103,9 +122,8 @@ def get_commercial_analytics(
     admin_user: User = Depends(require_admin)
 ):
     orders = db.query(Order).filter(
-        Order.payment_status == PaymentStatus.PAID,
-        Order.order_status != OrderStatus.CANCELLED
-    ).all()
+        ~Order.order_status.in_([OrderStatus.CANCELLED, OrderStatus.RETURNED, "Cancelled", "Returned", "CANCELLED", "RETURNED"])
+    ).order_by(Order.created_at.desc()).all()
     
     total_revenue = sum(o.total_amount for o in orders)
     
@@ -166,8 +184,7 @@ def get_report_packs(
     total_orders = db.query(func.count(Order.id)).scalar() or 0
     total_rev = db.query(func.sum(Order.total_amount))\
         .filter(
-            Order.payment_status == PaymentStatus.PAID,
-            Order.order_status != OrderStatus.CANCELLED
+            ~Order.order_status.in_([OrderStatus.CANCELLED, OrderStatus.RETURNED, "Cancelled", "Returned", "CANCELLED", "RETURNED"])
         )\
         .scalar() or 0.0
     total_products = db.query(func.count(Product.id))\

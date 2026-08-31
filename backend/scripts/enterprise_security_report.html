@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PharmaLink Enterprise — Security & Quality Engineering Report</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    code, pre, .font-mono { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-900 p-4 md:p-8">
+  <div class="max-w-7xl mx-auto space-y-6">
+    <div class="bg-[#0b2341] text-white p-8 rounded-3xl shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+      <div>
+        <div class="flex items-center space-x-2 mb-2">
+          <span class="bg-blue-500/20 text-blue-300 text-xs font-mono px-3 py-1 rounded-full border border-blue-400/30 uppercase font-bold tracking-wider">
+            Production Security Hardening & Zero-Blind Automated Suite
+          </span>
+          <span class="bg-emerald-500/20 text-emerald-300 border-emerald-400/30 text-xs font-mono px-2.5 py-1 rounded-full border font-bold">
+            PASS (AUTOMATED SECURITY VALIDATION PASSED)
+          </span>
+        </div>
+        <h1 class="text-3xl font-black tracking-tight">PharmaLink Production Security Scorecard</h1>
+        <p class="text-slate-300 text-sm mt-1">Automated security validation passed for the tested controls.</p>
+        <p class="text-slate-400 text-xs font-mono mt-2">Executed: 2026-08-27 11:25:40 IST | Environment: Isolated SQLite Sandbox</p>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full md:w-auto">
+        <div class="bg-white/10 p-4 rounded-2xl text-center border border-white/10">
+          <div class="text-2xl font-black">28</div>
+          <div class="text-[10px] text-slate-300 uppercase font-bold mt-1">Test Scenarios</div>
+        </div>
+        <div class="bg-emerald-500/20 p-4 rounded-2xl text-center border border-emerald-400/30">
+          <div class="text-2xl font-black text-emerald-300">144</div>
+          <div class="text-[10px] text-emerald-200 uppercase font-bold mt-1">Assertions</div>
+        </div>
+        <div class="bg-blue-500/20 p-4 rounded-2xl text-center border border-blue-400/30">
+          <div class="text-2xl font-black text-blue-300">130</div>
+          <div class="text-[10px] text-blue-200 uppercase font-bold mt-1">HTTP Requests</div>
+        </div>
+        <div class="bg-amber-500/20 p-4 rounded-2xl text-center border border-amber-400/30">
+          <div class="text-2xl font-black text-amber-300">52</div>
+          <div class="text-[10px] text-amber-200 uppercase font-bold mt-1">APIs Audited</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="text-xs font-bold text-slate-400 uppercase">Public Endpoints</div>
+        <div class="text-2xl font-black text-slate-800 mt-1">9</div>
+      </div>
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="text-xs font-bold text-slate-400 uppercase">Admin Privileged Endpoints</div>
+        <div class="text-2xl font-black text-indigo-600 mt-1">30</div>
+      </div>
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="text-xs font-bold text-slate-400 uppercase">Customer Private Endpoints</div>
+        <div class="text-2xl font-black text-emerald-600 mt-1">12</div>
+      </div>
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="text-xs font-bold text-slate-400 uppercase">Object Sensitive APIs</div>
+        <div class="text-2xl font-black text-amber-600 mt-1">17</div>
+      </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+      <h3 class="text-base font-black text-[#0b2341] flex items-center space-x-2">
+        <span>📊</span>
+        <span>Security Dimensions Breakdown</span>
+      </h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead>
+            <tr class="border-b border-slate-200 text-xs font-black uppercase text-slate-400 bg-slate-50">
+              <th class="py-3 px-4">Dimension</th>
+              <th class="py-3 px-4">Test Scenarios</th>
+              <th class="py-3 px-4">Passed</th>
+              <th class="py-3 px-4">Coverage</th>
+              <th class="py-3 px-4">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="py-3 px-4 font-bold text-slate-800">Priority 1: JWT Lifecycle & Alg Strictness</td>
+          <td class="py-3 px-4 font-mono text-xs">7</td>
+          <td class="py-3 px-4 font-mono text-xs text-emerald-600 font-bold">7</td>
+          <td class="py-3 px-4">
+            <div class="flex items-center space-x-2">
+              <div class="w-24 bg-slate-200 rounded-full h-2 overflow-hidden">
+                <div class="h-2 rounded-full" style="width: 100.0%; background-color: #10b981;"></div>
+              </div>
+              <span class="text-xs font-mono font-bold text-slate-700">100.0%</span>
+            </div>
+          </td>
+          <td class="py-3 px-4"><span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-0.5 rounded">PASS</span></td>
+        </tr>
+        
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="py-3 px-4 font-bold text-slate-800">Priority 2: Private File & KYC Security</td>
+          <td class="py-3 px-4 font-mono text-xs">5</td>
+          <td class="py-3 px-4 font-mono text-xs text-emerald-600 font-bold">5</td>
+          <td class="py-3 px-4">
+            <div class="flex items-center space-x-2">
+              <div class="w-24 bg-slate-200 rounded-full h-2 overflow-hidden">
+                <div class="h-2 rounded-full" style="width: 100.0%; background-color: #10b981;"></div>
+              </div>
+              <span class="text-xs font-mono font-bold text-slate-700">100.0%</span>
+            </div>
+          </td>
+          <td class="py-3 px-4"><span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-0.5 rounded">PASS</span></td>
+        </tr>
+        
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="py-3 px-4 font-bold text-slate-800">Priority 3: CORS & LAN Origin Defense</td>
+          <td class="py-3 px-4 font-mono text-xs">2</td>
+          <td class="py-3 px-4 font-mono text-xs text-emerald-600 font-bold">2</td>
+          <td class="py-3 px-4">
+            <div class="flex items-center space-x-2">
+              <div class="w-24 bg-slate-200 rounded-full h-2 overflow-hidden">
+                <div class="h-2 rounded-full" style="width: 100.0%; background-color: #10b981;"></div>
+              </div>
+              <span class="text-xs font-mono font-bold text-slate-700">100.0%</span>
+            </div>
+          </td>
+          <td class="py-3 px-4"><span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-0.5 rounded">PASS</span></td>
+        </tr>
+        
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="py-3 px-4 font-bold text-slate-800">Priority 4: Secret Management & Validation</td>
+          <td class="py-3 px-4 font-mono text-xs">1</td>
+          <td class="py-3 px-4 font-mono text-xs text-emerald-600 font-bold">1</td>
+          <td class="py-3 px-4">
+            <div class="flex items-center space-x-2">
+              <div class="w-24 bg-slate-200 rounded-full h-2 overflow-hidden">
+                <div class="h-2 rounded-full" style="width: 100.0%; background-color: #10b981;"></div>
+              </div>
+              <span class="text-xs font-mono font-bold text-slate-700">100.0%</span>
+            </div>
+          </td>
+          <td class="py-3 px-4"><span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-0.5 rounded">PASS</span></td>
+        </tr>
+        
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="py-3 px-4 font-bold text-slate-800">Priority 5: Error Security & 500 Sanitization</td>
+          <td class="py-3 px-4 font-mono text-xs">1</td>
+          <td class="py-3 px-4 font-mono text-xs text-emerald-600 font-bold">1</td>
+          <td class="py-3 px-4">
+            <div class="flex items-center space-x-2">
+              <div class="w-24 bg-slate-200 rounded-full h-2 overflow-hidden">
+                <div class="h-2 rounded-full" style="width: 100.0%; background-color: #10b981;"></div>
+              </div>
+              <span class="text-xs font-mono font-bold text-slate-700">100.0%</span>
+            </div>
+          </td>
+          <td class="py-3 px-4"><span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-0.5 rounded">PASS</span></td>
+        </tr>
+        
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="py-3 px-4 font-bold text-slate-800">Priority 6: OWASP Security Headers</td>
+          <td class="py-3 px-4 font-mono text-xs">1</td>
+          <td class="py-3 px-4 font-mono text-xs text-emerald-600 font-bold">1</td>
+          <td class="py-3 px-4">
+            <div class="flex items-center space-x-2">
+              <div class="w-24 bg-slate-200 rounded-full h-2 overflow-hidden">
+                <div class="h-2 rounded-full" style="width: 100.0%; background-color: #10b981;"></div>
+              </div>
+              <span class="text-xs font-mono font-bold text-slate-700">100.0%</span>
+            </div>
+          </td>
+          <td class="py-3 px-4"><span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-0.5 rounded">PASS</span></td>
+        </tr>
+        
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="py-3 px-4 font-bold text-slate-800">Priority 7: Rate Limiting & Anti-Brute Force</td>
+          <td class="py-3 px-4 font-mono text-xs">1</td>
+          <td class="py-3 px-4 font-mono text-xs text-emerald-600 font-bold">1</td>
+          <td class="py-3 px-4">
+            <div class="flex items-center space-x-2">
+              <div class="w-24 bg-slate-200 rounded-full h-2 overflow-hidden">
+                <div class="h-2 rounded-full" style="width: 100.0%; background-color: #10b981;"></div>
+              </div>
+              <span class="text-xs font-mono font-bold text-slate-700">100.0%</span>
+            </div>
+          </td>
+          <td class="py-3 px-4"><span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-0.5 rounded">PASS</span></td>
+        </tr>
+        
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="py-3 px-4 font-bold text-slate-800">Priority 8: Payment Cryptographic Integrity</td>
+          <td class="py-3 px-4 font-mono text-xs">1</td>
+          <td class="py-3 px-4 font-mono text-xs text-emerald-600 font-bold">1</td>
+          <td class="py-3 px-4">
+            <div class="flex items-center space-x-2">
+              <div class="w-24 bg-slate-200 rounded-full h-2 overflow-hidden">
+                <div class="h-2 rounded-full" style="width: 100.0%; background-color: #10b981;"></div>
+              </div>
+              <span class="text-xs font-mono font-bold text-slate-700">100.0%</span>
+            </div>
+          </td>
+          <td class="py-3 px-4"><span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-0.5 rounded">PASS</span></td>
+        </tr>
+        
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="py-3 px-4 font-bold text-slate-800">Priority 9: Business Logic & State Machine</td>
+          <td class="py-3 px-4 font-mono text-xs">2</td>
+          <td class="py-3 px-4 font-mono text-xs text-emerald-600 font-bold">2</td>
+          <td class="py-3 px-4">
+            <div class="flex items-center space-x-2">
+              <div class="w-24 bg-slate-200 rounded-full h-2 overflow-hidden">
+                <div class="h-2 rounded-full" style="width: 100.0%; background-color: #10b981;"></div>
+              </div>
+              <span class="text-xs font-mono font-bold text-slate-700">100.0%</span>
+            </div>
+          </td>
+          <td class="py-3 px-4"><span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-0.5 rounded">PASS</span></td>
+        </tr>
+        
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="py-3 px-4 font-bold text-slate-800">Priority 10: Immutable Regulatory Audit Trail</td>
+          <td class="py-3 px-4 font-mono text-xs">1</td>
+          <td class="py-3 px-4 font-mono text-xs text-emerald-600 font-bold">1</td>
+          <td class="py-3 px-4">
+            <div class="flex items-center space-x-2">
+              <div class="w-24 bg-slate-200 rounded-full h-2 overflow-hidden">
+                <div class="h-2 rounded-full" style="width: 100.0%; background-color: #10b981;"></div>
+              </div>
+              <span class="text-xs font-mono font-bold text-slate-700">100.0%</span>
+            </div>
+          </td>
+          <td class="py-3 px-4"><span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-0.5 rounded">PASS</span></td>
+        </tr>
+        
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="py-3 px-4 font-bold text-slate-800">Priority 11: API Fuzzing & Injection Defense</td>
+          <td class="py-3 px-4 font-mono text-xs">3</td>
+          <td class="py-3 px-4 font-mono text-xs text-emerald-600 font-bold">3</td>
+          <td class="py-3 px-4">
+            <div class="flex items-center space-x-2">
+              <div class="w-24 bg-slate-200 rounded-full h-2 overflow-hidden">
+                <div class="h-2 rounded-full" style="width: 100.0%; background-color: #10b981;"></div>
+              </div>
+              <span class="text-xs font-mono font-bold text-slate-700">100.0%</span>
+            </div>
+          </td>
+          <td class="py-3 px-4"><span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-0.5 rounded">PASS</span></td>
+        </tr>
+        
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="py-3 px-4 font-bold text-slate-800">Priority 12: Dynamic Discovery & RBAC Gate</td>
+          <td class="py-3 px-4 font-mono text-xs">1</td>
+          <td class="py-3 px-4 font-mono text-xs text-emerald-600 font-bold">1</td>
+          <td class="py-3 px-4">
+            <div class="flex items-center space-x-2">
+              <div class="w-24 bg-slate-200 rounded-full h-2 overflow-hidden">
+                <div class="h-2 rounded-full" style="width: 100.0%; background-color: #10b981;"></div>
+              </div>
+              <span class="text-xs font-mono font-bold text-slate-700">100.0%</span>
+            </div>
+          </td>
+          <td class="py-3 px-4"><span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-0.5 rounded">PASS</span></td>
+        </tr>
+        
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="py-3 px-4 font-bold text-slate-800">Priority 13: Semantic Response Verification</td>
+          <td class="py-3 px-4 font-mono text-xs">2</td>
+          <td class="py-3 px-4 font-mono text-xs text-emerald-600 font-bold">2</td>
+          <td class="py-3 px-4">
+            <div class="flex items-center space-x-2">
+              <div class="w-24 bg-slate-200 rounded-full h-2 overflow-hidden">
+                <div class="h-2 rounded-full" style="width: 100.0%; background-color: #10b981;"></div>
+              </div>
+              <span class="text-xs font-mono font-bold text-slate-700">100.0%</span>
+            </div>
+          </td>
+          <td class="py-3 px-4"><span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-0.5 rounded">PASS</span></td>
+        </tr>
+        
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="text-base font-black text-[#0b2341] flex items-center space-x-2">
+          <span>🧪</span>
+          <span>Automated Security Test Verifications</span>
+        </h3>
+        <span class="text-xs font-mono text-slate-500">Duration: 3.37s</span>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        
+        <div class="p-4 rounded-2xl border border-emerald-200 bg-white shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">DISC-001</span>
+              <span class="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Priority 12: Dynamic Discovery & RBAC Gate</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono text-slate-400">2.25 ms</span>
+              <span class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-md">PASS ✓</span>
+            </div>
+          </div>
+          <h4 class="font-bold text-sm text-[#0b2341]">Dynamic API Discovery Integrity (52/52 APIs, 43 Protected)</h4>
+          <div class="flex items-center space-x-4 text-[11px] text-slate-500 font-mono">
+            <span>Requests: 0</span>
+            <span>Assertions: 3</span>
+          </div>
+          <p class='text-xs text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100'>💡 <strong>ధృవీకరణ:</strong> మొత్తం 52 ఎండ్‌పాయింట్లు మరియు 43 ప్రొటెక్టెడ్ రూట్లు డైనమిక్‌గా కనుగొనబడ్డాయి.</p>
+        </div>
+        
+        <div class="p-4 rounded-2xl border border-emerald-200 bg-white shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">JWT-001</span>
+              <span class="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Priority 1: JWT Lifecycle & Alg Strictness</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono text-slate-400">11.09 ms</span>
+              <span class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-md">PASS ✓</span>
+            </div>
+          </div>
+          <h4 class="font-bold text-sm text-[#0b2341]">Strict JWT Claims Verification (iss, aud, type=access)</h4>
+          <div class="flex items-center space-x-4 text-[11px] text-slate-500 font-mono">
+            <span>Requests: 0</span>
+            <span>Assertions: 4</span>
+          </div>
+          <p class='text-xs text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100'>💡 <strong>ధృవీకరణ:</strong> టోకెన్‌లో issuer, audience, మరియు access type సరిగ్గా ధృవీకరించబడ్డాయి.</p>
+        </div>
+        
+        <div class="p-4 rounded-2xl border border-emerald-200 bg-white shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">JWT-002</span>
+              <span class="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Priority 1: JWT Lifecycle & Alg Strictness</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono text-slate-400">1531.9 ms</span>
+              <span class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-md">PASS ✓</span>
+            </div>
+          </div>
+          <h4 class="font-bold text-sm text-[#0b2341]">Multi-Role Session Ingestion (Admin, Dist A/B, Cust A/B)</h4>
+          <div class="flex items-center space-x-4 text-[11px] text-slate-500 font-mono">
+            <span>Requests: 5</span>
+            <span>Assertions: 5</span>
+          </div>
+          <p class='text-xs text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100'>💡 <strong>ధృవీకరణ:</strong> అన్ని రోల్స్ కోసం సురక్షితమైన సెషన్ టోకెన్లు జారీ చేయబడ్డాయి.</p>
+        </div>
+        
+        <div class="p-4 rounded-2xl border border-emerald-200 bg-white shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">JWT-003</span>
+              <span class="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Priority 1: JWT Lifecycle & Alg Strictness</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono text-slate-400">17.41 ms</span>
+              <span class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-md">PASS ✓</span>
+            </div>
+          </div>
+          <h4 class="font-bold text-sm text-[#0b2341]">Expired JWT Token Rejection (HTTP 401)</h4>
+          <div class="flex items-center space-x-4 text-[11px] text-slate-500 font-mono">
+            <span>Requests: 1</span>
+            <span>Assertions: 1</span>
+          </div>
+          <p class='text-xs text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100'>💡 <strong>ధృవీకరణ:</strong> గడువు ముగిసిన టోకెన్ వెంటనే 401 తో తిరస్కరించబడింది.</p>
+        </div>
+        
+        <div class="p-4 rounded-2xl border border-emerald-200 bg-white shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">JWT-004</span>
+              <span class="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Priority 1: JWT Lifecycle & Alg Strictness</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono text-slate-400">11.71 ms</span>
+              <span class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-md">PASS ✓</span>
+            </div>
+          </div>
+          <h4 class="font-bold text-sm text-[#0b2341]">Cryptographic alg=none Attack Rejection (HTTP 401)</h4>
+          <div class="flex items-center space-x-4 text-[11px] text-slate-500 font-mono">
+            <span>Requests: 1</span>
+            <span>Assertions: 1</span>
+          </div>
+          <p class='text-xs text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100'>💡 <strong>ధృవీకరణ:</strong> alg=none అటాక్ పేలోడ్ సురక్షితంగా తిరస్కరించబడింది.</p>
+        </div>
+        
+        <div class="p-4 rounded-2xl border border-emerald-200 bg-white shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">JWT-005</span>
+              <span class="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Priority 1: JWT Lifecycle & Alg Strictness</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono text-slate-400">10.97 ms</span>
+              <span class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-md">PASS ✓</span>
+            </div>
+          </div>
+          <h4 class="font-bold text-sm text-[#0b2341]">Forged / Tampered Signature Rejection (HTTP 401)</h4>
+          <div class="flex items-center space-x-4 text-[11px] text-slate-500 font-mono">
+            <span>Requests: 1</span>
+            <span>Assertions: 1</span>
+          </div>
+          <p class='text-xs text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100'>💡 <strong>ధృవీకరణ:</strong> మార్ఫింగ్ చేసిన టోకెన్ సంతకం నిరోధించబడింది.</p>
+        </div>
+        
+        <div class="p-4 rounded-2xl border border-emerald-200 bg-white shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">JWT-006</span>
+              <span class="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Priority 1: JWT Lifecycle & Alg Strictness</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono text-slate-400">15.42 ms</span>
+              <span class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-md">PASS ✓</span>
+            </div>
+          </div>
+          <h4 class="font-bold text-sm text-[#0b2341]">JWT Role Tampering Blocked by DB-Backed Authorization (HTTP 403)</h4>
+          <div class="flex items-center space-x-4 text-[11px] text-slate-500 font-mono">
+            <span>Requests: 1</span>
+            <span>Assertions: 1</span>
+          </div>
+          <p class='text-xs text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100'>💡 <strong>ధృవీకరణ:</strong> టోకెన్‌లో రోల్ మార్చినా డేటాబేస్ రోల్ చెక్ ద్వారా అడ్మిన్ యాక్సెస్ 403 తో నిరోధించబడింది.</p>
+        </div>
+        
+        <div class="p-4 rounded-2xl border border-emerald-200 bg-white shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">JWT-007</span>
+              <span class="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Priority 1: JWT Lifecycle & Alg Strictness</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono text-slate-400">15.34 ms</span>
+              <span class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-md">PASS ✓</span>
+            </div>
+          </div>
+          <h4 class="font-bold text-sm text-[#0b2341]">Suspended Account Rejection with Valid JWT (HTTP 401)</h4>
+          <div class="flex items-center space-x-4 text-[11px] text-slate-500 font-mono">
+            <span>Requests: 1</span>
+            <span>Assertions: 1</span>
+          </div>
+          <p class='text-xs text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100'>💡 <strong>ధృవీకరణ:</strong> డీయాక్టివేట్ చేయబడిన ఖాతా చెల్లుబాటు అయ్యే టోకెన్‌తో కూడా యాక్సెస్ చేయకుండా 401 తో నిరోధించబడింది.</p>
+        </div>
+        
+        <div class="p-4 rounded-2xl border border-emerald-200 bg-white shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">DOC-001</span>
+              <span class="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Priority 2: Private File & KYC Security</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono text-slate-400">11.64 ms</span>
+              <span class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-md">PASS ✓</span>
+            </div>
+          </div>
+          <h4 class="font-bold text-sm text-[#0b2341]">Anonymous Private Document Download Blocked (HTTP 401)</h4>
+          <div class="flex items-center space-x-4 text-[11px] text-slate-500 font-mono">
+            <span>Requests: 1</span>
+            <span>Assertions: 1</span>
+          </div>
+          <p class='text-xs text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100'>💡 <strong>ధృవీకరణ:</strong> లాగిన్ అవ్వకుండా ప్రైవేట్ డాక్యుమెంట్‌ను చూడటానికి చేసిన ప్రయత్నం 401 తో బ్లాక్ చేయబడింది.</p>
+        </div>
+        
+        <div class="p-4 rounded-2xl border border-emerald-200 bg-white shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">DOC-002</span>
+              <span class="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Priority 2: Private File & KYC Security</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono text-slate-400">13.72 ms</span>
+              <span class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-md">PASS ✓</span>
+            </div>
+          </div>
+          <h4 class="font-bold text-sm text-[#0b2341]">Customer Forbidden from Viewing Distributor KYC Document (HTTP 403)</h4>
+          <div class="flex items-center space-x-4 text-[11px] text-slate-500 font-mono">
+            <span>Requests: 1</span>
+            <span>Assertions: 1</span>
+          </div>
+          <p class='text-xs text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100'>💡 <strong>ధృవీకరణ:</strong> కస్టమర్ డిస్ట్రిబ్యూటర్ ప్రైవేట్ లైసెన్స్‌ను చూడకుండా 403 తో నిరోధించబడింది.</p>
+        </div>
+        
+        <div class="p-4 rounded-2xl border border-emerald-200 bg-white shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">DOC-003</span>
+              <span class="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Priority 2: Private File & KYC Security</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono text-slate-400">12.94 ms</span>
+              <span class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-md">PASS ✓</span>
+            </div>
+          </div>
+          <h4 class="font-bold text-sm text-[#0b2341]">Distributor B Forbidden from Accessing Distributor A KYC Doc (HTTP 403)</h4>
+          <div class="flex items-center space-x-4 text-[11px] text-slate-500 font-mono">
+            <span>Requests: 1</span>
+            <span>Assertions: 1</span>
+          </div>
+          <p class='text-xs text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100'>💡 <strong>ధృవీకరణ:</strong> మరొక డిస్ట్రిబ్యూటర్ ప్రైవేట్ డాక్యుమెంట్‌ను చూడకుండా IDOR రక్షణ 403 తో నిరోధించింది.</p>
+        </div>
+        
+        <div class="p-4 rounded-2xl border border-emerald-200 bg-white shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">DOC-004</span>
+              <span class="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Priority 2: Private File & KYC Security</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono text-slate-400">13.84 ms</span>
+              <span class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-md">PASS ✓</span>
+            </div>
+          </div>
+          <h4 class="font-bold text-sm text-[#0b2341]">Authorized Document Owner (Distributor A) Allowed Access (HTTP 200)</h4>
+          <div class="flex items-center space-x-4 text-[11px] text-slate-500 font-mono">
+            <span>Requests: 1</span>
+            <span>Assertions: 1</span>
+          </div>
+          <p class='text-xs text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100'>💡 <strong>ధృవీకరణ:</strong> అసలైన డాక్యుమెంట్ యజమాని విజయవంతంగా ఫైల్‌ను యాక్సెస్ చేసారు.</p>
+        </div>
+        
+        <div class="p-4 rounded-2xl border border-emerald-200 bg-white shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">DOC-005</span>
+              <span class="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Priority 2: Private File & KYC Security</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono text-slate-400">15.09 ms</span>
+              <span class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-md">PASS ✓</span>
+            </div>
+          </div>
+          <h4 class="font-bold text-sm text-[#0b2341]">Chief Administrator Authorized Review Access (HTTP 200)</h4>
+          <div class="flex items-center space-x-4 text-[11px] text-slate-500 font-mono">
+            <span>Requests: 1</span>
+            <span>Assertions: 1</span>
+          </div>
+          <p class='text-xs text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100'>💡 <strong>ధృవీకరణ:</strong> అడ్మినిస్ట్రేటర్ సమీక్ష కోసం డాక్యుమెంట్ యాక్సెస్ అనుమతించబడింది.</p>
+        </div>
+        
+        <div class="p-4 rounded-2xl border border-emerald-200 bg-white shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">CORS-001</span>
+              <span class="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Priority 3: CORS & LAN Origin Defense</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono text-slate-400">5.3 ms</span>
+              <span class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-md">PASS ✓</span>
+            </div>
+          </div>
+          <h4 class="font-bold text-sm text-[#0b2341]">Whitelisted Origin Preflight Allowed (http://localhost:3000)</h4>
+          <div class="flex items-center space-x-4 text-[11px] text-slate-500 font-mono">
+            <span>Requests: 1</span>
+            <span>Assertions: 1</span>
+          </div>
+          <p class='text-xs text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100'>💡 <strong>ధృవీకరణ:</strong> అనుమతించబడిన డొమైన్‌కి CORS ప్రీ-ఫ్లైట్ హెడర్లు సరిగ్గా జారీ అయ్యాయి.</p>
+        </div>
+        
+        <div class="p-4 rounded-2xl border border-emerald-200 bg-white shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">CORS-002</span>
+              <span class="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Priority 3: CORS & LAN Origin Defense</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono text-slate-400">6.48 ms</span>
+              <span class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-md">PASS ✓</span>
+            </div>
+          </div>
+          <h4 class="font-bold text-sm text-[#0b2341]">Untrusted Hacker Origin CORS Blocked</h4>
+          <div class="flex items-center space-x-4 text-[11px] text-slate-500 font-mono">
+            <span>Requests: 1</span>
+            <span>Assertions: 1</span>
+          </div>
+          <p class='text-xs text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100'>💡 <strong>ధృవీకరణ:</strong> హ్యాకర్ వెబ్‌సైట్ నుండి వచ్చిన CORS రిక్వెస్ట్ తిరస్కరించబడింది.</p>
+        </div>
+        
+        <div class="p-4 rounded-2xl border border-emerald-200 bg-white shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">SEC-001</span>
+              <span class="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Priority 4: Secret Management & Validation</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono text-slate-400">0.0 ms</span>
+              <span class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-md">PASS ✓</span>
+            </div>
+          </div>
+          <h4 class="font-bold text-sm text-[#0b2341]">Production Startup Secret Validation & Key Strength Check</h4>
+          <div class="flex items-center space-x-4 text-[11px] text-slate-500 font-mono">
+            <span>Requests: 0</span>
+            <span>Assertions: 2</span>
+          </div>
+          <p class='text-xs text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100'>💡 <strong>ధృవీకరణ:</strong> ప్రొడక్షన్ సీక్రెట్ కీ 32 క్యారెక్టర్ల కనీస పొడవు మరియు వాలిడేషన్ తనిఖీ చేయబడింది.</p>
+        </div>
+        
+        <div class="p-4 rounded-2xl border border-emerald-200 bg-white shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">ERR-001</span>
+              <span class="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Priority 5: Error Security & 500 Sanitization</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono text-slate-400">19.3 ms</span>
+              <span class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-md">PASS ✓</span>
+            </div>
+          </div>
+          <h4 class="font-bold text-sm text-[#0b2341]">Safe Generic Error Responses (Zero Stack Traces / SQL Leakage)</h4>
+          <div class="flex items-center space-x-4 text-[11px] text-slate-500 font-mono">
+            <span>Requests: 1</span>
+            <span>Assertions: 2</span>
+          </div>
+          <p class='text-xs text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100'>💡 <strong>ధృవీకరణ:</strong> ఎర్రర్ రెస్పాన్స్‌లో స్టాక్ ట్రేస్ లేదా డేటాబేస్ వివరాలు ఏవీ లీక్ కావడం లేదు.</p>
+        </div>
+        
+        <div class="p-4 rounded-2xl border border-emerald-200 bg-white shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">HDR-001</span>
+              <span class="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Priority 6: OWASP Security Headers</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono text-slate-400">8.35 ms</span>
+              <span class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-md">PASS ✓</span>
+            </div>
+          </div>
+          <h4 class="font-bold text-sm text-[#0b2341]">OWASP Security Headers (nosniff, DENY, CSP frame-ancestors, Referrer-Policy)</h4>
+          <div class="flex items-center space-x-4 text-[11px] text-slate-500 font-mono">
+            <span>Requests: 1</span>
+            <span>Assertions: 4</span>
+          </div>
+          <p class='text-xs text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100'>💡 <strong>ధృవీకరణ:</strong> అన్ని కీలకమైన OWASP సెక్యూరిటీ హెడర్లు సరిగ్గా రెస్పాన్స్‌లో ఉన్నాయి.</p>
+        </div>
+        
+        <div class="p-4 rounded-2xl border border-emerald-200 bg-white shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">RAT-001</span>
+              <span class="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Priority 7: Rate Limiting & Anti-Brute Force</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono text-slate-400">269.68 ms</span>
+              <span class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-md">PASS ✓</span>
+            </div>
+          </div>
+          <h4 class="font-bold text-sm text-[#0b2341]">Anti-Brute Force: Failed Authentication Blocked (HTTP 401)</h4>
+          <div class="flex items-center space-x-4 text-[11px] text-slate-500 font-mono">
+            <span>Requests: 1</span>
+            <span>Assertions: 1</span>
+          </div>
+          <p class='text-xs text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100'>💡 <strong>ధృవీకరణ:</strong> తప్పుడు పాస్‌వర్డ్ వెంటనే 401 తో నిరోధించబడింది.</p>
+        </div>
+        
+        <div class="p-4 rounded-2xl border border-emerald-200 bg-white shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">PAY-001</span>
+              <span class="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Priority 8: Payment Cryptographic Integrity</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono text-slate-400">12.38 ms</span>
+              <span class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-md">PASS ✓</span>
+            </div>
+          </div>
+          <h4 class="font-bold text-sm text-[#0b2341]">Forged Payment Signature Rejection (HTTP 400)</h4>
+          <div class="flex items-center space-x-4 text-[11px] text-slate-500 font-mono">
+            <span>Requests: 1</span>
+            <span>Assertions: 1</span>
+          </div>
+          <p class='text-xs text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100'>💡 <strong>ధృవీకరణ:</strong> నకిలీ పేమెంట్ సంతకంతో ఆర్డర్ పెట్టే ప్రయత్నం తిరస్కరించబడింది.</p>
+        </div>
+        
+        <div class="p-4 rounded-2xl border border-emerald-200 bg-white shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">BUS-001</span>
+              <span class="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Priority 9: Business Logic & State Machine</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono text-slate-400">75.99 ms</span>
+              <span class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-md">PASS ✓</span>
+            </div>
+          </div>
+          <h4 class="font-bold text-sm text-[#0b2341]">Authoritative Server Price Override (Subtotal ₹63.0)</h4>
+          <div class="flex items-center space-x-4 text-[11px] text-slate-500 font-mono">
+            <span>Requests: 1</span>
+            <span>Assertions: 2</span>
+          </div>
+          <p class='text-xs text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100'>💡 <strong>ధృవీకరణ:</strong> క్లయింట్ పంపిన తప్పుడు ధరను పట్టించుకోకుండా డేటాబేస్ ధరను సర్వర్ లెక్కించింది.</p>
+        </div>
+        
+        <div class="p-4 rounded-2xl border border-emerald-200 bg-white shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">BUS-002</span>
+              <span class="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Priority 9: Business Logic & State Machine</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono text-slate-400">13.78 ms</span>
+              <span class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-md">PASS ✓</span>
+            </div>
+          </div>
+          <h4 class="font-bold text-sm text-[#0b2341]">Illegal Order Jump Blocked: Pending -> Delivered (HTTP 400)</h4>
+          <div class="flex items-center space-x-4 text-[11px] text-slate-500 font-mono">
+            <span>Requests: 1</span>
+            <span>Assertions: 1</span>
+          </div>
+          <p class='text-xs text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100'>💡 <strong>ధృవీకరణ:</strong> క్రమం తప్పి Pending నుండి నేరుగా Delivered చేయడానికి ప్రయత్నించినప్పుడు 400 తో తిరస్కరించబడింది.</p>
+        </div>
+        
+        <div class="p-4 rounded-2xl border border-emerald-200 bg-white shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">AUD-001</span>
+              <span class="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Priority 10: Immutable Regulatory Audit Trail</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono text-slate-400">19.67 ms</span>
+              <span class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-md">PASS ✓</span>
+            </div>
+          </div>
+          <h4 class="font-bold text-sm text-[#0b2341]">Immutable Audit Trail Ingestion & Actor Attribution</h4>
+          <div class="flex items-center space-x-4 text-[11px] text-slate-500 font-mono">
+            <span>Requests: 1</span>
+            <span>Assertions: 1</span>
+          </div>
+          <p class='text-xs text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100'>💡 <strong>ధృవీకరణ:</strong> మొత్తం 50 ఆడిట్ రికార్డులు డేటాబేస్‌లో యూజర్ ఐడీలతో భద్రపరచబడ్డాయి.</p>
+        </div>
+        
+        <div class="p-4 rounded-2xl border border-emerald-200 bg-white shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">FUZ-001</span>
+              <span class="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Priority 11: API Fuzzing & Injection Defense</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono text-slate-400">17.3 ms</span>
+              <span class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-md">PASS ✓</span>
+            </div>
+          </div>
+          <h4 class="font-bold text-sm text-[#0b2341]">SQL Injection Resistance: Parameterized Query Shield (HTTP 200, No 500)</h4>
+          <div class="flex items-center space-x-4 text-[11px] text-slate-500 font-mono">
+            <span>Requests: 1</span>
+            <span>Assertions: 1</span>
+          </div>
+          <p class='text-xs text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100'>💡 <strong>ధృవీకరణ:</strong> SQL ఇంజెక్షన్ శోధనలు పారామీటరైజ్డ్ క్వెరీలతో సురక్షితంగా హ్యాండిల్ అయ్యాయి.</p>
+        </div>
+        
+        <div class="p-4 rounded-2xl border border-emerald-200 bg-white shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">FUZ-002</span>
+              <span class="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Priority 11: API Fuzzing & Injection Defense</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono text-slate-400">13.0 ms</span>
+              <span class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-md">PASS ✓</span>
+            </div>
+          </div>
+          <h4 class="font-bold text-sm text-[#0b2341]">Negative Number Fuzzing: Item Quantity Validation (HTTP 400/422)</h4>
+          <div class="flex items-center space-x-4 text-[11px] text-slate-500 font-mono">
+            <span>Requests: 1</span>
+            <span>Assertions: 1</span>
+          </div>
+          <p class='text-xs text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100'>💡 <strong>ధృవీకరణ:</strong> నెగెటివ్ క్వాంటిటీ పేలోడ్ తిరస్కరించబడింది.</p>
+        </div>
+        
+        <div class="p-4 rounded-2xl border border-emerald-200 bg-white shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">FUZ-003</span>
+              <span class="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Priority 11: API Fuzzing & Injection Defense</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono text-slate-400">3.52 ms</span>
+              <span class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-md">PASS ✓</span>
+            </div>
+          </div>
+          <h4 class="font-bold text-sm text-[#0b2341]">Path Traversal Fuzzing (../ & %2e%2e%2f Blocked)</h4>
+          <div class="flex items-center space-x-4 text-[11px] text-slate-500 font-mono">
+            <span>Requests: 1</span>
+            <span>Assertions: 1</span>
+          </div>
+          <p class='text-xs text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100'>💡 <strong>ధృవీకరణ:</strong> పాత్ ట్రావర్సల్ అటాక్స్ నిరోధించబడ్డాయి.</p>
+        </div>
+        
+        <div class="p-4 rounded-2xl border border-emerald-200 bg-white shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">SEM-001</span>
+              <span class="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Priority 13: Semantic Response Verification</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono text-slate-400">452.2 ms</span>
+              <span class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-md">PASS ✓</span>
+            </div>
+          </div>
+          <h4 class="font-bold text-sm text-[#0b2341]">100% Zero-Blind 401 Barrier across all 43 Protected Endpoints</h4>
+          <div class="flex items-center space-x-4 text-[11px] text-slate-500 font-mono">
+            <span>Requests: 43</span>
+            <span>Assertions: 43</span>
+          </div>
+          <p class='text-xs text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100'>💡 <strong>ధృవీకరణ:</strong> టోకెన్ లేని అభ్యర్థనలు అన్ని 43 ప్రొటెక్టెడ్ ఎండ్‌పాయింట్లపై 401 తో నిరోధించబడ్డాయి.</p>
+        </div>
+        
+        <div class="p-4 rounded-2xl border border-emerald-200 bg-white shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="font-mono text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">SEM-002</span>
+              <span class="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Priority 13: Semantic Response Verification</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono text-slate-400">698.55 ms</span>
+              <span class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-1 rounded-md">PASS ✓</span>
+            </div>
+          </div>
+          <h4 class="font-bold text-sm text-[#0b2341]">100% Zero-Blind Role Barrier on all 30 Admin Privileged Endpoints</h4>
+          <div class="flex items-center space-x-4 text-[11px] text-slate-500 font-mono">
+            <span>Requests: 60</span>
+            <span>Assertions: 60</span>
+          </div>
+          <p class='text-xs text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100'>💡 <strong>ధృవీకరణ:</strong> అడ్మిన్ ఎండ్‌పాయింట్లపై కస్టమర్ & డిస్ట్రిబ్యూటర్లు 403 తో నిరోధించబడ్డారు.</p>
+        </div>
+        
+      </div>
+    </div>
+
+    <div class="text-center text-xs text-slate-400 py-4 font-medium">
+      PharmaLink Enterprise Automated Test Framework • Automated security validation passed for the tested controls.
+    </div>
+  </div>
+</body>
+</html>

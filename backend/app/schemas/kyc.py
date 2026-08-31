@@ -14,6 +14,7 @@ class KYCSubmissionRequest(BaseModel):
 class KYCReviewRequest(BaseModel):
     status: KYCStatus
     admin_remarks: Optional[str] = None
+    credit_limit: Optional[float] = None
 
 
 class KYCOut(BaseModel):
@@ -27,6 +28,7 @@ class KYCOut(BaseModel):
     document_file_url: Optional[str] = None
     verification_status: KYCStatus
     admin_remarks: Optional[str] = None
+    credit_limit: Optional[float] = None
     submitted_at: datetime
     reviewed_at: Optional[datetime] = None
 

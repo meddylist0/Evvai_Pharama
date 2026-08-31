@@ -5,6 +5,8 @@ from pydantic import BaseModel
 class DashboardSummaryOut(BaseModel):
     total_sales_today: float
     total_sales_all_time: float
+    pending_credit_today: float = 0.0
+    pending_credit_total: float = 0.0
     total_orders: int = 0
     orders_today: int
     orders_pending: int

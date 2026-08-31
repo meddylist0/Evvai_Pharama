@@ -59,6 +59,13 @@ export default function AdminProductsPage() {
 
   useEffect(() => {
     loadProducts();
+    const handleGlobalSearch = (e: any) => {
+      const q = typeof e.detail === "string" ? e.detail : "";
+      setSearchTerm(q);
+      setCurrentPage(1);
+    };
+    window.addEventListener("pharmalink_admin_search", handleGlobalSearch);
+    return () => window.removeEventListener("pharmalink_admin_search", handleGlobalSearch);
   }, []);
 
   const filtered = products.filter((p) => {

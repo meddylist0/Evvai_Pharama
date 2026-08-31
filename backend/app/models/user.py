@@ -1,6 +1,6 @@
 import enum
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum, ForeignKey, Text, Float
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 
@@ -29,7 +29,7 @@ class User(Base):
     # Relationships
     customer_profile = relationship("CustomerProfile", back_populates="user", uselist=False, cascade="all, delete-orphan")
     distributor_profile = relationship("DistributorProfile", back_populates="user", uselist=False, cascade="all, delete-orphan")
-    orders = relationship("Order", back_populates="user")
+    orders = relationship("Order", back_populates="user", cascade="all, delete-orphan")
     audit_logs = relationship("AuditLog", back_populates="user")
 
 
@@ -43,6 +43,7 @@ class CustomerProfile(Base):
     state = Column(String(100), nullable=True)
     pincode = Column(String(20), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     user = relationship("User", back_populates="customer_profile")
 
@@ -68,6 +69,7 @@ class DistributorProfile(Base):
     pincode = Column(String(20), nullable=False)
     kyc_status = Column(Enum(KYCStatus), default=KYCStatus.PENDING, nullable=False)
     admin_remarks = Column(Text, nullable=True)
+    credit_limit = Column(Float, default=500000.0, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

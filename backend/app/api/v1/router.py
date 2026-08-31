@@ -10,7 +10,8 @@ from app.api.v1.endpoints import (
     reports,
     audit,
     users,
-    payments
+    payments,
+    notifications
 )
 
 api_router = APIRouter()
@@ -26,3 +27,5 @@ api_router.include_router(reports.router, prefix="/reports", tags=["Analytics & 
 api_router.include_router(audit.router, prefix="/audit", tags=["Compliance & Audit Logs"])
 api_router.include_router(users.router, prefix="/users", tags=["Users & Role Administration"])
 api_router.include_router(payments.router, prefix="/payments", tags=["Razorpay & Payments"])
+api_router.include_router(notifications.router, prefix="/notifications", tags=["SMS & Email Notifications"])
+

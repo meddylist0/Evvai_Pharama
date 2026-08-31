@@ -58,6 +58,7 @@ export const PharmaFAQSection: React.FC = () => {
               <button
                 onClick={() => setOpenIndex(isOpen ? null : idx)}
                 className="w-full text-left p-5 flex items-center justify-between font-extrabold text-xs md:text-sm text-[#0b2341] hover:bg-slate-50 transition-colors cursor-pointer"
+                suppressHydrationWarning
               >
                 <span>{faq.question}</span>
                 <span className="text-blue-600 text-base font-black ml-4 shrink-0">

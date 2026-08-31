@@ -42,11 +42,22 @@ export const AdminDashboardView: React.FC = () => {
     }
   };
 
+  const [searchTerm, setSearchTerm] = useState<string>("");
+
   useEffect(() => {
     loadDashboardData();
     const handleUpdate = () => setUser(getStoredUser());
+    const handleGlobalSearch = (e: any) => {
+      const q = typeof e.detail === "string" ? e.detail : "";
+      setSearchTerm(q);
+    };
+
     window.addEventListener("pharmalink_user_updated", handleUpdate);
-    return () => window.removeEventListener("pharmalink_user_updated", handleUpdate);
+    window.addEventListener("pharmalink_admin_search", handleGlobalSearch);
+    return () => {
+      window.removeEventListener("pharmalink_user_updated", handleUpdate);
+      window.removeEventListener("pharmalink_admin_search", handleGlobalSearch);
+    };
   }, []);
 
   return (
@@ -82,79 +93,92 @@ export const AdminDashboardView: React.FC = () => {
       </div>
 
       {/* 4 Stat Cards Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {/* Card 1: Today's Orders */}
-        <div className="bg-[#f7f6f4] border border-[#e8e6e2] rounded-2xl p-5 shadow-2xs flex items-center justify-between hover:shadow-xs transition-all">
-          <div className="space-y-1">
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 block">Total Orders</span>
-            <div className="text-3xl font-extrabold text-[#0b2341] tracking-tight">
-              {summary ? (summary.total_orders ?? summary.orders_pending + summary.orders_delivered) : "137"}
-            </div>
-            <div className="text-[11px] font-bold text-emerald-700 flex items-center space-x-1">
-              <span>{summary ? `${summary.orders_pending} pending` : "Active Lifecycle"}</span>
-            </div>
-          </div>
-          <div className="w-11 h-11 rounded-xl bg-[#0b2341] text-white flex items-center justify-center shadow-xs">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-          </div>
-        </div>
-
-        {/* Card 2: Cumulative Revenue */}
-        <div className="bg-[#f7f6f4] border border-[#e8e6e2] rounded-2xl p-5 shadow-2xs flex items-center justify-between hover:shadow-xs transition-all">
-          <div className="space-y-1">
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 block">Total Revenue</span>
-            <div className="text-3xl font-extrabold text-[#0b2341] tracking-tight">
-              ₹{summary ? summary.total_sales_all_time.toLocaleString() : "8,42,000"}
-            </div>
-            <div className="text-[11px] font-bold text-emerald-700 flex items-center space-x-1">
-              <span>₹{summary ? summary.total_sales_today.toLocaleString() : "1,20,000"} today</span>
-            </div>
-          </div>
-          <div className="w-11 h-11 rounded-xl bg-[#0b2341] text-white flex items-center justify-center shadow-xs">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-            </svg>
-          </div>
-        </div>
-
-        {/* Card 3: Pending KYC Approvals */}
-        <Link href="/admin/kyc" className="block">
-          <div className="bg-[#f7f6f4] border border-[#e8e6e2] rounded-2xl p-5 shadow-2xs flex items-center justify-between hover:shadow-xs hover:border-amber-300 transition-all cursor-pointer">
-            <div className="space-y-1">
-              <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 block">Pending KYC Approvals</span>
-              <div className="text-3xl font-extrabold text-[#0b2341] tracking-tight">
-                {summary ? `${summary.pending_kyc_count} Requests` : "2 Requests"}
+      {(() => {
+        const pendingCreditToday = summary?.pending_credit_today ?? 0;
+        return (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
+            {/* Card 1: Total Orders */}
+            <div className="bg-[#f7f6f4] border border-[#e8e6e2] rounded-2xl p-5 shadow-2xs flex flex-col justify-between h-full min-h-[145px] hover:shadow-xs transition-all">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 block">Total Orders</span>
+                <div className="w-10 h-10 rounded-xl bg-[#0b2341] text-white flex items-center justify-center shadow-xs shrink-0">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
               </div>
-              <div className="text-[11px] font-semibold text-amber-700">Review Documents &rarr;</div>
+              <div className="text-3xl font-extrabold text-[#0b2341] tracking-tight my-1">
+                {summary ? (summary.total_orders ?? summary.orders_pending + summary.orders_delivered) : "13"}
+              </div>
+              <div className="text-[11px] font-bold text-emerald-700 flex items-center space-x-1">
+                <span>{summary ? `${summary.orders_pending} pending` : "Active Lifecycle"}</span>
+              </div>
             </div>
-            <div className="w-11 h-11 rounded-xl bg-amber-100 border border-amber-200 text-amber-800 flex items-center justify-center shadow-xs">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-            </div>
-          </div>
-        </Link>
 
-        {/* Card 4: Active Portfolio */}
-        <div className="bg-[#f7f6f4] border border-[#e8e6e2] rounded-2xl p-5 shadow-2xs flex items-center justify-between hover:shadow-xs transition-all">
-          <div className="space-y-1">
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 block">Active Formulations</span>
-            <div className="text-3xl font-extrabold text-[#0b2341] tracking-tight">
-              {summary ? summary.total_products : "6"}
+            {/* Card 2: Cumulative Realized Revenue */}
+            <div className="bg-[#f7f6f4] border border-[#e8e6e2] rounded-2xl p-5 shadow-2xs flex flex-col justify-between h-full min-h-[145px] hover:shadow-xs transition-all">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 block">Total Revenue (Paid)</span>
+                <div className="w-10 h-10 rounded-xl bg-[#0b2341] text-white flex items-center justify-center shadow-xs shrink-0">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                </div>
+              </div>
+              <div className="text-3xl font-extrabold text-[#0b2341] tracking-tight my-1">
+                ₹{summary ? summary.total_sales_all_time.toLocaleString('en-IN') : "23,260"}
+              </div>
+              <div className="text-[11px] font-bold flex flex-wrap items-center gap-1.5">
+                <span className="text-emerald-700">
+                  ₹{summary ? summary.total_sales_today.toLocaleString('en-IN') : "0"} paid today
+                </span>
+                {pendingCreditToday > 0 && (
+                  <span className="bg-blue-100 text-blue-800 text-[10px] px-1.5 py-0.5 rounded font-extrabold">
+                    + ₹{pendingCreditToday.toLocaleString('en-IN')} credit/COD
+                  </span>
+                )}
+              </div>
             </div>
-            <div className="text-[11px] font-bold text-slate-600">
-              {summary ? `${summary.low_stock_count} low stock` : "0 stock alerts"}
+
+            {/* Card 3: Pending KYC Approvals */}
+            <Link href="/admin/kyc" className="block h-full">
+              <div className="bg-[#f7f6f4] border border-[#e8e6e2] rounded-2xl p-5 shadow-2xs flex flex-col justify-between h-full min-h-[145px] hover:shadow-xs hover:border-amber-300 transition-all cursor-pointer">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 block">Pending KYC Approvals</span>
+                  <div className="w-10 h-10 rounded-xl bg-amber-100 border border-amber-200 text-amber-800 flex items-center justify-center shadow-xs shrink-0">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="text-3xl font-extrabold text-[#0b2341] tracking-tight my-1">
+                  {summary ? `${summary.pending_kyc_count} Requests` : "0 Requests"}
+                </div>
+                <div className="text-[11px] font-semibold text-amber-700">Review Documents &rarr;</div>
+              </div>
+            </Link>
+
+            {/* Card 4: Active Portfolio */}
+            <div className="bg-[#f7f6f4] border border-[#e8e6e2] rounded-2xl p-5 shadow-2xs flex flex-col justify-between h-full min-h-[145px] hover:shadow-xs transition-all">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 block">Active Formulations</span>
+                <div className="w-10 h-10 rounded-xl bg-[#0b2341] text-white flex items-center justify-center shadow-xs shrink-0">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
+                </div>
+              </div>
+              <div className="text-3xl font-extrabold text-[#0b2341] tracking-tight my-1">
+                {summary ? summary.total_products : "23"}
+              </div>
+              <div className="text-[11px] font-bold text-slate-600">
+                {summary ? `${summary.low_stock_count} low stock` : "0 low stock"}
+              </div>
             </div>
           </div>
-          <div className="w-11 h-11 rounded-xl bg-[#0b2341] text-white flex items-center justify-center shadow-xs">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
-          </div>
-        </div>
-      </div>
+        );
+      })()}
+
 
       {/* Main Grid: Orders & Inventory */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -182,30 +206,54 @@ export const AdminDashboardView: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {recentOrders.map((ord: any) => (
-                  <tr key={ord.id || ord.order_code} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3 px-3 font-mono font-bold text-blue-700">{ord.order_code || ord.id}</td>
-                    <td className="py-3 px-3 font-semibold text-slate-800">{ord.customer_name || ord.customerName}</td>
-                    <td className="py-3 px-3">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                        (ord.role || "").includes("Distributor") ? "bg-emerald-50 text-emerald-800" : "bg-blue-50 text-blue-800"
-                      }`}>
-                        {ord.role}
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 font-black text-slate-900">₹{(ord.total_amount || ord.totalAmount || 0).toLocaleString()}</td>
-                    <td className="py-3 px-3">
-                      <span className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] uppercase ${
-                        (ord.order_status || ord.orderStatus) === "Delivered" ? "bg-emerald-100 text-emerald-800" :
-                        (ord.order_status || ord.orderStatus) === "Shipped" ? "bg-purple-100 text-purple-800" :
-                        (ord.order_status || ord.orderStatus) === "Confirmed" ? "bg-blue-100 text-blue-800" :
-                        "bg-amber-100 text-amber-800"
-                      }`}>
-                        {ord.order_status || ord.orderStatus}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                {(() => {
+                  const filtered = recentOrders.filter((ord: any) => {
+                    if (!searchTerm.trim()) return true;
+                    const q = searchTerm.toLowerCase();
+                    const code = (ord.order_code || ord.id || "").toString().toLowerCase();
+                    const name = (ord.customer_name || ord.customerName || "").toString().toLowerCase();
+                    const role = (ord.role || "").toString().toLowerCase();
+                    const status = (ord.order_status || ord.orderStatus || "").toString().toLowerCase();
+                    return code.includes(q) || name.includes(q) || role.includes(q) || status.includes(q);
+                  });
+
+                  if (filtered.length === 0) {
+                    return (
+                      <tr>
+                        <td colSpan={5} className="text-center py-8 text-slate-400 font-medium">
+                          No orders matching &ldquo;{searchTerm}&rdquo;
+                        </td>
+                      </tr>
+                    );
+                  }
+
+                  return filtered.map((ord: any) => (
+                    <tr key={ord.id || ord.order_code} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-3 px-3 font-mono font-bold text-blue-700">
+                        <Link href={`/admin/orders/${ord.id || ord.order_code}`} className="hover:underline">
+                          {ord.order_code || ord.id}
+                        </Link>
+                      </td>
+                      <td className="py-3 px-3 font-semibold text-slate-800">{ord.customer_name || ord.customerName}</td>
+                      <td className="py-3 px-3">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${(ord.role || "").includes("Distributor") ? "bg-emerald-50 text-emerald-800" : "bg-blue-50 text-blue-800"
+                          }`}>
+                          {ord.role}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 font-black text-slate-900">₹{(ord.total_amount || ord.totalAmount || 0).toLocaleString()}</td>
+                      <td className="py-3 px-3">
+                        <span className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] uppercase ${(ord.order_status || ord.orderStatus) === "Delivered" ? "bg-emerald-100 text-emerald-800" :
+                          (ord.order_status || ord.orderStatus) === "Shipped" ? "bg-purple-100 text-purple-800" :
+                            (ord.order_status || ord.orderStatus) === "Confirmed" ? "bg-blue-100 text-blue-800" :
+                              "bg-amber-100 text-amber-800"
+                          }`}>
+                          {ord.order_status || ord.orderStatus}
+                        </span>
+                      </td>
+                    </tr>
+                  ));
+                })()}
               </tbody>
             </table>
           </div>
@@ -224,18 +272,37 @@ export const AdminDashboardView: React.FC = () => {
           </div>
 
           <div className="space-y-3">
-            {lowStockProducts.map((p) => (
-              <div key={p.id || p.sku} className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between text-xs">
-                <div>
-                  <div className="font-bold text-[#0b2341]">{p.name}</div>
-                  <span className="text-[10px] font-mono text-slate-500">{p.sku} • Batch {p.batch_no || "BT-2026"}</span>
+            {(() => {
+              const filteredProds = lowStockProducts.filter((p) => {
+                if (!searchTerm.trim()) return true;
+                const q = searchTerm.toLowerCase();
+                const name = (p.name || "").toLowerCase();
+                const sku = (p.sku || "").toLowerCase();
+                const batch = (p.batch_no || "").toLowerCase();
+                return name.includes(q) || sku.includes(q) || batch.includes(q);
+              });
+
+              if (filteredProds.length === 0) {
+                return (
+                  <div className="text-center py-6 text-slate-400 font-medium text-xs">
+                    No low stock items matching &ldquo;{searchTerm}&rdquo;
+                  </div>
+                );
+              }
+
+              return filteredProds.map((p) => (
+                <div key={p.id || p.sku} className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between text-xs">
+                  <div>
+                    <div className="font-bold text-[#0b2341]">{p.name}</div>
+                    <span className="text-[10px] font-mono text-slate-500">{p.sku} • Batch {p.batch_no || "BT-2026"}</span>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-black text-slate-900">{p.stock} units</div>
+                    <span className="text-[10px] text-amber-700 font-bold">Monitor</span>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <div className="font-black text-slate-900">{p.stock} units</div>
-                  <span className="text-[10px] text-amber-700 font-bold">Monitor</span>
-                </div>
-              </div>
-            ))}
+              ));
+            })()}
           </div>
         </div>
       </div>

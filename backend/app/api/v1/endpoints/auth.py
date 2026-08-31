@@ -9,6 +9,7 @@ from app.models.kyc import DistributorKYC
 from app.schemas.user import (
     Token,
     LoginRequest,
+    PasswordChangeRequest,
     CustomerRegisterRequest,
     DistributorRegisterRequest,
     ProfileUpdateRequest,
@@ -216,6 +217,16 @@ def update_profile(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    if req.email is not None:
+        new_email = req.email.strip().lower()
+        if new_email and new_email != current_user.email:
+            existing = db.query(User).filter(User.email == new_email).first()
+            if existing:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="This email address is already in use by another account."
+                )
+            current_user.email = new_email
     if req.full_name is not None:
         current_user.full_name = req.full_name.strip()
     if req.phone is not None:
@@ -256,4 +267,42 @@ def update_profile(
     )
 
     return current_user
+
+
+@router.post("/change-password")
+def change_password(
+    req: PasswordChangeRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if not verify_password(req.current_password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect. Please check and try again."
+        )
+    
+    if len(req.new_password.strip()) < 6:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must be at least 6 characters long."
+        )
+    
+    if req.current_password == req.new_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password cannot be identical to your current password."
+        )
+
+    current_user.hashed_password = get_password_hash(req.new_password.strip())
+    db.commit()
+
+    record_audit(
+        db=db,
+        action="PASSWORD_CHANGED",
+        module="AUTH",
+        details=f"User {current_user.email} changed their password",
+        user=current_user
+    )
+
+    return {"status": "success", "message": "Password changed successfully"}
 

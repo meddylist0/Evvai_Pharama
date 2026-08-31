@@ -14,10 +14,12 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     
     # Security & JWT
-    # Default development secret key for local dev only (MUST be overridden in production .env)
     SECRET_KEY: str = "pharmalink-dev-secret-key-32-chars-minimum-sec-hash-random-2026!"
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # Default 24 hours (1440 minutes)
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # Default 24 hours for customer/distributor
+    ADMIN_ACCESS_TOKEN_EXPIRE_MINUTES: int = 60  # Restricted 1 hour for admin
+    JWT_ISSUER: str = "pharmalink-api"
+    JWT_AUDIENCE: str = "pharmalink-app"
     
     # Database (defaults to canonical SQLite file database)
     DATABASE_URL: str = f"sqlite:///{_CANONICAL_DB_PATH}"
@@ -36,17 +38,36 @@ class Settings(BaseSettings):
     RAZORPAY_ENABLED: bool = True
     RAZORPAY_MODE: str = "test"  # "test" | "live"
     
+    # SMTP Email Configuration
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USER: str = "notifications@evvaipharma.com"
+    SMTP_PASSWORD: str = "app_password_secret"
+    SENDER_EMAIL: str = "orders@evvaipharma.com"
+    SENDER_NAME: str = "Evvai Pharma"
+    EMAIL_ENABLED: bool = True
+
+    # SMS Gateway Configuration
+    SMS_PROVIDER: str = "Twilio / Fast2SMS"
+    SMS_API_KEY: str = "SK_TEST_SMS_9988776655"
+    SMS_SENDER_ID: str = "EVVAI"
+    SMS_ENABLED: bool = True
+
     def validate_production_security(self):
         if self.ENVIRONMENT.lower() == "production":
             weak_secrets = [
                 "pharmalink-super-secret-production-jwt-key-change-in-env-2026",
                 "pharmalink-dev-secret-key-32-chars-minimum-sec-hash-random-2026!",
-                "secret", "change-me", "12345678"
+                "secret", "change-me", "12345678", "TEST_RAZORPAY_SECRET_PLACEHOLDER_KEY"
             ]
             if not self.SECRET_KEY or self.SECRET_KEY in weak_secrets or len(self.SECRET_KEY) < 32:
                 raise ValueError(
                     "CRITICAL SECURITY ERROR: Production environment requires a strong SECRET_KEY "
                     "(minimum 32 characters) set via environment variable."
+                )
+            if self.RAZORPAY_KEY_SECRET in weak_secrets:
+                raise ValueError(
+                    "CRITICAL SECURITY ERROR: Production environment requires a real RAZORPAY_KEY_SECRET."
                 )
 
     class Config:
@@ -56,4 +77,3 @@ class Settings(BaseSettings):
 
 settings = Settings()
 settings.validate_production_security()
-

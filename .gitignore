@@ -43,3 +43,4 @@ pnpm-debug.log*
 *.swp
 *.swo
 Thumbs.db
+backend/.env

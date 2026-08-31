@@ -97,11 +97,12 @@ export const PartnerTestimonialsSection: React.FC = () => {
           </div>
 
           {/* Navigation Controls */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2" suppressHydrationWarning>
             <button
               onClick={handlePrev}
               className="w-9 h-9 rounded-xl bg-white border border-slate-200 text-[#0b2341] hover:bg-[#0b2341] hover:text-white transition-all flex items-center justify-center shadow-2xs cursor-pointer text-xs font-bold"
               aria-label="Previous Testimonial"
+              suppressHydrationWarning
             >
               ←
             </button>
@@ -113,12 +114,14 @@ export const PartnerTestimonialsSection: React.FC = () => {
                   activeIndex === idx ? "bg-[#0b2341] w-4" : "bg-slate-300 hover:bg-slate-400"
                 }`}
                 aria-label={`Go to slide ${idx + 1}`}
+                suppressHydrationWarning
               />
             ))}
             <button
               onClick={handleNext}
               className="w-9 h-9 rounded-xl bg-white border border-slate-200 text-[#0b2341] hover:bg-[#0b2341] hover:text-white transition-all flex items-center justify-center shadow-2xs cursor-pointer text-xs font-bold"
               aria-label="Next Testimonial"
+              suppressHydrationWarning
             >
               →
             </button>

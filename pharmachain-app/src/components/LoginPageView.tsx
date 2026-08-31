@@ -50,12 +50,16 @@ export const LoginPageView: React.FC = () => {
   const [distState, setDistState] = useState("");
   const [distPincode, setDistPincode] = useState("");
 
-  // Load remembered email and check for session expiration redirect
+  // Load remembered email, mode, and check for session expiration redirect
   React.useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       if (params.get("reason") === "session_expired") {
         setErrorMsg("Your session has expired. Please log in again to continue.");
+      }
+      const modeParam = params.get("mode");
+      if (modeParam === "register-customer" || modeParam === "register-distributor" || modeParam === "login") {
+        setAuthMode(modeParam as any);
       }
       const savedEmail = localStorage.getItem("pharmalink_remembered_email");
       if (savedEmail) {
@@ -80,10 +84,17 @@ export const LoginPageView: React.FC = () => {
       }
 
       const loggedUser = await login(email.trim(), password);
-      setSuccessMsg(`Welcome back, ${loggedUser.full_name}! Redirecting to ${loggedUser.role} portal...`);
+      setSuccessMsg(`Welcome back, ${loggedUser.full_name}! Redirecting...`);
 
-      // Automatic Role-Based Routing based on Database/JWT validation
+      const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+      const redirectUrl = params?.get("redirect");
+
       setTimeout(() => {
+        if (redirectUrl) {
+          router.push(redirectUrl);
+          return;
+        }
+        // Automatic Role-Based Routing based on Database/JWT validation
         switch (loggedUser.role) {
           case "ADMIN":
             router.push("/admin/dashboard");

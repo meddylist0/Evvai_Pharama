@@ -1,6 +1,16 @@
 // PharmaLink Enterprise API Client
+export const getApiBaseUrl = (): string => {
+  if (typeof window !== "undefined" && window.location && window.location.hostname) {
+    const host = window.location.hostname;
+    // If accessing via IP (like 192.168.x.x) or localhost, dynamically point to that host on port 8000
+    if (host !== "localhost" && host !== "127.0.0.1") {
+      return `http://${host}:8000/api/v1`;
+    }
+  }
+  return process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
+};
 
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
+export const API_BASE_URL = getApiBaseUrl();
 
 export interface StoredUser {
   id?: number;
@@ -114,6 +124,8 @@ export interface OrderData {
 export interface DashboardSummary {
   total_sales_today: number;
   total_sales_all_time: number;
+  pending_credit_today?: number;
+  pending_credit_total?: number;
   total_orders?: number;
   orders_today: number;
   orders_pending: number;
@@ -136,6 +148,7 @@ export interface KYCOut {
   document_file_url?: string | null;
   verification_status: "PENDING" | "APPROVED" | "REJECTED";
   admin_remarks?: string | null;
+  credit_limit?: number | null;
   submitted_at: string;
 }
 
@@ -185,7 +198,8 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const baseUrl = getApiBaseUrl();
+  const res = await fetch(`${baseUrl}${endpoint}`, {
     ...options,
     headers,
   });
@@ -328,6 +342,7 @@ export const authAPI = {
 
   updateProfile: async (payload: {
     full_name?: string;
+    email?: string;
     phone?: string;
     company_name?: string;
     address?: string;
@@ -343,6 +358,7 @@ export const authAPI = {
     // Update local storage stored user
     const current = getStoredUser();
     if (current) {
+      if (data.email || payload.email) current.email = data.email || payload.email || current.email;
       if (data.full_name || payload.full_name) current.full_name = data.full_name || payload.full_name || current.full_name;
       if (data.phone || payload.phone) current.phone = data.phone || payload.phone || current.phone;
       if (data.avatar !== undefined || payload.avatar !== undefined) current.avatar = data.avatar ?? payload.avatar ?? current.avatar;
@@ -356,6 +372,13 @@ export const authAPI = {
       }
     }
     return data;
+  },
+
+  changePassword: async (current_password: string, new_password: string): Promise<{ status: string; message: string }> => {
+    return apiFetch<{ status: string; message: string }>("/auth/change-password", {
+      method: "POST",
+      body: JSON.stringify({ current_password, new_password }),
+    });
   },
 
   logout: () => {
@@ -439,6 +462,24 @@ export const productsAPI = {
   },
 };
 
+export const pricingAPI = {
+  update: async (
+    productId: number,
+    payload: {
+      mrp?: number;
+      customer_price?: number;
+      distributor_price?: number;
+      bulk_price?: number;
+      bulk_moq?: number;
+    }
+  ): Promise<ProductItem> => {
+    return apiFetch<ProductItem>(`/pricing/${productId}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+  },
+};
+
 export const usersAPI = {
   list: async (role?: string, search?: string) => {
     const params = new URLSearchParams();
@@ -478,6 +519,13 @@ export const usersAPI = {
       method: "PATCH",
     });
   },
+
+  updateCreditLimit: async (userId: number, creditLimit: number) => {
+    return apiFetch<any>(`/users/${userId}/credit-limit`, {
+      method: "PATCH",
+      body: JSON.stringify({ credit_limit: creditLimit }),
+    });
+  },
 };
 
 
@@ -500,6 +548,10 @@ export const ordersAPI = {
     if (search) params.append("search", search);
     const query = params.toString() ? `?${params.toString()}` : "";
     return apiFetch<OrderData[]>(`/orders/admin/all${query}`);
+  },
+
+  getOrder: async (orderId: number | string): Promise<OrderData> => {
+    return apiFetch<OrderData>(`/orders/${orderId}`);
   },
 
   updateStatus: async (orderId: number, orderStatus: string, adminNotes?: string, trackingNumber?: string): Promise<OrderData> => {
@@ -543,10 +595,22 @@ export const kycAPI = {
     return apiFetch<KYCOut[]>("/kyc/pending");
   },
 
-  review: async (submissionId: number, status: "APPROVED" | "REJECTED", adminRemarks?: string): Promise<KYCOut> => {
+  submit: async (payload: {
+    gst_number: string;
+    drug_license_no: string;
+    pan_number?: string;
+    document_file_url?: string;
+  }): Promise<KYCOut> => {
+    return apiFetch<KYCOut>("/kyc/submit", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+
+  review: async (submissionId: number, status: "APPROVED" | "REJECTED", adminRemarks?: string, creditLimit?: number): Promise<KYCOut> => {
     return apiFetch<KYCOut>(`/kyc/${submissionId}/review`, {
       method: "POST",
-      body: JSON.stringify({ status, admin_remarks: adminRemarks }),
+      body: JSON.stringify({ status, admin_remarks: adminRemarks, credit_limit: creditLimit }),
     });
   },
 };
@@ -776,5 +840,63 @@ export const categoriesAPI = {
     });
   },
 };
+
+export interface NotificationSettingsData {
+  id: number;
+  smtp_host: string;
+  smtp_port: number;
+  smtp_user: string;
+  smtp_password_masked: string;
+  sender_email: string;
+  sender_name: string;
+  email_enabled: boolean;
+  sms_provider: string;
+  sms_api_key_masked: string;
+  sms_sender_id: string;
+  sms_enabled: boolean;
+  notify_order_created: boolean;
+  notify_order_status: boolean;
+  notify_kyc_status: boolean;
+  updated_at?: string;
+}
+
+export interface NotificationLogItem {
+  id: number;
+  recipient: string;
+  channel: "EMAIL" | "SMS";
+  event_type: string;
+  status: string;
+  subject?: string | null;
+  message_body: string;
+  sent_at: string;
+}
+
+export const notificationsAPI = {
+  getSettings: async (): Promise<NotificationSettingsData> => {
+    return apiFetch<NotificationSettingsData>("/notifications/settings");
+  },
+  updateSettings: async (payload: Partial<NotificationSettingsData> & { smtp_password?: string; sms_api_key?: string }): Promise<NotificationSettingsData> => {
+    return apiFetch<NotificationSettingsData>("/notifications/settings", {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+  },
+  sendTestEmail: async (target: string): Promise<{ success: boolean; message: string; status: string }> => {
+    return apiFetch("/notifications/test-email", {
+      method: "POST",
+      body: JSON.stringify({ target, channel: "EMAIL" }),
+    });
+  },
+  sendTestSMS: async (target: string): Promise<{ success: boolean; message: string; status: string }> => {
+    return apiFetch("/notifications/test-sms", {
+      method: "POST",
+      body: JSON.stringify({ target, channel: "SMS" }),
+    });
+  },
+  getLogs: async (limit = 50): Promise<NotificationLogItem[]> => {
+    return apiFetch<NotificationLogItem[]>(`/notifications/logs?limit=${limit}`);
+  },
+};
+
 
 

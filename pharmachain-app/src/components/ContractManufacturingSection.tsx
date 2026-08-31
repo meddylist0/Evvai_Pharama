@@ -70,7 +70,7 @@ export const ContractManufacturingSection: React.FC = () => {
               </button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-3 text-xs">
+            <form onSubmit={handleSubmit} className="space-y-3 text-xs" suppressHydrationWarning>
               <h3 className="text-sm font-bold text-[#0b2341] border-b border-slate-100 pb-2">
                 Request Contract Manufacturing Quote
               </h3>
@@ -85,6 +85,7 @@ export const ContractManufacturingSection: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, company: e.target.value })}
                     placeholder="Apex Pharma Labs"
                     className="w-full border border-slate-200 rounded-lg p-2.5 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600"
+                    suppressHydrationWarning
                   />
                 </div>
                 <div>
@@ -96,6 +97,7 @@ export const ContractManufacturingSection: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
                     placeholder="Dr. Rajesh"
                     className="w-full border border-slate-200 rounded-lg p-2.5 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600"
+                    suppressHydrationWarning
                   />
                 </div>
               </div>
@@ -110,6 +112,7 @@ export const ContractManufacturingSection: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="rajesh@apex.com"
                     className="w-full border border-slate-200 rounded-lg p-2.5 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600"
+                    suppressHydrationWarning
                   />
                 </div>
                 <div>
@@ -121,6 +124,7 @@ export const ContractManufacturingSection: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     placeholder="+91 98765 43210"
                     className="w-full border border-slate-200 rounded-lg p-2.5 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600"
+                    suppressHydrationWarning
                   />
                 </div>
               </div>
@@ -132,6 +136,7 @@ export const ContractManufacturingSection: React.FC = () => {
                     value={formData.dosageForm}
                     onChange={(e) => setFormData({ ...formData, dosageForm: e.target.value })}
                     className="w-full border border-slate-200 rounded-lg p-2.5 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600"
+                    suppressHydrationWarning
                   >
                     <option>Solid Oral Tablets</option>
                     <option>Hard Gelatin Capsules</option>
@@ -148,6 +153,7 @@ export const ContractManufacturingSection: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
                     placeholder="50,000 Packs"
                     className="w-full border border-slate-200 rounded-lg p-2.5 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600"
+                    suppressHydrationWarning
                   />
                 </div>
               </div>
@@ -155,6 +161,7 @@ export const ContractManufacturingSection: React.FC = () => {
               <button
                 type="submit"
                 className="w-full bg-[#0b2341] hover:bg-[#12315a] text-white py-3 rounded-xl font-bold text-xs shadow-xs transition-all cursor-pointer mt-2"
+                suppressHydrationWarning
               >
                 Submit Contract Inquiry
               </button>

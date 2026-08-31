@@ -23,6 +23,7 @@ interface UserAccount {
     city?: string;
     state?: string;
     pincode?: string;
+    credit_limit?: number;
   };
   customer_profile?: {
     address?: string;
@@ -90,6 +91,12 @@ export default function AdminUsersPage() {
   const [dossierUser, setDossierUser] = useState<UserAccount | null>(null);
   const [showPermissionsMatrix, setShowPermissionsMatrix] = useState(false);
 
+  // Credit Limit Modal State
+  const [isCreditLimitModalOpen, setIsCreditLimitModalOpen] = useState(false);
+  const [selectedUserForCredit, setSelectedUserForCredit] = useState<UserAccount | null>(null);
+  const [creditLimitInput, setCreditLimitInput] = useState<number>(500000);
+  const [creditLimitLoading, setCreditLimitLoading] = useState(false);
+
   // Add Staff Form State
   const [staffFullName, setStaffFullName] = useState("");
   const [staffEmail, setStaffEmail] = useState("");
@@ -97,6 +104,7 @@ export default function AdminUsersPage() {
   const [staffPhone, setStaffPhone] = useState("");
   const [staffRole, setStaffRole] = useState<"ADMIN" | "DISTRIBUTOR" | "CUSTOMER">("ADMIN");
   const [staffCompany, setStaffCompany] = useState("");
+  const [staffCreditLimit, setStaffCreditLimit] = useState<number>(500000);
   const [staffCity, setStaffCity] = useState("Hyderabad");
   const [staffState, setStaffState] = useState("Telangana");
   const [addSubmitLoading, setAddSubmitLoading] = useState(false);
@@ -120,6 +128,13 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     fetchUsers();
+    const handleGlobalSearch = (e: any) => {
+      const q = typeof e.detail === "string" ? e.detail : "";
+      setSearchTerm(q);
+      setCurrentPage(1);
+    };
+    window.addEventListener("pharmalink_admin_search", handleGlobalSearch);
+    return () => window.removeEventListener("pharmalink_admin_search", handleGlobalSearch);
   }, []);
 
   const handleCreateStaff = async (e: React.FormEvent) => {
@@ -143,7 +158,7 @@ export default function AdminUsersPage() {
       setIsAddStaffModalOpen(false);
       setStatusMsg({
         type: "success",
-        text: `✓ New ${staffRole} account for '${created.full_name}' successfully created and saved in SQLite database!`,
+        text: `✓ New ${staffRole} account for '${created.full_name}' successfully created and saved in database!`,
       });
 
       // Reset form
@@ -152,6 +167,7 @@ export default function AdminUsersPage() {
       setStaffPassword("");
       setStaffPhone("");
       setStaffCompany("");
+      setStaffCreditLimit(500000);
     } catch (err: any) {
       setStatusMsg({ type: "error", text: err.message || "Failed to create user account." });
     } finally {
@@ -182,6 +198,52 @@ export default function AdminUsersPage() {
       setStatusMsg({ type: "error", text: err.message || "Failed to update role." });
     } finally {
       setActionLoadingId(null);
+    }
+  };
+
+  const handleOpenCreditLimitModal = (user: UserAccount) => {
+    setSelectedUserForCredit(user);
+    setCreditLimitInput(user.distributor_profile?.credit_limit ?? 500000);
+    setIsCreditLimitModalOpen(true);
+  };
+
+  const handleSaveCreditLimit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedUserForCredit) return;
+    setCreditLimitLoading(true);
+    try {
+      await usersAPI.updateCreditLimit(selectedUserForCredit.id, Number(creditLimitInput));
+      setUsers(users.map((u) => {
+        if (u.id === selectedUserForCredit.id) {
+          return {
+            ...u,
+            distributor_profile: {
+              ...u.distributor_profile,
+              credit_limit: Number(creditLimitInput),
+            },
+          };
+        }
+        return u;
+      }));
+      if (dossierUser && dossierUser.id === selectedUserForCredit.id) {
+        setDossierUser({
+          ...dossierUser,
+          distributor_profile: {
+            ...dossierUser.distributor_profile,
+            credit_limit: Number(creditLimitInput),
+          },
+        });
+      }
+      setIsCreditLimitModalOpen(false);
+      setStatusMsg({
+        type: "success",
+        text: `✓ B2B Credit Limit for '${selectedUserForCredit.full_name}' updated to ₹${Number(creditLimitInput).toLocaleString('en-IN')}!`,
+      });
+      setTimeout(() => setStatusMsg(null), 4000);
+    } catch (err: any) {
+      setStatusMsg({ type: "error", text: err.message || "Failed to update credit limit." });
+    } finally {
+      setCreditLimitLoading(false);
     }
   };
 
@@ -404,8 +466,13 @@ export default function AdminUsersPage() {
                     <td className="py-4 px-4">
                       <div className="font-bold text-[#0b2341] text-sm">{u.full_name}</div>
                       {u.distributor_profile?.company_name ? (
-                        <div className="text-[11px] font-bold text-emerald-700">
-                          {u.distributor_profile.company_name}
+                        <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+                          <span className="text-[11px] font-bold text-emerald-700">
+                            {u.distributor_profile.company_name}
+                          </span>
+                          <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-emerald-100/80 text-emerald-900 border border-emerald-300">
+                            Credit: ₹{Number(u.distributor_profile.credit_limit ?? 500000).toLocaleString('en-IN')}
+                          </span>
                         </div>
                       ) : (
                         <div className="text-[10px] text-slate-400">Direct User Account</div>
@@ -460,6 +527,19 @@ export default function AdminUsersPage() {
                     {/* Action Buttons - Matching Product Management Style */}
                     <td className="py-4 px-4 text-right">
                       <div className="flex items-center justify-end space-x-2">
+                        {/* Adjust Credit Limit Button for Distributors */}
+                        {u.role === "DISTRIBUTOR" && (
+                          <button
+                            onClick={() => handleOpenCreditLimitModal(u)}
+                            title="Configure B2B Credit Limit"
+                            className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 p-2 rounded-xl font-bold border border-emerald-200 transition-all cursor-pointer flex items-center space-x-1"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                            </svg>
+                          </button>
+                        )}
+
                         {/* View Dossier Button */}
                         <button
                           onClick={() => {
@@ -700,6 +780,26 @@ export default function AdminUsersPage() {
                 </div>
               </div>
 
+              {staffRole === "DISTRIBUTOR" && (
+                <div className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-2xl space-y-1.5">
+                  <label className="block font-extrabold text-emerald-900 text-xs">
+                    Allocated B2B Credit Limit (₹) *
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="10000"
+                    required
+                    value={staffCreditLimit}
+                    onChange={(e) => setStaffCreditLimit(Number(e.target.value))}
+                    className="w-full border border-emerald-300 rounded-xl p-2.5 bg-white font-mono font-bold text-[#0b2341] focus:outline-none focus:border-emerald-600"
+                  />
+                  <span className="text-[10px] text-emerald-700 block">
+                    Default: ₹5,00,000. Distributor can order on credit up to this threshold.
+                  </span>
+                </div>
+              )}
+
               <div className="p-3 bg-blue-50/60 rounded-xl border border-blue-100 text-[11px] text-blue-900 leading-relaxed">
                 <strong>Authorization Note:</strong> Creating this account will automatically grant role permissions for{" "}
                 <span className="font-bold underline">{staffRole}</span>. You can change role scopes anytime.
@@ -718,7 +818,7 @@ export default function AdminUsersPage() {
                   disabled={addSubmitLoading}
                   className="bg-[#0b2341] hover:bg-[#12315a] text-white px-5 py-2.5 rounded-xl font-extrabold shadow-xs transition-all cursor-pointer disabled:opacity-50"
                 >
-                  {addSubmitLoading ? "Saving to Database..." : "Register User in SQLite"}
+                  {addSubmitLoading ? "Saving to Database..." : "Register User"}
                 </button>
               </div>
             </form>
@@ -846,8 +946,20 @@ export default function AdminUsersPage() {
 
               {dossierUser.distributor_profile && (
                 <div className="p-3.5 bg-emerald-50/60 rounded-2xl border border-emerald-100 space-y-2">
-                  <span className="text-emerald-800 font-black text-[10px] block uppercase tracking-wider">Distributor Corporate Profile</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-emerald-800 font-black text-[10px] uppercase tracking-wider">Distributor Corporate Profile</span>
+                    <button
+                      onClick={() => {
+                        setIsDossierModalOpen(false);
+                        handleOpenCreditLimitModal(dossierUser);
+                      }}
+                      className="text-[10px] font-bold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 px-2 py-0.5 rounded-lg border border-emerald-300 cursor-pointer"
+                    >
+                      💳 Edit Limit
+                    </button>
+                  </div>
                   <div className="font-bold text-slate-900 text-xs">{dossierUser.distributor_profile.company_name}</div>
+                  
                   <div className="grid grid-cols-2 gap-2 text-[11px]">
                     <div>
                       <span className="text-slate-400 font-medium block">GSTIN:</span>
@@ -857,6 +969,13 @@ export default function AdminUsersPage() {
                       <span className="text-slate-400 font-medium block">Drug License:</span>
                       <span className="font-mono font-bold text-slate-800">{dossierUser.distributor_profile.drug_license_no || "Verified"}</span>
                     </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-emerald-200/60 flex items-center justify-between">
+                    <span className="text-slate-600 font-medium">B2B Credit Limit:</span>
+                    <span className="font-black text-[#0b2341] font-mono text-sm">
+                      ₹{Number(dossierUser.distributor_profile.credit_limit ?? 500000).toLocaleString('en-IN')}
+                    </span>
                   </div>
                 </div>
               )}
@@ -881,6 +1000,114 @@ export default function AdminUsersPage() {
                 Close Dossier
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 4: EDIT B2B CREDIT LIMIT MODAL */}
+      {isCreditLimitModalOpen && selectedUserForCredit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="bg-white border border-slate-200 rounded-3xl max-w-lg w-full p-6 space-y-5 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <span className="text-[10px] font-extrabold uppercase bg-emerald-100 text-emerald-900 px-2.5 py-0.5 rounded-md border border-emerald-300">
+                  B2B Wholesale Credit Control
+                </span>
+                <h3 className="text-lg font-black text-[#0b2341] mt-1">Configure Distributor Credit Limit</h3>
+              </div>
+              <button onClick={() => setIsCreditLimitModalOpen(false)} className="text-slate-400 hover:text-slate-700 font-bold p-1 cursor-pointer">
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveCreditLimit} className="space-y-4 text-xs">
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">Distributor Partner</span>
+                  <span className="font-mono text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                    USR-{String(selectedUserForCredit.id).padStart(3, "0")}
+                  </span>
+                </div>
+                <div className="font-black text-sm text-[#0b2341]">{selectedUserForCredit.full_name}</div>
+                <div className="text-[11px] font-bold text-emerald-700">
+                  {selectedUserForCredit.distributor_profile?.company_name || "B2B Wholesaler"}
+                </div>
+                <div className="font-mono text-slate-500 text-[11px]">{selectedUserForCredit.email}</div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block font-bold text-slate-700">
+                  Allocated Credit Limit Amount (₹):
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-black text-slate-400 text-sm">₹</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="10000"
+                    required
+                    value={creditLimitInput}
+                    onChange={(e) => setCreditLimitInput(Number(e.target.value))}
+                    className="w-full border-2 border-slate-200 rounded-xl pl-8 pr-4 py-3 bg-white font-mono font-black text-lg text-[#0b2341] focus:outline-none focus:border-blue-600 shadow-2xs"
+                  />
+                </div>
+              </div>
+
+              {/* Quick Presets */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                  Quick Preset Limits:
+                </span>
+                <div className="grid grid-cols-5 gap-1.5">
+                  {[
+                    { label: "₹2 Lakhs", value: 200000 },
+                    { label: "₹5 Lakhs", value: 500000 },
+                    { label: "₹10 Lakhs", value: 1000000 },
+                    { label: "₹25 Lakhs", value: 2500000 },
+                    { label: "₹50 Lakhs", value: 5000000 },
+                  ].map((preset) => (
+                    <button
+                      key={preset.value}
+                      type="button"
+                      onClick={() => setCreditLimitInput(preset.value)}
+                      className={`py-1.5 px-2 rounded-xl text-[10px] font-bold border transition-all cursor-pointer ${
+                        creditLimitInput === preset.value
+                          ? "bg-[#0b2341] text-white border-[#0b2341] shadow-xs"
+                          : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-2xl space-y-1 text-[11px] text-emerald-950">
+                <div className="flex items-center space-x-1.5 font-bold">
+                  <span>💡 Credit Policy Overview:</span>
+                </div>
+                <p className="leading-relaxed text-slate-600 text-[10px]">
+                  Setting this credit limit allows the distributor to generate bulk purchase orders without immediate payment under Net-30 day payment terms.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-end space-x-3 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsCreditLimitModalOpen(false)}
+                  className="px-4 py-2.5 border border-slate-200 rounded-xl font-bold text-slate-600 hover:bg-slate-100 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={creditLimitLoading}
+                  className="bg-[#0b2341] hover:bg-[#12315a] text-white px-5 py-2.5 rounded-xl font-extrabold shadow-xs transition-all cursor-pointer disabled:opacity-50 flex items-center space-x-1.5"
+                >
+                  <span>{creditLimitLoading ? "Updating Database..." : "Save Credit Limit"}</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

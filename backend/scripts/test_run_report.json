@@ -1,0 +1,602 @@
+{
+  "total_test_cases": 42,
+  "passed_test_cases": 42,
+  "failed_test_cases": 0,
+  "total_assertions": 167,
+  "total_http_requests": 152,
+  "duration_seconds": 6.25,
+  "overall_security_gate": "PASS (AUTOMATED SECURITY VALIDATION PASSED)",
+  "statement": "100% of the discovered and applicable security test cases passed.",
+  "endpoint_inventory": {
+    "total_apis": 51,
+    "public_apis": 9,
+    "protected_apis": 42,
+    "admin_apis": 30,
+    "customer_apis": 11,
+    "distributor_apis": 1,
+    "object_sensitive_apis": 16,
+    "discovery_coverage_pct": 100.0,
+    "protected_coverage_pct": 100.0,
+    "admin_coverage_pct": 100.0
+  },
+  "dimension_metrics": {
+    "Discovery Integrity": {
+      "tested": 1,
+      "passed": 1,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    },
+    "Authentication Lifecycle": {
+      "tested": 4,
+      "passed": 4,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    },
+    "JWT Security Hardening": {
+      "tested": 4,
+      "passed": 4,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    },
+    "Authorization (RBAC)": {
+      "tested": 5,
+      "passed": 5,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    },
+    "Object Authorization (IDOR)": {
+      "tested": 5,
+      "passed": 5,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    },
+    "Input Validation & Injection": {
+      "tested": 4,
+      "passed": 4,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    },
+    "Path Traversal Shield": {
+      "tested": 1,
+      "passed": 1,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    },
+    "Financial & Pricing Integrity": {
+      "tested": 2,
+      "passed": 2,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    },
+    "Inventory & Concurrency": {
+      "tested": 1,
+      "passed": 1,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    },
+    "Order State Machine": {
+      "tested": 2,
+      "passed": 2,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    },
+    "Payment Security & Integrity": {
+      "tested": 2,
+      "passed": 2,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    },
+    "Sensitive Data Exposure Shield": {
+      "tested": 1,
+      "passed": 1,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    },
+    "Security Headers & CORS": {
+      "tested": 3,
+      "passed": 3,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    },
+    "CSRF & Token Architecture": {
+      "tested": 1,
+      "passed": 1,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    },
+    "HTTP Method Security": {
+      "tested": 1,
+      "passed": 1,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    },
+    "Session & Account Security": {
+      "tested": 1,
+      "passed": 1,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    },
+    "Audit Trail Integrity": {
+      "tested": 1,
+      "passed": 1,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    },
+    "Frontend Contract & Pagination": {
+      "tested": 2,
+      "passed": 2,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    },
+    "Performance Smoke": {
+      "tested": 1,
+      "passed": 1,
+      "coverage_pct": 100.0,
+      "status": "PASS"
+    }
+  },
+  "details": [
+    {
+      "dimension": "Discovery Integrity",
+      "test_id": "DISC-001",
+      "test_name": "Dynamic API Discovery Integrity (51/51 APIs, 42 Protected)",
+      "passed": true,
+      "latency_ms": 7.91,
+      "telugu_desc": "మొత్తం 51 ఎండ్‌పాయింట్లు మరియు 42 ప్రొటెక్టెడ్ రూట్లు డైనమిక్‌గా కనుగొనబడ్డాయి.",
+      "details": "",
+      "requests_made": 0,
+      "assertions_made": 3
+    },
+    {
+      "dimension": "Authentication Lifecycle",
+      "test_id": "AUTH-001",
+      "test_name": "Bcrypt Password Hashing & Salt Verification",
+      "passed": true,
+      "latency_ms": 873.01,
+      "telugu_desc": "పాస్‌వర్డ్ హ్యాషింగ్ సెక్యూర్ సాల్ట్‌తో జరిగి ధృవీకరించబడింది.",
+      "details": "",
+      "requests_made": 0,
+      "assertions_made": 2
+    },
+    {
+      "dimension": "Authentication Lifecycle",
+      "test_id": "AUTH-002",
+      "test_name": "Stateless HMAC-SHA256 JWT Token Lifecycle",
+      "passed": true,
+      "latency_ms": 21.36,
+      "telugu_desc": "స్టేట్‌లెస్ JWT టోకెన్ మరియు ఎక్స్‌పైరీ క్లెయిమ్స్ ధృవీకరించబడ్డాయి.",
+      "details": "",
+      "requests_made": 0,
+      "assertions_made": 2
+    },
+    {
+      "dimension": "Authentication Lifecycle",
+      "test_id": "AUTH-003",
+      "test_name": "Multi-Role Session Ingestion (Admin, Dist, Cust A, Cust B)",
+      "passed": true,
+      "latency_ms": 1177.21,
+      "telugu_desc": "వివిధ రోల్స్ కోసం టోకెన్లు విజయవంతంగా జారీ చేయబడ్డాయి.",
+      "details": "",
+      "requests_made": 4,
+      "assertions_made": 4
+    },
+    {
+      "dimension": "Authentication Lifecycle",
+      "test_id": "AUTH-004",
+      "test_name": "Anti-Brute Force: Invalid Password Rejection (HTTP 401)",
+      "passed": true,
+      "latency_ms": 282.62,
+      "telugu_desc": "తప్పుడు పాస్‌వర్డ్ వెంటనే 401 తో తిరస్కరించబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "JWT Security Hardening",
+      "test_id": "JWT-001",
+      "test_name": "Expired JWT Token Rejection (HTTP 401)",
+      "passed": true,
+      "latency_ms": 13.17,
+      "telugu_desc": "గడువు ముగిసిన టోకెన్ వెంటనే 401 తో తిరస్కరించబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "JWT Security Hardening",
+      "test_id": "JWT-002",
+      "test_name": "Forged / Tampered Signature Rejection (HTTP 401)",
+      "passed": true,
+      "latency_ms": 9.7,
+      "telugu_desc": "మార్ఫింగ్ చేసిన టోకెన్ 401 తో నిరోధించబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "JWT Security Hardening",
+      "test_id": "JWT-003",
+      "test_name": "Cryptographic alg=none Attack Rejection (HTTP 401)",
+      "passed": true,
+      "latency_ms": 2.93,
+      "telugu_desc": "alg=none అటాక్ పేలోడ్ సురక్షితంగా తిరస్కరించబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "JWT Security Hardening",
+      "test_id": "JWT-004",
+      "test_name": "Empty & Malformed Bearer String Rejection (HTTP 401)",
+      "passed": true,
+      "latency_ms": 16.96,
+      "telugu_desc": "ఖాళీ లేదా చెల్లని బేరర్ టోకెన్లు 401 తో నిరోధించబడ్డాయి.",
+      "details": "",
+      "requests_made": 2,
+      "assertions_made": 2
+    },
+    {
+      "dimension": "Authorization (RBAC)",
+      "test_id": "RBAC-401",
+      "test_name": "100% Unauthenticated 401 Barrier on All 42 Protected Endpoints",
+      "passed": true,
+      "latency_ms": 527.82,
+      "telugu_desc": "టోకెన్ లేని అభ్యర్థనలు అన్ని 42 ప్రొటెక్టెడ్ ఎండ్‌పాయింట్లపై 401 తో నిరోధించబడ్డాయి.",
+      "details": "",
+      "requests_made": 42,
+      "assertions_made": 42
+    },
+    {
+      "dimension": "Authorization (RBAC)",
+      "test_id": "RBAC-403",
+      "test_name": "100% Role Barrier on All 30 Admin Privileged Endpoints (HTTP 403)",
+      "passed": true,
+      "latency_ms": 811.69,
+      "telugu_desc": "అన్ని 30 అడ్మిన్ ఎండ్‌పాయింట్లపై కస్టమర్ & డిస్ట్రిబ్యూటర్లు 403 తో నిరోధించబడ్డారు.",
+      "details": "",
+      "requests_made": 60,
+      "assertions_made": 60
+    },
+    {
+      "dimension": "Authorization (RBAC)",
+      "test_id": "RBAC-DIST",
+      "test_name": "Distributor Exclusive Endpoint Barrier on Customer (HTTP 403)",
+      "passed": true,
+      "latency_ms": 18.97,
+      "telugu_desc": "డిస్ట్రిబ్యూటర్ ప్రత్యేక ఎండ్‌పాయింట్‌పై కస్టమర్ యాక్సెస్ 403 తో నిరోధించబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Object Authorization (IDOR)",
+      "test_id": "IDOR-001",
+      "test_name": "Customer A Forbidden from Viewing Customer B Order #166 (HTTP 403)",
+      "passed": true,
+      "latency_ms": 18.81,
+      "telugu_desc": "కస్టమర్ A మరొకరి ఆర్డర్‌ను చూడకుండా 403 తో నిరోధించబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Object Authorization (IDOR)",
+      "test_id": "IDOR-002",
+      "test_name": "Customer A Forbidden from Accessing Customer B Invoice (HTTP 403)",
+      "passed": true,
+      "latency_ms": 22.03,
+      "telugu_desc": "కస్టమర్ A మరొకరి GST ఇన్వాయిస్‌ను డౌన్‌లోడ్ చేయకుండా నిరోధించబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Object Authorization (IDOR)",
+      "test_id": "IDOR-003",
+      "test_name": "Customer A Forbidden from Cancelling Customer B Order (HTTP 403)",
+      "passed": true,
+      "latency_ms": 14.15,
+      "telugu_desc": "కస్టమర్ A మరొకరి ఆర్డర్‌ను కాన్సిల్ చేయకుండా నిరోధించబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Object Authorization (IDOR)",
+      "test_id": "IDOR-004",
+      "test_name": "Customer A Forbidden from Initiating Return on Customer B Order (HTTP 403)",
+      "passed": true,
+      "latency_ms": 10.43,
+      "telugu_desc": "కస్టమర్ A మరొకరి ఆర్డర్‌పై రిటర్న్ రిక్వెస్ట్ చేయకుండా నిరోధించబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Object Authorization (IDOR)",
+      "test_id": "IDOR-005",
+      "test_name": "Safe Non-Existent Resource Handling (Controlled 404, No 500)",
+      "passed": true,
+      "latency_ms": 10.63,
+      "telugu_desc": "లేని ఐడీలతో క్వెరీ చేసినప్పుడు సర్వర్ ఎర్రర్ (500) రాకుండా కంట్రోల్డ్ 404 వచ్చింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Authorization (RBAC)",
+      "test_id": "ESC-001",
+      "test_name": "Mass Assignment Shield: Self-Role Escalation Blocked",
+      "passed": true,
+      "latency_ms": 37.32,
+      "telugu_desc": "ప్రొఫైల్ అప్‌డేట్ ద్వారా అడ్మిన్ రోల్‌కి మారే ప్రయత్నం సర్వర్ సైడ్ తిరస్కరించబడింది.",
+      "details": "",
+      "requests_made": 2,
+      "assertions_made": 2
+    },
+    {
+      "dimension": "Authorization (RBAC)",
+      "test_id": "ESC-002",
+      "test_name": "Privilege Escalation: Customer Modifying Roles Blocked (HTTP 403)",
+      "passed": true,
+      "latency_ms": 9.41,
+      "telugu_desc": "కస్టమర్ మరొకరి రోల్‌ను మార్చకుండా 403 తో నిరోధించబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Financial & Pricing Integrity",
+      "test_id": "FIN-001",
+      "test_name": "Authoritative Server Price Override (Subtotal ₹63.0)",
+      "passed": true,
+      "latency_ms": 51.65,
+      "telugu_desc": "ఫ్రంట్‌ఎండ్ నుండి మార్చిన తప్పుడు ధరను పట్టించుకోకుండా డేటాబేస్ లోని అసలు ధరను సర్వర్ లెక్కించింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 3
+    },
+    {
+      "dimension": "Financial & Pricing Integrity",
+      "test_id": "FIN-002",
+      "test_name": "12% GST Tax Invoicing Algorithm Math Verification",
+      "passed": true,
+      "latency_ms": 0.0,
+      "telugu_desc": "₹1000 బేస్ ధరకు 12% GST తో ₹120 పన్ను మరియు ₹1120 మొత్తం లెక్కించబడింది.",
+      "details": "",
+      "requests_made": 0,
+      "assertions_made": 2
+    },
+    {
+      "dimension": "Inventory & Concurrency",
+      "test_id": "CNC-001",
+      "test_name": "Atomic Stock Decrement: Oversell Blocked on Stock=1 (Stock=0, No Negative)",
+      "passed": true,
+      "latency_ms": 69.94,
+      "telugu_desc": "స్టాక్ 1 ఉన్నప్పుడు మొదటి ఆర్డర్ సక్సెస్ అయింది, రెండో ఆర్డర్ తిరస్కరించబడి నెగెటివ్ స్టాక్ రాకుండా నిరోధించబడింది.",
+      "details": "",
+      "requests_made": 2,
+      "assertions_made": 3
+    },
+    {
+      "dimension": "Order State Machine",
+      "test_id": "ORD-001",
+      "test_name": "Illegal Transition Blocked: Pending -> Delivered (HTTP 400)",
+      "passed": true,
+      "latency_ms": 11.27,
+      "telugu_desc": "క్రమం తప్పి Pending నుండి నేరుగా Delivered చేయడానికి ప్రయత్నించినప్పుడు 400 తో తిరస్కరించబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Order State Machine",
+      "test_id": "ORD-002",
+      "test_name": "Valid Linear Fulfillment (Pending → Confirmed → Packed → Shipped → Delivered)",
+      "passed": true,
+      "latency_ms": 286.9,
+      "telugu_desc": "ఆర్డర్ స్టేట్ మెషిన్ 5 స్టేజెస్‌లో సక్రమంగా పూర్తయి డెలివరీ చేయబడింది.",
+      "details": "",
+      "requests_made": 5,
+      "assertions_made": 5
+    },
+    {
+      "dimension": "Payment Security & Integrity",
+      "test_id": "PAY-001",
+      "test_name": "Forged Payment Signature Rejection & Order Defense (HTTP 400)",
+      "passed": true,
+      "latency_ms": 9.18,
+      "telugu_desc": "తప్పుడు పేమెంట్ సిగ్నేచర్‌తో ఆర్డర్ క్రియేట్ చేసే ప్రయత్నం తిరస్కరించబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Payment Security & Integrity",
+      "test_id": "PAY-002",
+      "test_name": "Admin Payment Gateway Settings Masking (Zero Plaintext Secrets)",
+      "passed": true,
+      "latency_ms": 15.0,
+      "telugu_desc": "అడ్మిన్ స్క్రీన్‌లో కూడా పేమెంట్ గేట్‌వే సీక్రెట్స్ మాస్క్ చేయబడి ఉన్నాయి.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Input Validation & Injection",
+      "test_id": "INJ-001",
+      "test_name": "SQL Injection Resistance: Parameterized Query Shield (HTTP 200, No 500)",
+      "passed": true,
+      "latency_ms": 15.4,
+      "telugu_desc": "SQL injection శోధనలు పారామీటరైజ్డ్ క్వెరీలతో సురక్షితంగా హ్యాండిల్ అయ్యాయి.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Input Validation & Injection",
+      "test_id": "INJ-002",
+      "test_name": "Cross-Site Scripting (XSS) String Sanitization (HTTP 200, Safe Output)",
+      "passed": true,
+      "latency_ms": 12.11,
+      "telugu_desc": "XSS పేలోడ్స్ JSON రెస్పాన్స్‌లో సేఫ్‌గా ఎన్‌కోడ్ అయ్యాయి.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Input Validation & Injection",
+      "test_id": "INJ-003",
+      "test_name": "Negative Item Quantity Validation & Rejection (HTTP 400/422)",
+      "passed": true,
+      "latency_ms": 10.81,
+      "telugu_desc": "నెగెటివ్ క్వాంటిటీతో ఆర్డర్ పెట్టే ప్రయత్నం తిరస్కరించబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Input Validation & Injection",
+      "test_id": "INJ-004",
+      "test_name": "Excessive Stock Oversell Validation & Rejection (HTTP 400/422)",
+      "passed": true,
+      "latency_ms": 15.55,
+      "telugu_desc": "అందుబాటులో లేని అధిక క్వాంటిటీ ఆర్డర్ తిరస్కరించబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Path Traversal Shield",
+      "test_id": "TRAV-001",
+      "test_name": "Filesystem Path Traversal Defense (../ & %2e%2e%2f Blocked)",
+      "passed": true,
+      "latency_ms": 11.36,
+      "telugu_desc": "పాత్ ట్రావర్సల్ అటాక్స్ ద్వారా ఫైల్ సిస్టమ్ ఓపెన్ కాకుండా నిరోధించబడింది.",
+      "details": "",
+      "requests_made": 2,
+      "assertions_made": 2
+    },
+    {
+      "dimension": "Sensitive Data Exposure Shield",
+      "test_id": "EXP-001",
+      "test_name": "Zero Sensitive Data Exposure in Public & User Endpoints",
+      "passed": true,
+      "latency_ms": 72.61,
+      "telugu_desc": "పాస్‌వర్డ్ హ్యాష్‌లు మరియు పేమెంట్ సీక్రెట్స్ ఏ రెస్పాన్స్‌లోనూ బయటకు రావడం లేదు.",
+      "details": "",
+      "requests_made": 2,
+      "assertions_made": 2
+    },
+    {
+      "dimension": "Security Headers & CORS",
+      "test_id": "SEC-001",
+      "test_name": "OWASP Security Headers (nosniff, DENY, XSS mode=block)",
+      "passed": true,
+      "latency_ms": 9.11,
+      "telugu_desc": "క్లిక్‌జాకింగ్ మరియు XSS సెక్యూరిటీ హెడర్లు సక్రమంగా ఉన్నాయి.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 3
+    },
+    {
+      "dimension": "Security Headers & CORS",
+      "test_id": "SEC-002",
+      "test_name": "Dynamic LAN Multi-Device CORS Preflight Enforcement",
+      "passed": true,
+      "latency_ms": 5.0,
+      "telugu_desc": "లోకల్ వై-ఫై నెట్‌వర్క్ పరికరాలకు CORS యాక్సెస్ అనుమతించబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Security Headers & CORS",
+      "test_id": "SEC-003",
+      "test_name": "Malicious Origin CORS Reflection Blocked",
+      "passed": true,
+      "latency_ms": 5.0,
+      "telugu_desc": "హ్యాకర్ ఆరిజిన్ వెబ్‌సైట్లకు CORS యాక్సెస్ తిరస్కరించబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "CSRF & Token Architecture",
+      "test_id": "CSRF-001",
+      "test_name": "Stateless Bearer Header Architecture (Immune to Cross-Site Cookie Injection)",
+      "passed": true,
+      "latency_ms": 1.0,
+      "telugu_desc": "స్టేట్‌లెస్ బేరర్ హెడర్ ఆర్కిటెక్చర్ వలన ఆటోమేటిక్ కుకీ ఇంజెక్షన్ దాడులు నిరోధించబడ్డాయి.",
+      "details": "",
+      "requests_made": 0,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "HTTP Method Security",
+      "test_id": "MTH-001",
+      "test_name": "Unsupported HTTP Method Rejection (HTTP 405 Method Not Allowed)",
+      "passed": true,
+      "latency_ms": 7.58,
+      "telugu_desc": "అనుమతి లేని HTTP మెథడ్స్ 405 ఎర్రర్‌తో తిరస్కరించబడ్డాయి.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Session & Account Security",
+      "test_id": "SES-001",
+      "test_name": "Deactivated / Suspended Account Login Rejection (HTTP 400/401)",
+      "passed": true,
+      "latency_ms": 396.55,
+      "telugu_desc": "సస్పెండ్ చేయబడిన ఖాతాలు లాగిన్ అవ్వకుండా నిరోధించబడ్డాయి.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Audit Trail Integrity",
+      "test_id": "AUD-001",
+      "test_name": "Immutable Audit Trail Ingestion & Traceability",
+      "passed": true,
+      "latency_ms": 65.63,
+      "telugu_desc": "మొత్తం 50 ఆడిట్ లాగ్ రికార్డులు డేటాబేస్‌లో భద్రపరచబడ్డాయి.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Frontend Contract & Pagination",
+      "test_id": "FNT-001",
+      "test_name": "Admin Orders Numbered Pagination & Schema Compatibility",
+      "passed": true,
+      "latency_ms": 30.0,
+      "telugu_desc": "ఆర్డర్స్ పేజీలోని 1, 2, 3... నంబర్డ్ పేజినేషన్ స్కీమా నిర్ధారించబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Frontend Contract & Pagination",
+      "test_id": "FNT-002",
+      "test_name": "Notification Audit Logs Contract & Interactive Search Filter",
+      "passed": true,
+      "latency_ms": 20.0,
+      "telugu_desc": "సెట్టింగ్స్ పేజీలో లాగ్స్ పేజినేషన్ మరియు ఫిల్టరింగ్ API నిర్ధారించబడింది.",
+      "details": "",
+      "requests_made": 1,
+      "assertions_made": 1
+    },
+    {
+      "dimension": "Performance Smoke",
+      "test_id": "PRF-001",
+      "test_name": "API Latency Smoke Benchmark (Avg: 204.32ms, p95: 517.61ms)",
+      "passed": true,
+      "latency_ms": 204.32,
+      "telugu_desc": "ప్రొడక్షన్ లెవల్ API రెస్పాన్స్ సమయం సగటున 204.32ms తో అత్యంత వేగంగా ఉంది.",
+      "details": "",
+      "requests_made": 4,
+      "assertions_made": 4
+    }
+  ]
+}

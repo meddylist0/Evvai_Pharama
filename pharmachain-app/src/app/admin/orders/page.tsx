@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { INITIAL_ORDERS } from "@/data/mockData";
 import { ordersAPI, OrderData } from "@/lib/api";
 
@@ -19,7 +20,7 @@ export default function AdminOrdersPage() {
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(8);
+  const [pageSize, setPageSize] = useState(5);
 
   const loadOrders = async () => {
     try {
@@ -49,12 +50,31 @@ export default function AdminOrdersPage() {
     return () => window.removeEventListener("pharmalink_admin_search", handleGlobalSearch);
   }, []);
 
+  const formatOrderTimestamp = (ts: string | null | undefined) => {
+    if (!ts) return "N/A";
+    try {
+      const d = new Date(ts.includes("T") || ts.endsWith("Z") ? ts : ts.replace(" ", "T") + "Z");
+      if (isNaN(d.getTime())) return ts;
+      return new Intl.DateTimeFormat("en-IN", {
+        timeZone: "Asia/Kolkata",
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      }).format(d);
+    } catch {
+      return ts;
+    }
+  };
+
   const handleUpdateStatus = async (id: number, newStatus: any, orderCode: string) => {
     setStatusMsg(null);
     try {
       await ordersAPI.updateStatus(id, newStatus);
       setOrders((prev) =>
-        prev.map((o) => (o.id === id ? { ...o, order_status: newStatus, orderStatus: newStatus } as any : o))
+        prev.map((o) => (o.id === id ? ({ ...o, order_status: newStatus, orderStatus: newStatus } as any) : o))
       );
       setStatusMsg({
         type: "success",
@@ -86,13 +106,13 @@ export default function AdminOrdersPage() {
       setOrders((prev) =>
         prev.map((o) =>
           o.id === selectedRefundOrder.id
-            ? {
+            ? ({
                 ...o,
                 payment_status: "REFUNDED",
                 paymentStatus: "Refunded",
                 refund_id: (updated as any).refund_id || (updated as any).refundId,
                 refund_status: "REFUNDED",
-              } as any
+              } as any)
             : o
         )
       );
@@ -102,7 +122,6 @@ export default function AdminOrdersPage() {
         text: `✔ Gateway Refund successfully processed for Order ${selectedRefundOrder.order_code || selectedRefundOrder.id}! Payment marked as REFUNDED.`,
       });
       setSelectedRefundOrder(null);
-      // Reload fresh orders
       loadOrders();
     } catch (err: any) {
       setStatusMsg({
@@ -124,21 +143,25 @@ export default function AdminOrdersPage() {
     const role = (o.role || "").toString().toLowerCase();
     const query = searchTerm.trim().toLowerCase();
 
-    // 1. Search Filter Check (Global Across All Attributes)
+    // Check items / formulations match
+    const itemsMatch = o.items && Array.isArray(o.items) && o.items.some((item: any) =>
+      (item.product_name || item.name || "").toLowerCase().includes(query) ||
+      (item.sku || "").toLowerCase().includes(query)
+    );
+
     if (query) {
       const matchesSearch =
         orderCode.includes(query) ||
         customerName.includes(query) ||
         city.includes(query) ||
         role.includes(query) ||
+        itemsMatch ||
         (o.refund_id && o.refund_id.toLowerCase().includes(query)) ||
         (o.razorpay_payment_id && o.razorpay_payment_id.toLowerCase().includes(query));
       if (!matchesSearch) return false;
-      // When searching with query, search universally across all statuses
       return true;
     }
 
-    // 2. Status Filter Check (When not actively searching)
     if (statusFilter !== "all") {
       if (statusFilter === "Refunded") {
         const isRef =
@@ -173,7 +196,7 @@ export default function AdminOrdersPage() {
       <div className="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-2xs">
         <div className="flex items-center space-x-2">
           <span className="text-[11px] font-extrabold text-[#0b2341] uppercase tracking-wider bg-blue-100/60 px-3 py-1 rounded-full border border-blue-200">
-            Order Fulfillment Operations & Status Lifecycle
+            Order Fulfillment Operations & Brand Pipeline
           </span>
           <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
             FastAPI Synced
@@ -186,7 +209,7 @@ export default function AdminOrdersPage() {
           Order Lifecycle Management & Fulfillment
         </h1>
         <p className="text-xs text-slate-500">
-          Transition orders across states (Pending &rarr; Confirmed &rarr; Packed &rarr; Shipped &rarr; Delivered) or initiate direct Razorpay gateway refunds.
+          View ordered formulation brands, payment confirmation status, verified buyer/distributor credentials, and advance order state transitions.
         </p>
       </div>
 
@@ -210,7 +233,7 @@ export default function AdminOrdersPage() {
           <div className="relative flex-1 max-w-md">
             <input
               type="text"
-              placeholder="Search Order Code, Customer Name, City, Refund ID..."
+              placeholder="Search Order Code, Formulation Brand, Customer, City, Refund ID..."
               value={searchTerm}
               onChange={(e) => handleSearchChange(e.target.value)}
               className="w-full pl-9 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 text-xs focus:bg-white focus:outline-none focus:border-blue-600 transition-all"
@@ -320,12 +343,12 @@ export default function AdminOrdersPage() {
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-extrabold uppercase text-[10px]">
                   <th className="py-3.5 px-4">Order Code</th>
-                  <th className="py-3.5 px-4">Customer / Distributor</th>
-                  <th className="py-3.5 px-4">Role</th>
+                  <th className="py-3.5 px-4">Buyer & Entity</th>
+                  <th className="py-3.5 px-4">Ordered Brands / Items</th>
                   <th className="py-3.5 px-4">Total Amount</th>
-                  <th className="py-3.5 px-4">Payment & Refund</th>
-                  <th className="py-3.5 px-4">Current Status</th>
-                  <th className="py-3.5 px-4 text-right">Actions / Refund</th>
+                  <th className="py-3.5 px-4">Payment Status</th>
+                  <th className="py-3.5 px-4">Lifecycle State</th>
+                  <th className="py-3.5 px-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -335,7 +358,7 @@ export default function AdminOrdersPage() {
                       <span className="text-2xl block">🔍</span>
                       <p className="text-slate-600 font-bold">No matching orders found</p>
                       <p className="text-slate-400 text-[11px]">
-                        {searchTerm ? `No results matching "${searchTerm}". Try a different code or customer name.` : "No orders found under this status filter."}
+                        {searchTerm ? `No results matching "${searchTerm}". Try a different code, formulation brand, or customer name.` : "No orders found under this status filter."}
                       </p>
                     </td>
                   </tr>
@@ -349,24 +372,66 @@ export default function AdminOrdersPage() {
                     const orderCode = ord.order_code || ord.id;
                     const total = ord.total_amount || ord.totalAmount || 0;
                     const refundId = ord.refund_id || ord.refundId;
+                    const isDistributor = (ord.role || "").toLowerCase().includes("distributor");
+
+                    // Extract items / brands summary
+                    const itemsList = ord.items && Array.isArray(ord.items) ? ord.items : [];
+                    const itemsCount = ord.items_count || ord.itemsCount || (itemsList.length > 0 ? itemsList.reduce((acc: number, item: any) => acc + (item.quantity || 1), 0) : 1);
 
                     return (
                       <tr key={ord.id || orderCode} className="hover:bg-slate-50/70 transition-colors">
-                        <td className="py-3.5 px-4 font-mono font-bold text-blue-700">{orderCode}</td>
                         <td className="py-3.5 px-4">
-                          <div className="font-extrabold text-[#0b2341]">{ord.customer_name || ord.customerName}</div>
-                          <span className="text-[10px] text-slate-400">{ord.delivery_city || ord.deliveryCity || "Hyderabad"}</span>
-                        </td>
-                        <td className="py-3.5 px-4">
-                          <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                              (ord.role || "").includes("Distributor") ? "bg-emerald-50 text-emerald-800 border border-emerald-200" : "bg-blue-50 text-blue-800 border border-blue-200"
-                            }`}
+                          <Link
+                            href={`/admin/orders/${ord.id || orderCode}`}
+                            className="font-mono font-bold text-blue-700 hover:text-blue-900 block text-xs underline underline-offset-2"
+                            title="View Full Order File"
                           >
-                            {ord.role}
-                          </span>
+                            {orderCode}
+                          </Link>
+                          <span className="text-[10px] text-slate-400 font-medium">{formatOrderTimestamp(ord.created_at || ord.orderDate)}</span>
                         </td>
-                        <td className="py-3.5 px-4 font-black text-slate-900">₹{total.toLocaleString()}</td>
+
+                        <td className="py-3.5 px-4">
+                          <div className="font-extrabold text-[#0b2341] text-xs">{ord.customer_name || ord.customerName}</div>
+                          <div className="flex items-center space-x-1.5 mt-0.5">
+                            <span
+                              className={`px-1.5 py-0.2 rounded text-[9px] font-extrabold uppercase ${
+                                isDistributor
+                                  ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                                  : "bg-blue-50 text-blue-800 border border-blue-200"
+                              }`}
+                            >
+                              {isDistributor ? "Distributor" : "Retail Customer"}
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-medium truncate max-w-[120px]">
+                              {ord.delivery_city || ord.deliveryCity || "Hyderabad"}
+                            </span>
+                          </div>
+                        </td>
+
+                        <td className="py-3.5 px-4">
+                          {itemsList.length > 0 ? (
+                            <div className="space-y-1">
+                              <div className="font-bold text-[#0b2341] text-[11px] truncate max-w-[190px]">
+                                {itemsList[0].product_name || itemsList[0].name || "Formulation Brand"}
+                              </div>
+                              <div className="text-[10px] text-slate-500 font-medium">
+                                <span className="font-bold text-blue-800">{itemsList[0].quantity} units</span>
+                                {itemsList.length > 1 && (
+                                  <span className="text-slate-400 ml-1">+{itemsList.length - 1} more items</span>
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            <div>
+                              <span className="font-bold text-[#0b2341] text-[11px] block">EVVAI Formulations</span>
+                              <span className="text-[10px] text-slate-500 font-bold">{itemsCount} Total Units</span>
+                            </div>
+                          )}
+                        </td>
+
+                        <td className="py-3.5 px-4 font-black text-slate-900 text-xs font-mono">₹{total.toLocaleString()}</td>
+
                         <td className="py-3.5 px-4">
                           <div className="space-y-0.5">
                             {isRefunded ? (
@@ -375,7 +440,7 @@ export default function AdminOrdersPage() {
                                   💸 REFUNDED
                                 </span>
                                 {refundId && (
-                                  <span className="text-[9px] font-mono text-slate-500 block truncate max-w-[130px]" title={refundId}>
+                                  <span className="text-[9px] font-mono text-slate-500 block truncate max-w-[120px]" title={refundId}>
                                     ID: {refundId}
                                   </span>
                                 )}
@@ -385,16 +450,27 @@ export default function AdminOrdersPage() {
                                 ⚠ REFUND FAILED
                               </span>
                             ) : isPaid ? (
-                              <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded text-[10px] font-extrabold block w-max">
-                                ✓ PAID
-                              </span>
+                              <div>
+                                <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded text-[10px] font-extrabold block w-max">
+                                  ✓ PAID
+                                </span>
+                                <span className="text-[9px] text-slate-400 font-medium block mt-0.5">
+                                  {ord.payment_method || "Online NetBanking"}
+                                </span>
+                              </div>
                             ) : (
-                              <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[10px] font-bold block w-max">
-                                {paymentStatus}
-                              </span>
+                              <div>
+                                <span className="bg-slate-100 text-slate-700 border border-slate-200 px-2 py-0.5 rounded text-[10px] font-bold block w-max">
+                                  {paymentStatus}
+                                </span>
+                                <span className="text-[9px] text-slate-400 font-medium block mt-0.5">
+                                  {ord.payment_method || "Pending Payment"}
+                                </span>
+                              </div>
                             )}
                           </div>
                         </td>
+
                         <td className="py-3.5 px-4">
                           <span
                             className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] uppercase ${
@@ -414,12 +490,22 @@ export default function AdminOrdersPage() {
                             {currentStatus}
                           </span>
                         </td>
+
                         <td className="py-3.5 px-4 text-right">
-                          <div className="flex items-center justify-end space-x-2">
-                            {/* Update Status Dropdown strictly matching valid transitions */}
+                          <div className="flex items-center justify-end space-x-1.5">
+                            {/* 1. DEDICATED VIEW PAGE LINK */}
+                            <Link
+                              href={`/admin/orders/${ord.id || orderCode}`}
+                              className="bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200 px-3 py-1.5 rounded-xl font-extrabold text-[11px] shadow-2xs transition-all cursor-pointer whitespace-nowrap flex items-center space-x-1"
+                              title="Open full order details page"
+                            >
+                              <span>👁️ View</span>
+                            </Link>
+
+                            {/* 2. UPDATE STATUS SELECTOR */}
                             {["Cancelled", "CANCELLED", "Returned", "RETURNED"].includes(currentStatus) ? (
-                              <span className="text-[10px] font-bold font-mono text-slate-400 bg-slate-100 px-2 py-1 rounded-lg">
-                                Terminal
+                              <span className="text-[10px] font-bold font-mono text-slate-400 bg-slate-100 px-2 py-1.5 rounded-xl">
+                                Closed
                               </span>
                             ) : (
                               <select
@@ -447,11 +533,11 @@ export default function AdminOrdersPage() {
                               </select>
                             )}
 
-                            {/* Direct Refund Button if Paid and not already refunded */}
+                            {/* 3. DIRECT REFUND BUTTON */}
                             {isPaid && !isRefunded && (
                               <button
                                 onClick={() => handleOpenRefundModal(ord)}
-                                className="bg-rose-600 hover:bg-rose-700 text-white font-extrabold px-3 py-1.5 rounded-xl text-[11px] shadow-2xs transition-all cursor-pointer whitespace-nowrap flex items-center space-x-1"
+                                className="bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 font-extrabold px-2.5 py-1.5 rounded-xl text-[11px] shadow-2xs transition-all cursor-pointer whitespace-nowrap flex items-center space-x-1"
                                 title="Issue automated Razorpay refund"
                               >
                                 <span>💸 Refund</span>
@@ -468,8 +554,8 @@ export default function AdminOrdersPage() {
           </div>
 
           {/* Pagination Bar */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 border-t border-slate-200 bg-slate-50/70 text-xs font-semibold text-slate-600">
-            <div>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 border-t border-slate-200 bg-slate-50/80 text-xs font-semibold text-slate-600">
+            <div className="flex items-center space-x-3">
               {filteredOrders.length > 0 ? (
                 <span>
                   Showing <span className="font-bold text-[#0b2341]">{(currentPage - 1) * pageSize + 1}</span> to{" "}
@@ -479,69 +565,83 @@ export default function AdminOrdersPage() {
               ) : (
                 <span>0 orders found</span>
               )}
+              <span className="text-slate-300">|</span>
+              <span className="bg-slate-200/70 text-slate-700 px-2 py-0.5 rounded-md font-mono text-[11px] font-bold">
+                Page {currentPage} of {totalPages}
+              </span>
             </div>
 
-            {totalPages > 1 && (
-              <div className="flex items-center space-x-1.5">
-                <button
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(1)}
-                  className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px]"
-                  title="First Page"
-                >
-                  «
-                </button>
-                <button
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px]"
-                >
-                  ‹ Prev
-                </button>
+            <div className="flex items-center space-x-1.5">
+              {/* First Page Button */}
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(1)}
+                className="px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px] font-bold text-slate-700 shadow-2xs"
+                title="First Page"
+              >
+                « First
+              </button>
 
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
-                  if (
-                    pageNum === 1 ||
-                    pageNum === totalPages ||
-                    (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
-                  ) {
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => setCurrentPage(pageNum)}
-                        className={`px-3 py-1.5 rounded-lg font-bold text-[11px] transition-all cursor-pointer ${
-                          currentPage === pageNum
-                            ? "bg-[#0b2341] text-white shadow-2xs"
-                            : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  }
-                  if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
-                    return <span key={pageNum} className="px-1 text-slate-400 font-bold text-[10px]">...</span>;
-                  }
-                  return null;
-                })}
+              {/* Previous Page Button */}
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px] font-bold text-slate-700 shadow-2xs"
+              >
+                ‹ Prev
+              </button>
 
-                <button
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                  className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px]"
-                >
-                  Next ›
-                </button>
-                <button
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage(totalPages)}
-                  className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px]"
-                  title="Last Page"
-                >
-                  »
-                </button>
-              </div>
-            )}
+              {/* Numbered Page Buttons: 1, 2, 3 ... */}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+                if (
+                  totalPages <= 7 ||
+                  pageNum === 1 ||
+                  pageNum === totalPages ||
+                  (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                ) {
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`min-w-[32px] px-3 py-1.5 rounded-xl font-black text-xs transition-all cursor-pointer ${
+                        currentPage === pageNum
+                          ? "bg-[#0b2341] text-white shadow-sm border border-[#0b2341] scale-105"
+                          : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 hover:border-slate-300 shadow-2xs"
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                }
+                if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
+                  return (
+                    <span key={pageNum} className="px-1.5 text-slate-400 font-bold text-xs select-none">
+                      ...
+                    </span>
+                  );
+                }
+                return null;
+              })}
+
+              {/* Next Page Button */}
+              <button
+                disabled={currentPage === totalPages || totalPages === 0}
+                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px] font-bold text-slate-700 shadow-2xs"
+              >
+                Next ›
+              </button>
+
+              {/* Last Page Button */}
+              <button
+                disabled={currentPage === totalPages || totalPages === 0}
+                onClick={() => setCurrentPage(totalPages)}
+                className="px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px] font-bold text-slate-700 shadow-2xs"
+                title="Last Page"
+              >
+                Last »
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -552,8 +652,14 @@ export default function AdminOrdersPage() {
           <div className="bg-white rounded-3xl max-w-lg w-full shadow-2xl border border-slate-200 space-y-6 p-8 relative">
             <div className="flex items-center justify-between border-b border-slate-200 pb-4">
               <div>
-                <span className="text-[10px] font-extrabold text-rose-800 uppercase bg-rose-50 px-2.5 py-0.5 rounded border border-rose-200">
-                  Automated Gateway Refund
+                <span className={`text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded border ${
+                  (selectedRefundOrder.payment_method || "").toUpperCase() === "COD" || selectedRefundOrder.payment_status === "COD" || !selectedRefundOrder.razorpay_payment_id
+                    ? "bg-amber-50 text-amber-800 border-amber-200"
+                    : "bg-rose-50 text-rose-800 border-rose-200"
+                }`}>
+                  {(selectedRefundOrder.payment_method || "").toUpperCase() === "COD" || selectedRefundOrder.payment_status === "COD" || !selectedRefundOrder.razorpay_payment_id
+                    ? "Cash On Delivery (COD) / Offline Refund"
+                    : "Automated Gateway Refund"}
                 </span>
                 <h2 className="text-xl font-black text-[#0b2341] tracking-tight mt-1">
                   Issue Refund: {selectedRefundOrder.order_code || selectedRefundOrder.id}
@@ -576,8 +682,14 @@ export default function AdminOrdersPage() {
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
+                  <span className="text-slate-500 font-medium">Payment Mode:</span>
+                  <span className="font-extrabold text-blue-900 font-mono">
+                    {selectedRefundOrder.payment_method || selectedRefundOrder.payment_status || "Online"}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
                   <span className="text-slate-500 font-medium">Original Order Total:</span>
-                  <span className="font-black text-emerald-700 text-sm">
+                  <span className="font-black text-emerald-700 text-sm font-mono">
                     ₹{(selectedRefundOrder.total_amount || selectedRefundOrder.totalAmount || 0).toLocaleString()}
                   </span>
                 </div>
@@ -618,8 +730,16 @@ export default function AdminOrdersPage() {
                 />
               </div>
 
-              <div className="p-3 bg-rose-50 border border-rose-200 rounded-2xl text-rose-800 text-[11px] leading-relaxed">
-                <strong>Important:</strong> Clicking confirm will trigger a live API call to Razorpay to initiate the refund, update the order to <span className="font-mono font-bold">REFUNDED</span>, and record an immutable audit log.
+              <div className={`p-3 rounded-2xl text-[11px] leading-relaxed border ${
+                (selectedRefundOrder.payment_method || "").toUpperCase() === "COD" || selectedRefundOrder.payment_status === "COD" || !selectedRefundOrder.razorpay_payment_id
+                  ? "bg-amber-50 border-amber-200 text-amber-900"
+                  : "bg-rose-50 border-rose-200 text-rose-800"
+              }`}>
+                {(selectedRefundOrder.payment_method || "").toUpperCase() === "COD" || selectedRefundOrder.payment_status === "COD" || !selectedRefundOrder.razorpay_payment_id ? (
+                  <span><strong>COD / Offline Order:</strong> Clicking confirm will process a manual refund record, update the order status to <span className="font-mono font-bold">REFUNDED / RETURNED</span>, and record an immutable audit entry without calling Razorpay.</span>
+                ) : (
+                  <span><strong>Important:</strong> Clicking confirm will trigger a live API call to Razorpay to initiate the refund, update the order to <span className="font-mono font-bold">REFUNDED</span>, and record an immutable audit log.</span>
+                )}
               </div>
 
               <div className="flex items-center space-x-3 pt-2">
@@ -638,10 +758,14 @@ export default function AdminOrdersPage() {
                   {refundProcessing ? (
                     <>
                       <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
-                      <span>Processing Gateway Refund...</span>
+                      <span>Processing Refund...</span>
                     </>
                   ) : (
-                    <span>⚡ Confirm Razorpay Refund</span>
+                    <span>
+                      {(selectedRefundOrder.payment_method || "").toUpperCase() === "COD" || selectedRefundOrder.payment_status === "COD" || !selectedRefundOrder.razorpay_payment_id
+                        ? "Confirm COD / Cash Refund"
+                        : "⚡ Confirm Razorpay Refund"}
+                    </span>
                   )}
                 </button>
               </div>

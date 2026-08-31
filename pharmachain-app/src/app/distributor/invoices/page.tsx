@@ -2,20 +2,38 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { getStoredUser, StoredUser, ordersAPI, OrderData } from "@/lib/api";
+import { getStoredUser, StoredUser, ordersAPI, OrderData, notificationsAPI, paymentsAPI } from "@/lib/api";
+import { InvoiceDocumentContent } from "@/components/InvoiceDocument";
 
 export default function DistributorInvoicesPage() {
   const [user, setUser] = useState<StoredUser | null>(null);
   const [orders, setOrders] = useState<OrderData[]>([]);
   const [selectedInvoice, setSelectedInvoice] = useState<OrderData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [adminSettings, setAdminSettings] = useState<{
+    email?: string;
+    bankName?: string;
+    accountNo?: string;
+    ifscCode?: string;
+  }>({});
 
   useEffect(() => {
     setUser(getStoredUser());
     const load = async () => {
       try {
-        const myOrders = await ordersAPI.getMyOrders();
-        if (myOrders) setOrders(myOrders);
+        const [myOrders, notifRes, payRes] = await Promise.allSettled([
+          ordersAPI.getMyOrders(),
+          notificationsAPI.getSettings(),
+          paymentsAPI.getAdminSettings(),
+        ]);
+        if (myOrders.status === "fulfilled" && myOrders.value) {
+          setOrders(myOrders.value);
+        }
+        const email = notifRes.status === "fulfilled" ? (notifRes.value.sender_email || notifRes.value.smtp_user) : undefined;
+        const bankName = payRes.status === "fulfilled" ? payRes.value.bank_name : undefined;
+        const accountNo = payRes.status === "fulfilled" ? payRes.value.account_no : undefined;
+        const ifscCode = payRes.status === "fulfilled" ? payRes.value.ifsc_code : undefined;
+        setAdminSettings({ email, bankName, accountNo, ifscCode });
       } catch (err) {
         console.warn("Failed fetching invoices:", err);
       } finally {
@@ -24,6 +42,13 @@ export default function DistributorInvoicesPage() {
     };
     load();
   }, []);
+
+  const handleDownloadPDF = (ord: OrderData) => {
+    setSelectedInvoice(ord);
+    setTimeout(() => {
+      window.print();
+    }, 300);
+  };
 
   const isApproved = user?.kyc_status === "APPROVED";
 
@@ -53,6 +78,31 @@ export default function DistributorInvoicesPage() {
 
   return (
     <div className="space-y-6">
+      {/* Embedded Print CSS to print only the invoice sheet */}
+      <style jsx global>{`
+        @media print {
+          body {
+            background: white !important;
+          }
+          body * {
+            visibility: hidden;
+          }
+          #printable-invoice,
+          #printable-invoice * {
+            visibility: visible;
+          }
+          #printable-invoice {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            background: white !important;
+          }
+        }
+      `}</style>
+
       {/* Header Banner */}
       <div className="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-2xs">
         <span className="text-[11px] font-extrabold text-[#0b2341] uppercase tracking-wider bg-blue-100/60 px-3 py-1 rounded-full border border-blue-200">
@@ -62,7 +112,7 @@ export default function DistributorInvoicesPage() {
           GST Tax Invoices & Billing Statements
         </h1>
         <p className="text-xs text-slate-500">
-          Detailed GST tax billing register displaying stockist details, HSN codes, formulation items, and PDF receipt downloads.
+          Official B2B GST tax billing register displaying stockist details, HSN codes, formulation items, and PDF receipt downloads.
         </p>
       </div>
 
@@ -105,11 +155,11 @@ export default function DistributorInvoicesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {orders.map((ord, idx) => (
+                {orders.map((ord) => (
                   <tr key={ord.id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="py-4 px-4 whitespace-nowrap">
                       <span className="font-mono font-black text-[#0b2341] text-sm block">
-                        {ord.invoice_number || `INV-EVV-2026-${1000 + ord.id}`}
+                        {ord.invoice_number || `EVV-INV-2026-${String(ord.id).padStart(4, "0")}`}
                       </span>
                       <span className="text-[10px] text-slate-400 font-medium">{ord.created_at?.split("T")[0]}</span>
                     </td>
@@ -125,23 +175,42 @@ export default function DistributorInvoicesPage() {
                     </td>
 
                     <td className="py-4 px-4 whitespace-nowrap">
-                      <span className="font-black text-emerald-700 text-sm block">₹{ord.total_amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                      <span className="font-black text-emerald-700 text-sm block">
+                        ₹{Number(ord.total_amount || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                      </span>
                       <span className="text-[10px] text-slate-400 font-mono">Tax: ₹{(ord.tax_amount || 0).toFixed(2)}</span>
                     </td>
 
                     <td className="py-4 px-4 whitespace-nowrap">
-                      <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-3 py-1 rounded-full text-[10px] font-extrabold inline-block">
-                        ✓ {ord.payment_status}
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-extrabold inline-block border ${(ord.payment_status || "").toUpperCase() === "PAID"
+                        ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                        : "bg-amber-50 text-amber-800 border-amber-200"
+                        }`}>
+                        {ord.payment_status || "PENDING"}
                       </span>
                     </td>
 
                     <td className="py-4 px-4 text-right whitespace-nowrap">
                       <div className="inline-flex items-center justify-end space-x-2">
+                        {/* 1. View Invoice Button */}
                         <button
                           onClick={() => setSelectedInvoice(ord)}
-                          className="bg-[#0b2341] hover:bg-[#12315a] text-white px-3.5 py-1.5 rounded-xl font-bold text-xs shadow-2xs transition-all cursor-pointer whitespace-nowrap"
+                          className="bg-[#0b2341] hover:bg-[#12315a] text-white px-3 py-1.5 rounded-xl font-bold text-xs shadow-2xs transition-all cursor-pointer whitespace-nowrap flex items-center space-x-1.5"
+                          title="Preview Official Tax Invoice"
                         >
-                          🔍 Preview
+                          <span>👁️ View</span>
+                        </button>
+
+                        {/* 2. Download / Print PDF Button */}
+                        <button
+                          onClick={() => handleDownloadPDF(ord)}
+                          className="bg-slate-100 hover:bg-slate-200 text-[#0b2341] border border-slate-200 px-3 py-1.5 rounded-xl font-bold text-xs shadow-2xs transition-all cursor-pointer whitespace-nowrap flex items-center space-x-1.5"
+                          title="Direct Download / Print PDF"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          <span>📥 Download PDF</span>
                         </button>
                       </div>
                     </td>
@@ -153,117 +222,51 @@ export default function DistributorInvoicesPage() {
         )}
       </div>
 
-      {/* Full GST Tax Invoice Preview Modal */}
+      {/* Official Tax Invoice Preview Modal (Matches Admin Order Detail Template) */}
       {selectedInvoice && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200 space-y-6 p-8 relative">
-            {/* Modal Header Bar */}
-            <div className="flex items-center justify-between border-b border-slate-200 pb-4">
-              <div>
-                <span className="text-[10px] font-extrabold text-emerald-800 uppercase bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
-                  Tax Audit Compliant GST Invoice
+        <div className="fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[94vh] overflow-y-auto shadow-2xl border border-slate-300 p-6 sm:p-8 relative space-y-5 my-auto">
+            {/* Modal Actions Bar */}
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+              <div className="flex items-center space-x-2">
+                <span className="bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border border-emerald-300">
+                  GST Audit Compliant
                 </span>
-                <h2 className="text-xl font-black text-[#0b2341] tracking-tight mt-1">
-                  Tax Invoice {selectedInvoice.invoice_number || `INV-EVV-2026-${1000 + selectedInvoice.id}`}
-                </h2>
+                <span className="text-xs text-slate-500 font-medium">Official Bill of Supply</span>
               </div>
 
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2.5">
                 <button
                   onClick={() => window.print()}
-                  className="bg-[#0b2341] hover:bg-[#12315a] text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-xs cursor-pointer whitespace-nowrap"
+                  className="bg-[#0b2341] hover:bg-[#12315a] text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-xs cursor-pointer flex items-center space-x-1.5"
                 >
-                  🖨️ Print Invoice
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                  </svg>
+                  <span>Print / Save PDF</span>
                 </button>
                 <button
                   onClick={() => setSelectedInvoice(null)}
                   className="text-slate-400 hover:text-slate-700 font-black text-xl p-1 cursor-pointer"
+                  title="Close Modal"
                 >
                   ✕
                 </button>
               </div>
             </div>
 
-            {/* Corporate & B2B Wholesaler Details Split Header */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-[#f7f6f4] border border-[#e8e6e2] rounded-2xl p-6 text-xs">
-              {/* Seller Information */}
-              <div className="space-y-1">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Seller / Manufacturer</span>
-                <h3 className="font-extrabold text-[#0b2341] text-sm">EVVAI Pharmaceuticals Global Ltd</h3>
-                <p className="text-slate-600 font-normal">Plot 18, BioTech Industrial Campus, Phase II</p>
-                <p className="text-slate-600 font-normal">Gachibowli, Hyderabad, Telangana 500032</p>
-                <p className="font-mono text-blue-900 font-bold pt-1">GSTIN: 36AAACE9988F1Z5</p>
-                <p className="font-mono text-slate-600">Drug Lic: TS/HYD/2025/8892</p>
-              </div>
-
-              {/* Buyer Information */}
-              <div className="space-y-1">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">B2B Bill To / Stockist</span>
-                <h3 className="font-extrabold text-[#0b2341] text-sm">{selectedInvoice.customer_name}</h3>
-                <p className="text-slate-600 font-normal">Phone: {selectedInvoice.customer_phone || "On file"}</p>
-                <p className="text-slate-600 font-normal">{selectedInvoice.delivery_address}, {selectedInvoice.delivery_city}, {selectedInvoice.delivery_state} - {selectedInvoice.delivery_pincode}</p>
-                <p className="font-mono text-blue-900 font-bold pt-1">GSTIN: {selectedInvoice.gstin || "Recorded on KYC"}</p>
-                <p className="font-mono text-slate-600">PO Ref: {selectedInvoice.order_code} | Date: {selectedInvoice.created_at?.split("T")[0]}</p>
-              </div>
+            {/* Official GST Tax Invoice Document */}
+            <div id="printable-invoice">
+              <InvoiceDocumentContent
+                order={selectedInvoice}
+                adminSettings={adminSettings}
+              />
             </div>
 
-            {/* Itemized Formulation Billing Table */}
-            <div className="space-y-3">
-              <h4 className="text-xs font-bold text-[#0b2341] uppercase tracking-wider">Itemized Formulation Breakdown</h4>
-
-              <div className="border border-slate-200 rounded-2xl overflow-hidden text-xs">
-                <table className="w-full text-left">
-                  <thead>
-                    <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase text-[10px]">
-                      <th className="py-3 px-4">Item & Batch</th>
-                      <th className="py-3 px-4">HSN Code</th>
-                      <th className="py-3 px-4">Qty</th>
-                      <th className="py-3 px-4 text-right">Unit B2B Rate</th>
-                      <th className="py-3 px-4 text-right">Taxable Value</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {selectedInvoice.items?.map((it, idx) => (
-                      <tr key={idx}>
-                        <td className="py-3.5 px-4">
-                          <span className="font-bold text-[#0b2341] block">{it.product_name}</span>
-                          <span className="text-[10px] text-slate-400 font-mono">Batch: {it.batch_no || "BAT-2026"}</span>
-                        </td>
-                        <td className="py-3.5 px-4 font-mono text-slate-600">3004 90 99</td>
-                        <td className="py-3.5 px-4 font-bold">{it.quantity} Units</td>
-                        <td className="py-3.5 px-4 text-right">₹{it.unit_price?.toFixed(2)}</td>
-                        <td className="py-3.5 px-4 text-right font-black text-blue-700">₹{it.total_price?.toFixed(2)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Tax Summary Total */}
-              <div className="bg-[#f7f6f4] border border-[#e8e6e2] rounded-2xl p-4 flex flex-col items-end space-y-1.5 text-xs">
-                <div className="flex justify-between w-64 text-slate-600">
-                  <span>Subtotal (Taxable Value):</span>
-                  <span className="font-bold">₹{selectedInvoice.subtotal?.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between w-64 text-slate-600">
-                  <span>GST (12% Pharma Rate):</span>
-                  <span className="font-bold">₹{selectedInvoice.tax_amount?.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between w-64 text-slate-600">
-                  <span>Shipping & Cold-Chain:</span>
-                  <span className="font-bold">₹{selectedInvoice.shipping_charge?.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between w-64 text-sm font-black text-[#0b2341] border-t border-slate-300 pt-1.5">
-                  <span>Grand Total (INR):</span>
-                  <span className="text-emerald-700 text-base">₹{selectedInvoice.total_amount?.toFixed(2)}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end pt-2">
+            <div className="flex justify-end pt-2 border-t border-slate-100">
               <button
                 onClick={() => setSelectedInvoice(null)}
-                className="bg-[#0b2341] hover:bg-[#12315a] text-white text-xs font-bold px-6 py-2.5 rounded-xl transition-all cursor-pointer"
+                className="bg-slate-100 hover:bg-slate-200 text-[#0b2341] text-xs font-extrabold px-6 py-2.5 rounded-xl transition-all cursor-pointer"
               >
                 Close Invoice
               </button>

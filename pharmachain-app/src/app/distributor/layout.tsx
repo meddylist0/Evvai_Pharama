@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
 import { DistributorSidebar } from "@/components/DistributorSidebar";
 import { getStoredUser, StoredUser, authAPI, setStoredUser } from "@/lib/api";
 
@@ -12,12 +13,13 @@ export default function DistributorLayout({ children }: { children: React.ReactN
   const [user, setUser] = useState<StoredUser | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
+  const defaultAvatar = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80";
+
   // Sync user and KYC status
   const syncStatus = async () => {
     try {
       const stored = getStoredUser();
       setUser(stored);
-      // Fetch fresh /me from backend to check if admin approved KYC
       if (stored) {
         const freshUser = await authAPI.getMe();
         if (freshUser) {
@@ -66,18 +68,16 @@ export default function DistributorLayout({ children }: { children: React.ReactN
       {/* Mobile Drawer Sidebar Overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-40 flex md:hidden">
-          {/* Overlay backdrop */}
           <div
             className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs"
             onClick={() => setSidebarOpen(false)}
           />
 
-          {/* Sidebar Drawer container */}
           <div className="relative flex-1 flex flex-col max-w-xs w-full bg-[#0b2341] animate-in slide-in-from-left duration-200">
             <div className="absolute top-4 right-4 z-50">
               <button
                 onClick={() => setSidebarOpen(false)}
-                className="text-white hover:text-slate-300 font-bold text-lg p-2"
+                className="text-white hover:text-slate-300 font-bold text-lg p-2 cursor-pointer"
                 aria-label="Close Sidebar"
               >
                 ✕
@@ -100,12 +100,12 @@ export default function DistributorLayout({ children }: { children: React.ReactN
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Header */}
-        <header className="bg-white border-b border-slate-200/80 py-3 px-4 md:px-8 flex items-center justify-between sticky top-0 z-30 shadow-2xs">
+        <header className="bg-white border-b border-slate-200/80 py-3.5 px-4 md:px-8 flex items-center justify-between sticky top-0 z-30 shadow-2xs">
           <div className="flex items-center space-x-3">
             {/* Hamburger Menu button for Mobile view */}
             <button
               onClick={() => setSidebarOpen(true)}
-              className="md:hidden p-2 rounded-xl border border-slate-200 text-[#0b2341] hover:bg-slate-50 transition-colors"
+              className="md:hidden p-2 rounded-xl border border-slate-200 text-[#0b2341] hover:bg-slate-50 transition-colors cursor-pointer"
               aria-label="Open Sidebar Menu"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -113,75 +113,62 @@ export default function DistributorLayout({ children }: { children: React.ReactN
               </svg>
             </button>
 
-            <span className={`text-white font-extrabold text-[10px] px-2.5 py-0.5 rounded tracking-wider uppercase ${
-              isApproved ? "bg-emerald-600" : "bg-amber-600"
+            <span className={`text-white font-extrabold text-[10px] px-2.5 py-1 rounded-md tracking-wider uppercase ${
+              isApproved ? "bg-[#0b2341]" : "bg-amber-600"
             }`}>
-              {isApproved ? "B2B Distributor Portal" : "KYC Verification Pending"}
+              {isApproved ? "PharmaChain B2B Distributor" : "KYC Pending Review"}
             </span>
-            <span className="text-xs text-slate-500 font-semibold hidden lg:inline">
+
+            <span className="text-xs text-slate-500 font-medium hidden lg:inline">
               {isApproved 
-                ? "Tiered Wholesale Pricing & GST Invoice Console" 
+                ? "Direct Wholesale Pricing & Batch COA Dispatch Console" 
                 : "Drug License & GSTIN Review in Progress by Compliance Admin"}
             </span>
           </div>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-4">
             <button
               onClick={handleManualRefresh}
               disabled={refreshing}
               title="Refresh KYC verification status from database"
-              className="border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-xl transition-all flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
+              className="border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold px-3 py-1.5 rounded-xl transition-all flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
             >
               <span className={refreshing ? "animate-spin" : ""}>🔄</span>
               <span className="hidden sm:inline">Refresh Status</span>
             </button>
 
-            <button
-              onClick={() => {
-                if (!isApproved) {
-                  alert("Your Drug License & GST are pending Admin approval. Purchase orders are locked until approved.");
-                  return;
-                }
-                router.push("/distributor/catalog");
-              }}
-              className={`text-xs font-bold px-4 py-2 rounded-xl shadow-xs transition-all flex items-center space-x-2 ${
-                isApproved 
-                  ? "bg-[#0b2341] hover:bg-[#12315a] text-white cursor-pointer" 
-                  : "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
-              }`}
-            >
-              <span>{isApproved ? "+ Quick Bulk PO Order" : "🔒 Orders Locked (Pending KYC)"}</span>
-            </button>
+            {/* User Profile Pill in Header */}
+            <div className="flex items-center space-x-3">
+              <Link 
+                href="/distributor/profile"
+                className="flex items-center space-x-2.5 p-1.5 pr-3 rounded-2xl border border-slate-200 bg-slate-50/70 hover:bg-slate-100 transition-all cursor-pointer"
+                title="Click to view & edit Distributor Profile"
+              >
+                <div className="w-8 h-8 rounded-xl overflow-hidden border border-slate-300 bg-blue-100 flex items-center justify-center shrink-0">
+                  <img
+                    src={user?.avatar || defaultAvatar}
+                    alt={user?.full_name || "Distributor"}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = defaultAvatar;
+                    }}
+                  />
+                </div>
+                <div className="text-left hidden sm:block">
+                  <div className="text-xs font-black text-[#0b2341] leading-tight max-w-[140px] truncate">
+                    {user?.full_name || "Pharma Distributor"}
+                  </div>
+                  <div className="text-[10px] font-bold text-blue-700 leading-none">
+                    {isApproved ? "DISTRIBUTOR (KYC ✓)" : "DISTRIBUTOR (PENDING)"}
+                  </div>
+                </div>
+              </Link>
+            </div>
           </div>
         </header>
 
-        {/* Pending KYC Notice Banner */}
-        {!isApproved && (
-          <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 md:px-8 py-3 flex items-center justify-between gap-4">
-            <div className="flex items-center space-x-3">
-              <span className="text-xl">⏳</span>
-              <div>
-                <h4 className="text-xs font-black text-amber-900">
-                  Drug License & GSTIN Verification Under Review
-                </h4>
-                <p className="text-[11px] text-amber-800">
-                  Your registration and Drug License documents have been submitted to the Admin for regulatory compliance review. 
-                  Once approved, wholesale rates & purchase orders will be unlocked automatically.
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => router.push("/distributor/profile")}
-              className="bg-amber-800 hover:bg-amber-900 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg shrink-0 cursor-pointer shadow-2xs"
-            >
-              View KYC Details
-            </button>
-          </div>
-        )}
-
-        <main className="p-4 md:p-8 flex-1 overflow-y-auto">{children}</main>
+        <main className="p-4 md:p-8 flex-1 overflow-y-auto w-full">{children}</main>
       </div>
     </div>
   );
 }
-

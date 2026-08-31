@@ -6,7 +6,7 @@ from app.core.security import get_password_hash
 from app.core.permissions import require_admin
 from app.models.user import User, UserRole, CustomerProfile, DistributorProfile, KYCStatus
 from app.models.order import OrderStatus, PaymentStatus
-from app.schemas.user import UserOut, UserCreateAdminRequest, UserRoleUpdateRequest
+from app.schemas.user import UserOut, UserCreateAdminRequest, UserRoleUpdateRequest, CreditLimitUpdateRequest
 from app.services.audit_service import record_audit
 
 router = APIRouter()
@@ -23,33 +23,29 @@ def list_users(
     if role:
         query = query.filter(User.role == role)
     if search:
-        pat = f"%{search}%"
-        query = query.filter((User.full_name.ilike(pat)) | (User.email.ilike(pat)))
+        s = f"%{search.strip().lower()}%"
+        query = query.filter(
+            (User.email.ilike(s)) | (User.full_name.ilike(s))
+        )
     
     users = query.order_by(User.created_at.desc()).all()
     results = []
     for u in users:
-        paid_orders = [o for o in u.orders if o.payment_status == PaymentStatus.PAID and o.order_status != OrderStatus.CANCELLED] if u.orders else []
-        lifetime_orders = len(paid_orders)
-        total_spent = sum(o.total_amount for o in paid_orders)
-        
-        # Fallback default seed order values if newly created database
-        if lifetime_orders == 0 and u.role == UserRole.DISTRIBUTOR:
-            lifetime_orders = 18
-            total_spent = 245000.0
-        elif lifetime_orders == 0 and u.role == UserRole.CUSTOMER:
-            lifetime_orders = 4
-            total_spent = 8450.0
+        # Calculate actual lifetime orders and total spent directly from SQLite database
+        user_orders = u.orders if u.orders else []
+        valid_orders = [o for o in user_orders if o.order_status != OrderStatus.CANCELLED]
+        lifetime_orders = len(valid_orders)
+        total_spent = sum(o.total_amount for o in valid_orders)
 
         user_out = UserOut.model_validate(u)
         user_out.lifetime_orders = lifetime_orders
-        user_out.total_spent = total_spent
+        user_out.total_spent = round(float(total_spent), 2)
         results.append(user_out)
         
     return results
 
 
-@router.post("", response_model=UserOut)
+@router.post("", response_model=UserOut, status_code=status.HTTP_201_CREATED)
 def create_staff_user(
     req: UserCreateAdminRequest,
     db: Session = Depends(get_db),
@@ -86,7 +82,8 @@ def create_staff_user(
                 city=req.city or "Hyderabad",
                 state=req.state or "Telangana",
                 pincode=req.pincode or "500081",
-                kyc_status=KYCStatus.APPROVED
+                kyc_status=KYCStatus.APPROVED,
+                credit_limit=req.credit_limit if req.credit_limit is not None else 500000.0
             )
             db.add(dist_profile)
         else:
@@ -144,9 +141,54 @@ def update_user_role(
     )
 
     user_out = UserOut.model_validate(user)
-    paid_orders = [o for o in user.orders if o.payment_status == PaymentStatus.PAID and o.order_status != OrderStatus.CANCELLED] if user.orders else []
-    user_out.lifetime_orders = len(paid_orders)
-    user_out.total_spent = sum(o.total_amount for o in paid_orders)
+    user_orders = user.orders if user.orders else []
+    valid_orders = [o for o in user_orders if o.order_status != OrderStatus.CANCELLED]
+    user_out.lifetime_orders = len(valid_orders)
+    user_out.total_spent = round(float(sum(o.total_amount for o in valid_orders)), 2)
+    return user_out
+
+
+@router.patch("/{user_id}/credit-limit", response_model=UserOut)
+def update_distributor_credit_limit(
+    user_id: int,
+    req: CreditLimitUpdateRequest,
+    db: Session = Depends(get_db),
+    admin_user: User = Depends(require_admin)
+):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    if not user.distributor_profile:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This user does not have an active distributor profile to assign a credit limit."
+        )
+
+    if req.credit_limit < 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Credit limit cannot be negative."
+        )
+
+    old_limit = user.distributor_profile.credit_limit or 0.0
+    user.distributor_profile.credit_limit = float(req.credit_limit)
+    db.commit()
+    db.refresh(user)
+
+    record_audit(
+        db=db,
+        action="CREDIT_LIMIT_UPDATED",
+        module="DISTRIBUTOR",
+        details=f"Admin {admin_user.email} updated B2B credit limit for {user.email} from ₹{old_limit:,.2f} to ₹{req.credit_limit:,.2f}",
+        user=admin_user
+    )
+
+    user_out = UserOut.model_validate(user)
+    user_orders = user.orders if user.orders else []
+    valid_orders = [o for o in user_orders if o.order_status != OrderStatus.CANCELLED]
+    user_out.lifetime_orders = len(valid_orders)
+    user_out.total_spent = round(float(sum(o.total_amount for o in valid_orders)), 2)
     return user_out
 
 
@@ -177,8 +219,8 @@ def toggle_user_status(
     )
 
     user_out = UserOut.model_validate(user)
-    paid_orders = [o for o in user.orders if o.payment_status == PaymentStatus.PAID and o.order_status != OrderStatus.CANCELLED] if user.orders else []
-    user_out.lifetime_orders = len(paid_orders)
-    user_out.total_spent = sum(o.total_amount for o in paid_orders)
+    user_orders = user.orders if user.orders else []
+    valid_orders = [o for o in user_orders if o.order_status != OrderStatus.CANCELLED]
+    user_out.lifetime_orders = len(valid_orders)
+    user_out.total_spent = round(float(sum(o.total_amount for o in valid_orders)), 2)
     return user_out
-

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { auditAPI, AuditLogItem } from "@/lib/api";
 
 export default function AdminAuditPage() {
+  const [mounted, setMounted] = useState(false);
   const [logs, setLogs] = useState<AuditLogItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -11,6 +12,9 @@ export default function AdminAuditPage() {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [moduleFilter, setModuleFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState<"all" | "today" | "yesterday" | "7days" | "30days" | "custom">("all");
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
   const [selectedLog, setSelectedLog] = useState<AuditLogItem | null>(null);
 
   // Pagination states
@@ -33,21 +37,90 @@ export default function AdminAuditPage() {
   };
 
   useEffect(() => {
+    setMounted(true);
     fetchAuditLogs();
+    const handleGlobalSearch = (e: any) => {
+      const q = typeof e.detail === "string" ? e.detail : "";
+      setSearchTerm(q);
+      setCurrentPage(1);
+    };
+    window.addEventListener("pharmalink_admin_search", handleGlobalSearch);
+    return () => window.removeEventListener("pharmalink_admin_search", handleGlobalSearch);
   }, []);
 
-  // Reset page number on search, filter, or page size change
+  // Reset page number on search, filter, date, or page size change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, moduleFilter, pageSize]);
+  }, [searchTerm, moduleFilter, dateFilter, startDate, endDate, pageSize]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
     await fetchAuditLogs();
   };
 
-  // Filtered list
+  // Helper to get exact YYYY-MM-DD date key in Asia/Kolkata (IST) timezone
+  const getLogDateKey = (timestampStr: string): string => {
+    if (!timestampStr) return "";
+    try {
+      let d: Date;
+      if (timestampStr.includes("T") || timestampStr.endsWith("Z")) {
+        d = new Date(timestampStr);
+      } else {
+        d = new Date(timestampStr.replace(" ", "T") + "Z");
+        if (isNaN(d.getTime())) d = new Date(timestampStr);
+      }
+      if (isNaN(d.getTime())) return timestampStr.slice(0, 10);
+
+      return new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Kolkata",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).format(d); // Returns "YYYY-MM-DD"
+    } catch {
+      return timestampStr.slice(0, 10);
+    }
+  };
+
+  // Helper to parse log timestamp into local Date object
+  const parseLogDate = (timestampStr: string): Date | null => {
+    if (!timestampStr) return null;
+    try {
+      let d: Date;
+      if (timestampStr.includes("T") || timestampStr.endsWith("Z")) {
+        d = new Date(timestampStr);
+      } else {
+        d = new Date(timestampStr.replace(" ", "T") + "Z");
+      }
+      return isNaN(d.getTime()) ? null : d;
+    } catch {
+      return null;
+    }
+  };
+
+  // Filtered list with Module + Search + Date Range
   const filteredLogs = useMemo(() => {
+    const now = new Date();
+
+    // Get Today and Yesterday keys in IST
+    const todayKey = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Kolkata",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(now);
+
+    const yesterdayDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const yesterdayKey = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Kolkata",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(yesterdayDate);
+
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
     return logs.filter((log) => {
       const q = searchTerm.toLowerCase();
       const matchesSearch =
@@ -58,13 +131,45 @@ export default function AdminAuditPage() {
         (log.ip_address?.toLowerCase() || "").includes(q) ||
         `log-${log.id}`.includes(q);
 
-      if (moduleFilter === "all") return matchesSearch;
+      if (!matchesSearch) return false;
+
+      // Module Filter
       if (moduleFilter === "SECURITY") {
-        return matchesSearch && ["AUTH", "USERS", "PAYMENTS"].includes(log.module.toUpperCase());
+        if (!["AUTH", "USERS", "PAYMENTS"].includes(log.module.toUpperCase())) return false;
+      } else if (moduleFilter !== "all") {
+        if (log.module.toUpperCase() !== moduleFilter.toUpperCase()) return false;
       }
-      return matchesSearch && log.module.toUpperCase() === moduleFilter.toUpperCase();
+
+      // Date Filter
+      if (dateFilter === "all" && !startDate && !endDate) return true;
+
+      const logDateKey = getLogDateKey(log.timestamp);
+      const logDateObj = parseLogDate(log.timestamp) || (logDateKey ? new Date(logDateKey) : null);
+
+      if (dateFilter === "today") {
+        return logDateKey === todayKey || log.timestamp.startsWith(todayKey);
+      }
+      if (dateFilter === "yesterday") {
+        return logDateKey === yesterdayKey || log.timestamp.startsWith(yesterdayKey);
+      }
+      if (dateFilter === "7days") {
+        return logDateObj ? logDateObj.getTime() >= sevenDaysAgo.getTime() : true;
+      }
+      if (dateFilter === "30days") {
+        return logDateObj ? logDateObj.getTime() >= thirtyDaysAgo.getTime() : true;
+      }
+      if (dateFilter === "custom" || startDate || endDate) {
+        const cleanStart = startDate && startDate.length >= 10 ? startDate.slice(0, 10) : "";
+        const cleanEnd = endDate && endDate.length >= 10 ? endDate.slice(0, 10) : "";
+
+        if (cleanStart && logDateKey < cleanStart) return false;
+        if (cleanEnd && logDateKey > cleanEnd) return false;
+        return true;
+      }
+
+      return true;
     });
-  }, [logs, searchTerm, moduleFilter]);
+  }, [logs, searchTerm, moduleFilter, dateFilter, startDate, endDate]);
 
   // Paginated list & page count
   const totalPages = Math.max(1, Math.ceil(filteredLogs.length / pageSize));
@@ -161,6 +266,22 @@ export default function AdminAuditPage() {
     }
   };
 
+  if (!mounted) {
+    return (
+      <div className="space-y-6 animate-pulse">
+        <div className="bg-white p-6 rounded-3xl border border-slate-200 h-28"></div>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="bg-white p-4 rounded-2xl border border-slate-200 h-20"></div>
+          ))}
+        </div>
+        <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center text-slate-400 font-bold text-xs">
+          Loading Audit Console...
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header Banner */}
@@ -240,7 +361,7 @@ export default function AdminAuditPage() {
         </div>
       </div>
 
-      {/* Filter Row & Search Input */}
+      {/* Filter Row 1: Module Categories & Search Input */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs text-xs">
         <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 md:pb-0">
           {[
@@ -277,6 +398,118 @@ export default function AdminAuditPage() {
             placeholder="Search action, email, module, details..."
             className="border border-slate-200 rounded-xl pl-9 pr-4 py-2 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600 font-medium text-xs w-full md:w-72"
           />
+        </div>
+      </div>
+
+      {/* Filter Row 2: Date-based Filter Bar (Today, Yesterday, 7 Days, 30 Days, Custom Range) */}
+      <div className="bg-[#f7f6f4] border border-[#e8e6e2] p-3.5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+        <div className="flex items-center space-x-2 overflow-x-auto pb-1 md:pb-0">
+          <span className="font-extrabold text-[#0b2341] flex items-center space-x-1.5 shrink-0 pr-1">
+            <svg className="w-3.5 h-3.5 text-[#0b2341]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span>Date Filter:</span>
+          </span>
+
+          {[
+            { id: "all", label: "All Time" },
+            { id: "today", label: "Today" },
+            { id: "yesterday", label: "Yesterday" },
+            { id: "7days", label: "Last 7 Days" },
+            { id: "30days", label: "Last 30 Days" },
+            { id: "custom", label: "Custom Range" },
+          ].map((d) => {
+            const isActive = dateFilter === d.id;
+            return (
+              <button
+                key={d.id}
+                onClick={() => {
+                  setDateFilter(d.id as any);
+                  if (d.id !== "custom") {
+                    setStartDate("");
+                    setEndDate("");
+                  }
+                }}
+                className={`px-3 py-1.5 rounded-xl font-extrabold whitespace-nowrap transition-all cursor-pointer text-[11px] ${isActive
+                  ? "bg-[#0b2341] text-white shadow-2xs"
+                  : "bg-white text-slate-700 hover:bg-slate-200/80 border border-slate-200/80"
+                  }`}
+              >
+                {d.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Date Pickers for Custom Range or Quick Tuning */}
+        <div className="flex items-center space-x-2 shrink-0">
+          <div className="flex items-center space-x-1.5 bg-white px-2.5 py-1 rounded-xl border border-slate-200/90 shadow-2xs">
+            <span className="text-[10px] font-bold text-slate-400 uppercase">From:</span>
+            <input
+              type="date"
+              min="2020-01-01"
+              max="2035-12-31"
+              value={startDate}
+              onChange={(e) => {
+                const val = e.target.value;
+                // Guard against browser year typos like 20024
+                if (val) {
+                  const parts = val.split("-");
+                  if (parts[0] && parts[0].length > 4) {
+                    parts[0] = parts[0].slice(0, 4);
+                    setStartDate(parts.join("-"));
+                  } else {
+                    setStartDate(val);
+                  }
+                } else {
+                  setStartDate("");
+                }
+                setDateFilter("custom");
+              }}
+              className="font-mono text-xs font-bold text-[#0b2341] bg-transparent focus:outline-none cursor-pointer"
+            />
+          </div>
+
+          <div className="flex items-center space-x-1.5 bg-white px-2.5 py-1 rounded-xl border border-slate-200/90 shadow-2xs">
+            <span className="text-[10px] font-bold text-slate-400 uppercase">To:</span>
+            <input
+              type="date"
+              min="2020-01-01"
+              max="2035-12-31"
+              value={endDate}
+              onChange={(e) => {
+                const val = e.target.value;
+                // Guard against browser year typos like 20024
+                if (val) {
+                  const parts = val.split("-");
+                  if (parts[0] && parts[0].length > 4) {
+                    parts[0] = parts[0].slice(0, 4);
+                    setEndDate(parts.join("-"));
+                  } else {
+                    setEndDate(val);
+                  }
+                } else {
+                  setEndDate("");
+                }
+                setDateFilter("custom");
+              }}
+              className="font-mono text-xs font-bold text-[#0b2341] bg-transparent focus:outline-none cursor-pointer"
+            />
+          </div>
+
+          {(dateFilter !== "all" || startDate || endDate) && (
+            <button
+              onClick={() => {
+                setDateFilter("all");
+                setStartDate("");
+                setEndDate("");
+              }}
+              className="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-2.5 py-1.5 rounded-xl font-bold text-[10px] transition-all cursor-pointer whitespace-nowrap flex items-center space-x-1"
+              title="Reset Date Filter"
+            >
+              <span>✕ Clear Date</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -427,11 +660,10 @@ export default function AdminAuditPage() {
                       <button
                         key={pageNum}
                         onClick={() => setCurrentPage(pageNum)}
-                        className={`px-3 py-1.5 rounded-lg font-bold text-[11px] transition-all cursor-pointer ${
-                          currentPage === pageNum
-                            ? "bg-[#0b2341] text-white shadow-2xs"
-                            : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
-                        }`}
+                        className={`px-3 py-1.5 rounded-lg font-bold text-[11px] transition-all cursor-pointer ${currentPage === pageNum
+                          ? "bg-[#0b2341] text-white shadow-2xs"
+                          : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
+                          }`}
                       >
                         {pageNum}
                       </button>

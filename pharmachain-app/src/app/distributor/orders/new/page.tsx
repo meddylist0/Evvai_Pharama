@@ -28,15 +28,14 @@ export default function NewPurchaseOrderPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [confirmedOrder, setConfirmedOrder] = useState<OrderData | null>(null);
 
-  // Multi-item PO Line Items State
+  // Multi-item PO Line Items State (Loaded directly from PO cart)
   const [poItems, setPoItems] = useState<POLineItem[]>([]);
 
-  // Item Picker selection state
-  const [selectedAddProductId, setSelectedAddProductId] = useState<number | "">("");
-  const [selectedAddQty, setSelectedAddQty] = useState<number>(50);
+  const [profileData, setProfileData] = useState<any>(null);
+  const [myOrders, setMyOrders] = useState<OrderData[]>([]);
 
   // Checkout & Shipping Details
-  const [paymentMethod, setPaymentMethod] = useState<string>("razorpay");
+  const [paymentMethod, setPaymentMethod] = useState<string>("30-Day B2B Credit Line");
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [deliveryCity, setDeliveryCity] = useState("Hyderabad");
   const [deliveryState, setDeliveryState] = useState("Telangana");
@@ -52,18 +51,20 @@ export default function NewPurchaseOrderPage() {
         const stored = getStoredUser();
         setUser(stored);
 
-        // Fetch products and profile in parallel
-        const [prods, profileRes] = await Promise.all([
+        // Fetch products, orders, and profile in parallel
+        const [prods, profileRes, ordersRes] = await Promise.all([
           productsAPI.list().catch(() => []),
           authAPI.getMe().catch(() => null),
+          ordersAPI.getMyOrders().catch(() => []),
         ]);
+
+        if (profileRes) setProfileData(profileRes);
+        if (ordersRes) setMyOrders(ordersRes);
 
         if (prods && prods.length > 0) {
           setProducts(prods);
-          setSelectedAddProductId(prods[0].id);
-          setSelectedAddQty(prods[0].bulk_moq || 50);
 
-          // Check if there are items saved from catalog or initialize with first product
+          // Load items added from Wholesale Catalog
           let initialItems: POLineItem[] = [];
           if (typeof window !== "undefined") {
             const savedCart = localStorage.getItem("pharmalink_distributor_po_cart");
@@ -77,14 +78,6 @@ export default function NewPurchaseOrderPage() {
             }
           }
 
-          if (initialItems.length === 0 && prods.length > 0) {
-            initialItems = [
-              {
-                product: prods[0],
-                quantity: prods[0].bulk_moq || 100,
-              },
-            ];
-          }
           setPoItems(initialItems);
         }
 
@@ -109,11 +102,12 @@ export default function NewPurchaseOrderPage() {
     initData();
   }, []);
 
-  // Save PO items to local storage helper
+  // Save PO items to local storage helper & dispatch event for sidebar sync
   const updatePoItems = (items: POLineItem[]) => {
     setPoItems(items);
     if (typeof window !== "undefined") {
       localStorage.setItem("pharmalink_distributor_po_cart", JSON.stringify(items));
+      window.dispatchEvent(new Event("storage"));
     }
   };
 
@@ -147,21 +141,18 @@ export default function NewPurchaseOrderPage() {
   const gstTax = Math.round(subtotal * 0.12 * 100) / 100; // 12% Pharma GST
   const grandTotal = Math.round((subtotal + gstTax) * 100) / 100;
 
-  // Add Product to PO Cart
-  const handleAddProduct = () => {
-    if (!selectedAddProductId) return;
-    const prod = products.find((p) => p.id === Number(selectedAddProductId));
-    if (!prod) return;
-
-    const existingIndex = poItems.findIndex((it) => it.product.id === prod.id);
-    if (existingIndex >= 0) {
-      const updated = [...poItems];
-      updated[existingIndex].quantity += selectedAddQty;
-      updatePoItems(updated);
-    } else {
-      updatePoItems([...poItems, { product: prod, quantity: selectedAddQty }]);
-    }
-  };
+  // Dynamic B2B Credit Limit Computations
+  const totalCreditLimit = Number(profileData?.distributor_profile?.credit_limit ?? 500000);
+  const outstandingCreditOrders = myOrders.filter((o) => {
+    const isCredit = (o.payment_method || "").toLowerCase().includes("credit");
+    const isUnpaid = (o.payment_status || "").toUpperCase() !== "PAID";
+    const isNotCancelled = (o.order_status || "").toLowerCase() !== "cancelled" && (o.order_status || "").toLowerCase() !== "returned";
+    return isCredit && isUnpaid && isNotCancelled;
+  });
+  const utilizedCreditSoFar = outstandingCreditOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+  const availableCreditLimit = Math.max(0, totalCreditLimit - utilizedCreditSoFar);
+  const remainingCreditAfterOrder = availableCreditLimit - grandTotal;
+  const isCreditExceeded = paymentMethod === "30-Day B2B Credit Line" && remainingCreditAfterOrder < 0;
 
   // Quantity Change Handler
   const handleQuantityChange = (productId: number, newQty: number) => {
@@ -189,7 +180,7 @@ export default function NewPurchaseOrderPage() {
     setErrorMessage(null);
 
     if (poItems.length === 0) {
-      setErrorMessage("Please add at least one formulation product to your Purchase Order.");
+      setErrorMessage("Please add at least one formulation product from the Wholesale Catalog to your Purchase Order.");
       return;
     }
 
@@ -205,6 +196,14 @@ export default function NewPurchaseOrderPage() {
 
     if (!deliveryAddress.trim() || !deliveryCity.trim() || !deliveryPincode.trim()) {
       setErrorMessage("Please enter the complete delivery warehouse address, city, and pincode.");
+      return;
+    }
+
+    // Validate B2B Credit Limit
+    if (paymentMethod === "30-Day B2B Credit Line" && remainingCreditAfterOrder < 0) {
+      setErrorMessage(
+        `PO Value (₹${grandTotal.toLocaleString("en-IN")}) exceeds your Available Credit Balance (₹${availableCreditLimit.toLocaleString("en-IN")}). Please choose Razorpay or Bank Wire Transfer, or contact Admin to increase your limit.`
+      );
       return;
     }
 
@@ -348,20 +347,20 @@ export default function NewPurchaseOrderPage() {
             Create Bulk Purchase Order (PO)
           </h1>
           <p className="text-xs text-slate-500">
-            Add multiple WHO-GMP formulation products with live dynamic price calculation and Razorpay / B2B Credit settlement.
+            Review your selected formulations, adjust bulk order quantities, and submit with live tax calculation and Razorpay / B2B Credit settlement.
           </p>
         </div>
 
         <div className="flex items-center space-x-3">
           <Link
             href="/distributor/catalog"
-            className="text-xs font-bold bg-slate-100 hover:bg-slate-200 text-[#0b2341] px-4 py-2.5 rounded-xl transition-colors"
+            className="text-xs font-bold bg-[#0b2341] hover:bg-[#12315a] text-white px-4 py-2.5 rounded-xl transition-all flex items-center space-x-1.5 shadow-2xs"
           >
-            💊 Browse Catalog
+            <span>💊 Browse Catalog</span>
           </Link>
           <Link
             href="/distributor/orders"
-            className="text-xs font-bold text-[#0b2341] hover:text-blue-700 transition-colors flex items-center space-x-1"
+            className="text-xs font-bold text-slate-600 hover:text-blue-700 transition-colors flex items-center space-x-1 px-3 py-2 rounded-xl hover:bg-slate-50"
           >
             <span>&larr; PO History</span>
           </Link>
@@ -417,107 +416,68 @@ export default function NewPurchaseOrderPage() {
             >
               View PO in Order History &rarr;
             </Link>
-            <button
+            <Link
+              href="/distributor/catalog"
               onClick={() => {
                 setConfirmedOrder(null);
-                if (products.length > 0) {
-                  updatePoItems([{ product: products[0], quantity: products[0].bulk_moq || 50 }]);
-                }
+                updatePoItems([]);
               }}
               className="bg-slate-100 hover:bg-slate-200 text-slate-800 px-6 py-3 rounded-xl font-bold text-xs transition-all cursor-pointer"
             >
-              + Create Another PO
-            </button>
+              + Create Another PO from Catalog
+            </Link>
           </div>
         </div>
       ) : (
-        /* Main Two-Column Layout: Left (Products & PO Builder) + Right (Sticky Live Calculation Summary Sidebar) */
+        /* Main Two-Column Layout: Left (Line Items Table, Shipping & Payment) + Right (Sticky Live Calculation Summary Sidebar) */
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-          {/* Left 2 Columns: Add Formulations, Line Items Table, Shipping & Payment */}
+          {/* Left 2 Columns: Line Items Table, Shipping & Payment */}
           <div className="lg:col-span-2 space-y-6">
-            {/* 1. Quick Add Product to PO Bar */}
-            <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-2xs space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 className="text-sm font-black text-[#0b2341] flex items-center space-x-2">
-                  <span>➕ 1. Add Formulations to PO</span>
-                </h3>
-                <span className="text-[11px] text-slate-400 font-bold">
-                  {products.length} Products in Catalog
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
-                <div className="sm:col-span-7">
-                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Select Formulation Product</label>
-                  <select
-                    value={selectedAddProductId}
-                    onChange={(e) => {
-                      const id = Number(e.target.value);
-                      setSelectedAddProductId(id);
-                      const p = products.find((x) => x.id === id);
-                      if (p && p.bulk_moq) setSelectedAddQty(p.bulk_moq);
-                    }}
-                    className="w-full border border-slate-200 rounded-xl p-2.5 text-xs bg-slate-50 font-bold text-[#0b2341] focus:bg-white focus:outline-none focus:border-blue-600"
-                  >
-                    {products.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name} ({p.composition}) — Stock: {p.stock}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="sm:col-span-3">
-                  <label className="block text-[11px] font-bold text-slate-600 mb-1">Quantity (Units)</label>
-                  <input
-                    type="number"
-                    min={1}
-                    step={10}
-                    value={selectedAddQty}
-                    onChange={(e) => setSelectedAddQty(Math.max(1, Number(e.target.value)))}
-                    className="w-full border border-slate-200 rounded-xl p-2.5 text-xs bg-slate-50 font-mono font-bold focus:bg-white focus:outline-none focus:border-blue-600"
-                  />
-                </div>
-
-                <div className="sm:col-span-2">
-                  <button
-                    type="button"
-                    onClick={handleAddProduct}
-                    className="w-full bg-[#0b2341] hover:bg-[#12315a] text-white p-2.5 rounded-xl text-xs font-black shadow-2xs transition-all cursor-pointer flex items-center justify-center space-x-1"
-                  >
-                    <span>+ Add</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* 2. PO Line Items Table */}
-            <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-2xs space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            {/* 1. PO Line Items Table */}
+            <div className="bg-white border border-slate-200/90 rounded-3xl p-6 md:p-7 shadow-2xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
                 <div>
-                  <h3 className="text-sm font-black text-[#0b2341]">
-                    2. PO Line Items ({poItems.length} Formulation{poItems.length === 1 ? "" : "s"})
+                  <h3 className="text-base font-extrabold text-[#0b2341] tracking-tight">
+                    1. PO Line Items ({poItems.length} Formulation{poItems.length === 1 ? "" : "s"})
                   </h3>
-                  <p className="text-[11px] text-slate-500">
-                    Edit quantities to instantly calculate bulk tiered rates and live tax totals.
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Items selected from Wholesale Catalog. Edit order quantities below to unlock bulk MOQ pricing.
                   </p>
                 </div>
-                {poItems.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={handleClearAll}
-                    className="text-[11px] font-bold text-rose-600 hover:text-rose-800 cursor-pointer"
+                <div className="flex items-center space-x-3">
+                  <Link
+                    href="/distributor/catalog"
+                    className="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-extrabold px-3.5 py-1.5 rounded-xl transition-all flex items-center space-x-1.5"
                   >
-                    Clear All
-                  </button>
-                )}
+                    <span>+ Add More from Catalog</span>
+                  </Link>
+                  {poItems.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleClearAll}
+                      className="text-xs font-bold text-rose-600 hover:text-rose-800 cursor-pointer"
+                    >
+                      Clear All
+                    </button>
+                  )}
+                </div>
               </div>
 
               {poItems.length === 0 ? (
-                <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-2xl space-y-2">
-                  <span className="text-3xl">📦</span>
-                  <p className="text-xs font-bold text-slate-600">Your Purchase Order is currently empty.</p>
-                  <p className="text-[11px] text-slate-400">Select a medicine above or browse catalog to add products.</p>
+                <div className="p-10 text-center border-2 border-dashed border-slate-200 rounded-2xl space-y-3">
+                  <span className="text-4xl block">📦</span>
+                  <h4 className="text-sm font-bold text-slate-700">Your Purchase Order is empty</h4>
+                  <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                    Explore our wholesale catalog to choose formulations, inspect batch COAs, and add items to this PO.
+                  </p>
+                  <div className="pt-2">
+                    <Link
+                      href="/distributor/catalog"
+                      className="inline-block bg-[#0b2341] hover:bg-[#12315a] text-white text-xs font-extrabold px-5 py-2.5 rounded-xl transition-all shadow-2xs"
+                    >
+                      Browse Wholesale Catalog &rarr;
+                    </Link>
+                  </div>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -611,20 +571,19 @@ export default function NewPurchaseOrderPage() {
               )}
             </div>
 
-            {/* 3. Payment Method Selection Card */}
+            {/* 2. Payment Method Selection Card */}
             <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-2xs space-y-4">
               <h3 className="text-sm font-black text-[#0b2341] border-b border-slate-100 pb-2">
-                3. Payment Method & Settlement Terms
+                2. Payment Method & Settlement Terms
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 {/* Razorpay Online Option */}
                 <label
-                  className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex flex-col justify-between ${
-                    paymentMethod === "razorpay"
-                      ? "border-[#0b2341] bg-blue-50/40 shadow-xs"
-                      : "border-slate-200 hover:border-slate-300 bg-white"
-                  }`}
+                  className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex flex-col justify-between ${paymentMethod === "razorpay"
+                    ? "border-[#0b2341] bg-blue-50/40 shadow-xs"
+                    : "border-slate-200 hover:border-slate-300 bg-white"
+                    }`}
                 >
                   <div className="flex items-start space-x-3">
                     <input
@@ -649,11 +608,10 @@ export default function NewPurchaseOrderPage() {
 
                 {/* 30-Day B2B Credit Line Option */}
                 <label
-                  className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex flex-col justify-between ${
-                    paymentMethod === "30-Day B2B Credit Line"
-                      ? "border-[#0b2341] bg-blue-50/40 shadow-xs"
-                      : "border-slate-200 hover:border-slate-300 bg-white"
-                  }`}
+                  className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex flex-col justify-between ${paymentMethod === "30-Day B2B Credit Line"
+                    ? "border-[#0b2341] bg-blue-50/40 shadow-xs"
+                    : "border-slate-200 hover:border-slate-300 bg-white"
+                    }`}
                 >
                   <div className="flex items-start space-x-3">
                     <input
@@ -678,11 +636,10 @@ export default function NewPurchaseOrderPage() {
 
                 {/* Bank Wire Option */}
                 <label
-                  className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex flex-col justify-between ${
-                    paymentMethod === "Advance Bank Wire Transfer"
-                      ? "border-[#0b2341] bg-blue-50/40 shadow-xs"
-                      : "border-slate-200 hover:border-slate-300 bg-white"
-                  }`}
+                  className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex flex-col justify-between ${paymentMethod === "Advance Bank Wire Transfer"
+                    ? "border-[#0b2341] bg-blue-50/40 shadow-xs"
+                    : "border-slate-200 hover:border-slate-300 bg-white"
+                    }`}
                 >
                   <div className="flex items-start space-x-3">
                     <input
@@ -704,11 +661,10 @@ export default function NewPurchaseOrderPage() {
 
                 {/* Letter of Credit */}
                 <label
-                  className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex flex-col justify-between ${
-                    paymentMethod === "Irrevocable Bank Letter of Credit (LC)"
-                      ? "border-[#0b2341] bg-blue-50/40 shadow-xs"
-                      : "border-slate-200 hover:border-slate-300 bg-white"
-                  }`}
+                  className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex flex-col justify-between ${paymentMethod === "Irrevocable Bank Letter of Credit (LC)"
+                    ? "border-[#0b2341] bg-blue-50/40 shadow-xs"
+                    : "border-slate-200 hover:border-slate-300 bg-white"
+                    }`}
                 >
                   <div className="flex items-start space-x-3">
                     <input
@@ -728,12 +684,69 @@ export default function NewPurchaseOrderPage() {
                   </div>
                 </label>
               </div>
+
+              {/* B2B Credit Line Dynamic Balance Inspection Box */}
+              {paymentMethod === "30-Day B2B Credit Line" && (
+                <div className={`p-4 rounded-2xl border transition-all space-y-3 ${isCreditExceeded
+                  ? "bg-rose-50/90 border-rose-300 text-rose-950"
+                  : "bg-emerald-50/70 border-emerald-200 text-emerald-950"
+                  }`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2 font-black text-xs">
+                      <span>💳 B2B Credit Line Breakdown</span>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-extrabold border ${isCreditExceeded
+                        ? "bg-rose-200 text-rose-900 border-rose-300"
+                        : "bg-emerald-200 text-emerald-900 border-emerald-300"
+                        }`}>
+                        {isCreditExceeded ? "Limit Exceeded" : "Credit Available"}
+                      </span>
+                    </div>
+                    <span className="font-mono text-[11px] font-bold text-slate-600">
+                      Allocated Limit: ₹{totalCreditLimit.toLocaleString('en-IN')}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                    <div className="p-2.5 bg-white rounded-xl border border-slate-200/80 shadow-2xs">
+                      <span className="text-[10px] font-bold text-slate-400 block uppercase">Current Available Credit</span>
+                      <span className="text-sm font-black text-emerald-700 font-mono">
+                        ₹{availableCreditLimit.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                      </span>
+                    </div>
+
+                    <div className="p-2.5 bg-white rounded-xl border border-slate-200/80 shadow-2xs">
+                      <span className="text-[10px] font-bold text-slate-400 block uppercase">This PO Value (Deducted)</span>
+                      <span className="text-sm font-black text-blue-700 font-mono">
+                        - ₹{grandTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                      </span>
+                    </div>
+
+                    <div className={`p-2.5 rounded-xl border shadow-2xs ${isCreditExceeded ? "bg-rose-100/80 border-rose-300" : "bg-white border-slate-200/80"
+                      }`}>
+                      <span className="text-[10px] font-bold text-slate-500 block uppercase">Balance After Order</span>
+                      <span className={`text-sm font-black font-mono ${isCreditExceeded ? "text-rose-700" : "text-[#0b2341]"
+                        }`}>
+                        ₹{remainingCreditAfterOrder.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                      </span>
+                    </div>
+                  </div>
+
+                  {isCreditExceeded && (
+                    <div className="p-2.5 bg-rose-100/90 rounded-xl border border-rose-300 text-[11px] font-bold text-rose-900 flex items-center space-x-2">
+                      <span>⚠️</span>
+                      <span>
+                        Order exceeds your available credit line by ₹{Math.abs(remainingCreditAfterOrder).toLocaleString('en-IN')}. Please choose <strong>Razorpay Online</strong> or <strong>Bank Wire Transfer</strong> to place this order.
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
-            {/* 4. Delivery & Destination Warehouse Details */}
+            {/* 3. Delivery & Destination Warehouse Details */}
             <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-2xs space-y-4 text-xs">
               <h3 className="text-sm font-black text-[#0b2341] border-b border-slate-100 pb-2">
-                4. Destination Warehouse & Logistics
+                3. Destination Warehouse & Logistics
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -892,14 +905,19 @@ export default function NewPurchaseOrderPage() {
               <button
                 type="button"
                 onClick={handleSubmitOrder}
-                disabled={poItems.length === 0 || submitting || razorpayLoading}
-                className="w-full bg-emerald-500 hover:bg-emerald-400 text-[#0b2341] py-4 rounded-2xl font-black text-xs shadow-lg transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                disabled={poItems.length === 0 || submitting || razorpayLoading || isCreditExceeded}
+                className={`w-full py-4 rounded-2xl font-black text-xs shadow-lg transition-all flex items-center justify-center space-x-2 ${isCreditExceeded
+                  ? "bg-rose-500 text-white opacity-80 cursor-not-allowed"
+                  : "bg-emerald-500 hover:bg-emerald-400 text-[#0b2341] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  }`}
               >
                 {submitting || razorpayLoading ? (
                   <>
                     <div className="animate-spin w-4 h-4 border-2 border-[#0b2341] border-t-transparent rounded-full" />
                     <span>{razorpayLoading ? "Launching Razorpay..." : "Processing PO..."}</span>
                   </>
+                ) : isCreditExceeded ? (
+                  <span>⚠️ Credit Limit Exceeded — Switch to Online/Wire</span>
                 ) : (
                   <span>
                     {paymentMethod === "razorpay"
