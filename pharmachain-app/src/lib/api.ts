@@ -2,10 +2,8 @@
 export const getApiBaseUrl = (): string => {
   if (typeof window !== "undefined" && window.location && window.location.hostname) {
     const host = window.location.hostname;
-    // If accessing via IP (like 192.168.x.x) or localhost, dynamically point to that host on port 8000
-    if (host !== "localhost" && host !== "127.0.0.1") {
-      return `http://${host}:8000/api/v1`;
-    }
+    // Dynamically point to port 8000 matching the current browser hostname (localhost, 127.0.0.1, or LAN IP)
+    return `http://${host}:8000/api/v1`;
   }
   return process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
 };
