@@ -168,12 +168,12 @@ export default function AdminPricingPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" suppressHydrationWarning>
       {/* Header Banner */}
-      <div className="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-2xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="bg-white p-6 rounded-[6px] border border-slate-200/90 shadow-2xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4" suppressHydrationWarning>
         <div>
           <div className="flex items-center space-x-2">
-            <span className="text-[11px] font-extrabold text-[#0b2341] uppercase tracking-wider bg-blue-100/60 px-3 py-1 rounded-full border border-blue-200">
+            <span className="text-[11px] font-extrabold text-[#0b2341] uppercase tracking-wider bg-[#F8EAF4] px-3 py-1 rounded-full border border-[#F3D0E9]">
               Multi-Tier Role Pricing Rules & Bulk Configurator
             </span>
             <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 font-bold">
@@ -191,7 +191,8 @@ export default function AdminPricingPage() {
         <button
           onClick={loadProducts}
           disabled={loading}
-          className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer shrink-0 disabled:opacity-50"
+          className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-[5px] text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer shrink-0 disabled:opacity-50"
+          suppressHydrationWarning
         >
           <svg className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -203,7 +204,7 @@ export default function AdminPricingPage() {
       {/* Status Alert */}
       {statusMsg && (
         <div
-          className={`p-4 rounded-2xl text-xs font-bold border flex items-center justify-between transition-all ${statusMsg.type === "success"
+          className={`p-4 rounded-[5px] text-xs font-bold border flex items-center justify-between transition-all ${statusMsg.type === "success"
             ? "bg-emerald-50 text-emerald-800 border-emerald-200"
             : "bg-rose-50 text-rose-800 border-rose-200"
             }`}
@@ -215,6 +216,7 @@ export default function AdminPricingPage() {
           <button
             onClick={() => setStatusMsg(null)}
             className="text-slate-400 hover:text-slate-700 font-bold ml-3 cursor-pointer"
+            suppressHydrationWarning
           >
             ✕
           </button>
@@ -222,16 +224,17 @@ export default function AdminPricingPage() {
       )}
 
       {/* Search & Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs text-xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-[5px] border border-slate-200/90 shadow-2xs text-xs" suppressHydrationWarning>
         <input
           type="text"
           placeholder="Search by SKU, formulation name, composition, or category..."
           value={searchTerm}
           onChange={(e) => handleSearchChange(e.target.value)}
-          className="border border-slate-200 rounded-xl px-4 py-2 bg-slate-50 font-medium w-full sm:w-96 focus:bg-white focus:outline-none"
+          className="border border-slate-200 rounded-[5px] px-4 py-2 bg-slate-50 font-medium w-full sm:w-96 focus:bg-white focus:outline-none"
+          suppressHydrationWarning
         />
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3" suppressHydrationWarning>
           <div className="flex items-center space-x-1.5 text-slate-500 font-medium">
             <span className="text-[11px]">Per page:</span>
             <select
@@ -240,7 +243,8 @@ export default function AdminPricingPage() {
                 setPageSize(Number(e.target.value));
                 setCurrentPage(1);
               }}
-              className="border border-slate-200 rounded-lg px-2 py-1.5 bg-slate-50 font-bold text-[#0b2341]"
+              className="border border-slate-200 rounded-[4px] px-2 py-1.5 bg-slate-50 font-bold text-[#0b2341]"
+              suppressHydrationWarning
             >
               <option value={5}>5</option>
               <option value={8}>8</option>
@@ -253,12 +257,12 @@ export default function AdminPricingPage() {
 
       {/* Pricing Table */}
       {loading ? (
-        <div className="text-center py-16 bg-white rounded-3xl border border-slate-200">
-          <div className="animate-spin w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full mx-auto mb-3"></div>
+        <div className="text-center py-16 bg-white rounded-[6px] border border-slate-200">
+          <div className="animate-spin w-8 h-8 border-3 border-[#A71380] border-t-transparent rounded-full mx-auto mb-3"></div>
           <p className="text-xs font-bold text-slate-500">Loading live product pricing catalog from database...</p>
         </div>
       ) : (
-        <div className="bg-white border border-slate-200/90 rounded-3xl overflow-hidden shadow-2xs">
+        <div className="bg-white border border-slate-200/90 rounded-[6px] overflow-hidden shadow-2xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
@@ -297,7 +301,7 @@ export default function AdminPricingPage() {
 
                     return (
                       <tr key={p.id || p.sku} className="hover:bg-slate-50/70 transition-colors">
-                        <td className="py-3.5 px-4 font-mono font-bold text-blue-700 whitespace-nowrap">
+                        <td className="py-3.5 px-4 font-mono font-bold text-[#A71380] whitespace-nowrap">
                           {p.sku}
                         </td>
                         <td className="py-3.5 px-4">
@@ -327,11 +331,11 @@ export default function AdminPricingPage() {
                           )}
                         </td>
                         <td className="py-3.5 px-4 whitespace-nowrap">
-                          <div className="text-blue-700 font-black font-mono text-sm">
+                          <div className="text-[#A71380] font-black font-mono text-sm">
                             ₹{distPrice.toFixed(2)}
                           </div>
                           {distDiscount > 0 && (
-                            <span className="text-[9px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.2 rounded border border-blue-200 inline-block mt-0.5">
+                            <span className="text-[9px] font-bold text-[#A71380] bg-[#F8EAF4] px-1.5 py-0.2 rounded border border-[#F3D0E9] inline-block mt-0.5">
                               {distDiscount}% Wholesale
                             </span>
                           )}
@@ -347,7 +351,7 @@ export default function AdminPricingPage() {
                         <td className="py-3.5 px-4 text-right whitespace-nowrap">
                           <button
                             onClick={() => handleOpenConfigure(p)}
-                            className="bg-[#0b2341] hover:bg-[#12315a] text-white px-3.5 py-2 rounded-xl font-bold text-[11px] shadow-2xs transition-all cursor-pointer inline-flex items-center space-x-1.5"
+                            className="bg-[#A71380] hover:bg-[#8E0F6D] text-white px-3.5 py-2 rounded-[5px] font-extrabold text-[11px] shadow-sm shadow-[#A71380]/20 transition-all cursor-pointer inline-flex items-center space-x-1.5"
                           >
                             <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
@@ -382,7 +386,7 @@ export default function AdminPricingPage() {
                 <button
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage(1)}
-                  className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px]"
+                  className="px-2.5 py-1.5 rounded-[4px] border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px]"
                   title="First Page"
                 >
                   «
@@ -390,7 +394,7 @@ export default function AdminPricingPage() {
                 <button
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px]"
+                  className="px-3 py-1.5 rounded-[4px] border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px]"
                 >
                   ‹ Prev
                 </button>
@@ -405,8 +409,8 @@ export default function AdminPricingPage() {
                       <button
                         key={pageNum}
                         onClick={() => setCurrentPage(pageNum)}
-                        className={`px-3 py-1.5 rounded-lg font-bold text-[11px] transition-all cursor-pointer ${currentPage === pageNum
-                          ? "bg-[#0b2341] text-white shadow-2xs"
+                        className={`px-3 py-1.5 rounded-[4px] font-bold text-[11px] transition-all cursor-pointer ${currentPage === pageNum
+                          ? "bg-[#A71380] text-white shadow-xs"
                           : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
                           }`}
                       >
@@ -423,14 +427,14 @@ export default function AdminPricingPage() {
                 <button
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                  className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px]"
+                  className="px-3 py-1.5 rounded-[4px] border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px]"
                 >
                   Next ›
                 </button>
                 <button
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage(totalPages)}
-                  className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px]"
+                  className="px-2.5 py-1.5 rounded-[4px] border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px]"
                   title="Last Page"
                 >
                   »
@@ -444,10 +448,10 @@ export default function AdminPricingPage() {
       {/* Configure Pricing Modal */}
       {isModalOpen && selectedProduct && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-slate-200 space-y-6 p-8 relative">
+          <div className="bg-white rounded-[6px] max-w-md w-full shadow-2xl border border-slate-200 space-y-6 p-8 relative">
             <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <div>
-                <span className="text-[10px] font-extrabold text-blue-800 uppercase bg-blue-50 px-2 py-0.5 rounded">
+                <span className="text-[10px] font-extrabold text-[#A71380] uppercase bg-[#F8EAF4] px-2 py-0.5 rounded">
                   Configure Multi-Tier Pricing (Database)
                 </span>
                 <h2 className="text-lg font-black text-[#0b2341] mt-1">
@@ -473,7 +477,7 @@ export default function AdminPricingPage() {
                     required
                     value={mrp}
                     onChange={(e) => setMrp(Number(e.target.value))}
-                    className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 font-bold font-mono text-sm focus:bg-white focus:border-blue-500 focus:outline-none"
+                    className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 font-bold font-mono text-sm focus:bg-white focus:border-[#A71380] focus:outline-none"
                   />
                 </div>
 
@@ -487,7 +491,7 @@ export default function AdminPricingPage() {
                     required
                     value={customerPrice}
                     onChange={(e) => setCustomerPrice(Number(e.target.value))}
-                    className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 font-bold font-mono text-sm focus:bg-white focus:border-blue-500 focus:outline-none"
+                    className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 font-bold font-mono text-sm focus:bg-white focus:border-[#A71380] focus:outline-none"
                   />
                 </div>
               </div>
@@ -503,7 +507,7 @@ export default function AdminPricingPage() {
                     required
                     value={distributorPrice}
                     onChange={(e) => setDistributorPrice(Number(e.target.value))}
-                    className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 font-bold font-mono text-sm text-blue-900 focus:bg-white focus:border-blue-500 focus:outline-none"
+                    className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 font-bold font-mono text-sm text-[#A71380] focus:bg-white focus:border-[#A71380] focus:outline-none"
                   />
                 </div>
 
@@ -517,7 +521,7 @@ export default function AdminPricingPage() {
                     required
                     value={bulkPrice}
                     onChange={(e) => setBulkPrice(Number(e.target.value))}
-                    className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 font-bold font-mono text-sm text-emerald-900 focus:bg-white focus:border-blue-500 focus:outline-none"
+                    className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 font-bold font-mono text-sm text-emerald-900 focus:bg-white focus:border-[#A71380] focus:outline-none"
                   />
                 </div>
               </div>
@@ -533,14 +537,14 @@ export default function AdminPricingPage() {
                   required
                   value={bulkMoq}
                   onChange={(e) => setBulkMoq(Number(e.target.value))}
-                  className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 font-bold font-mono text-sm focus:bg-white focus:border-blue-500 focus:outline-none"
+                  className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 font-bold font-mono text-sm focus:bg-white focus:border-[#A71380] focus:outline-none"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={saving}
-                className="w-full bg-[#0b2341] hover:bg-[#12315a] text-white py-3.5 rounded-xl font-bold text-xs shadow-xs transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center space-x-2"
+                className="w-full bg-[#A71380] hover:bg-[#8E0F6D] text-white py-3.5 rounded-[5px] font-extrabold text-xs shadow-md shadow-[#A71380]/20 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center space-x-2"
               >
                 {saving && <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />}
                 <span>{saving ? "Saving to Database..." : "Save Pricing Matrix in Database"}</span>

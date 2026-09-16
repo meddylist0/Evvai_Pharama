@@ -171,7 +171,7 @@ const jsonLdOrganization = {
   ],
 };
 
-import { ClientProvider } from "@/components/ClientProvider";
+import { ClientProvider } from "@/components/shared/ClientProvider";
 
 export default function RootLayout({
   children,
@@ -179,14 +179,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" data-scroll-behavior="smooth" className={`${plusJakarta.variable} antialiased scroll-smooth`} suppressHydrationWarning>
-      <head>
+    <html lang="en" className={`${plusJakarta.variable} antialiased scroll-smooth`} suppressHydrationWarning>
+      <body className="min-h-screen bg-slate-50 text-slate-900 font-sans" suppressHydrationWarning>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdOrganization) }}
         />
-      </head>
-      <body className="min-h-screen bg-slate-50 text-slate-900 font-sans" suppressHydrationWarning>
         <ClientProvider>
           {children}
         </ClientProvider>

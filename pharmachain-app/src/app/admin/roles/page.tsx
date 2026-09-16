@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { usersAPI } from "@/lib/api";
 
 export interface SystemRoleDefinition {
-  id: "ADMIN" | "DISTRIBUTOR" | "CUSTOMER";
+  id: "ADMIN" | "DISTRIBUTOR" | "RETAILER" | "CUSTOMER";
   name: string;
   icon: string;
   portal_url: string;
@@ -37,17 +37,17 @@ export const SYSTEM_MODULES: PermissionModule[] = [
   },
   {
     id: "kyc",
-    name: "B2B Distributor KYC Verification",
+    name: "B2B Distributor & Retailer KYC Verification",
     icon: "📑",
     category: "Compliance",
-    description: "Review submitted GSTIN and Drug Licenses, approve or reject wholesale trade onboarding.",
+    description: "Review submitted GSTIN and Drug Licenses (Form 20/21, Form 20B/21B), approve or reject trade onboarding.",
   },
   {
     id: "pricing",
     name: "Dynamic Pricing & Discount Rules",
     icon: "🏷️",
     category: "Commercial",
-    description: "Configure role multipliers, retail margins, wholesale trade prices, and 50+ bulk MOQ tier discounts.",
+    description: "Configure role multipliers, PTR trade margins, PTS wholesale rates, and 10+1 free promotional schemes.",
   },
   {
     id: "inventory",
@@ -75,11 +75,11 @@ export const SYSTEM_MODULES: PermissionModule[] = [
     name: "Staff & User Access Management",
     icon: "👥",
     category: "Security",
-    description: "Create staff personnel, toggle account activation, and assign permission scope tickmarks.",
+    description: "Create staff personnel, toggle account activation, and manage role access permissions.",
   },
 ];
 
-// Exactly 3 Database Core Roles (matching PostgreSQL UserRole enum)
+// 4 Pharma Supply Chain Roles
 const DATABASE_ROLES: SystemRoleDefinition[] = [
   {
     id: "ADMIN",
@@ -90,28 +90,37 @@ const DATABASE_ROLES: SystemRoleDefinition[] = [
     assigned_modules: ["products", "orders", "kyc", "pricing", "inventory", "reports", "audit", "users"],
   },
   {
+    id: "RETAILER",
+    name: "Pharmacy & Chemist Retailer",
+    icon: "🏪",
+    portal_url: "/retailer/dashboard",
+    description: "Licensed retail chemist (Form 20/21) purchasing at Price-To-Retailer (PTR) trade discounts, 10+1 schemes & Net-30 trade credit.",
+    assigned_modules: ["products", "orders"],
+  },
+  {
     id: "DISTRIBUTOR",
     name: "B2B Wholesale Distributor",
-    icon: "🏢",
+    icon: "🏬",
     portal_url: "/distributor/dashboard",
-    description: "Verified B2B wholesale pharmaceutical stockist with bulk MOQ pricing tiers, 30-Day Credit Line & GST Tax Invoices.",
+    description: "Verified B2B wholesale pharmaceutical stockist (Form 20B/21B) with bulk MOQ master shipper cartons & GST tax invoicing.",
     assigned_modules: ["products", "orders"],
   },
   {
     id: "CUSTOMER",
-    name: "Retail Customer / Chemist",
+    name: "Retail Patient / Consumer",
     icon: "👤",
     portal_url: "/customer/dashboard",
-    description: "Direct retail consumer & pharmacy buyer purchasing therapeutic products at standard MRP with online Razorpay payment.",
+    description: "Direct retail consumer purchasing therapeutic products at standard MRP with prescription uploads.",
     assigned_modules: ["products", "orders"],
   },
 ];
 
 export default function AdminRolesMatrixPage() {
   const [roles, setRoles] = useState<SystemRoleDefinition[]>(DATABASE_ROLES);
-  const [userCounts, setUserCounts] = useState<{ ADMIN: number; DISTRIBUTOR: number; CUSTOMER: number }>({
+  const [userCounts, setUserCounts] = useState<{ ADMIN: number; DISTRIBUTOR: number; RETAILER: number; CUSTOMER: number }>({
     ADMIN: 0,
     DISTRIBUTOR: 0,
+    RETAILER: 0,
     CUSTOMER: 0,
   });
   const [loading, setLoading] = useState(true);
@@ -129,7 +138,7 @@ export default function AdminRolesMatrixPage() {
     email: "",
     password: "",
     phone: "",
-    role: "ADMIN" as "ADMIN" | "DISTRIBUTOR" | "CUSTOMER",
+    role: "ADMIN" as "ADMIN" | "DISTRIBUTOR" | "RETAILER" | "CUSTOMER",
     selectedModules: ["products", "orders", "kyc", "pricing", "inventory", "reports", "audit", "users"] as string[],
   });
 
@@ -138,7 +147,7 @@ export default function AdminRolesMatrixPage() {
     assigned_modules: [] as string[],
   });
 
-  // Fetch real database user counts for the 3 roles
+  // Fetch real database user counts for all roles
   const loadDatabaseCounts = async () => {
     try {
       setLoading(true);
@@ -146,6 +155,7 @@ export default function AdminRolesMatrixPage() {
       const counts = {
         ADMIN: allUsers.filter((u: any) => u.role === "ADMIN").length,
         DISTRIBUTOR: allUsers.filter((u: any) => u.role === "DISTRIBUTOR").length,
+        RETAILER: allUsers.filter((u: any) => u.role === "RETAILER").length,
         CUSTOMER: allUsers.filter((u: any) => u.role === "CUSTOMER").length,
       };
       setUserCounts(counts);
@@ -156,10 +166,10 @@ export default function AdminRolesMatrixPage() {
         if (stored) {
           try {
             const parsed = JSON.parse(stored);
-            if (Array.isArray(parsed) && parsed.length === 3) {
+            if (Array.isArray(parsed) && parsed.length >= 3) {
               setRoles(parsed);
             }
-          } catch (e) {}
+          } catch (e) { }
         }
       }
     } catch (err: any) {
@@ -207,9 +217,9 @@ export default function AdminRolesMatrixPage() {
     const updated = roles.map((r) =>
       r.id === selectedRole.id
         ? {
-            ...r,
-            assigned_modules: roleFormData.assigned_modules,
-          }
+          ...r,
+          assigned_modules: roleFormData.assigned_modules,
+        }
         : r
     );
 
@@ -222,7 +232,7 @@ export default function AdminRolesMatrixPage() {
   };
 
   // Open Add User with Role Modal
-  const handleOpenAddUserModal = (defaultRole: "ADMIN" | "DISTRIBUTOR" | "CUSTOMER" = "ADMIN") => {
+  const handleOpenAddUserModal = (defaultRole: "ADMIN" | "DISTRIBUTOR" | "RETAILER" | "CUSTOMER" = "ADMIN") => {
     const roleDef = roles.find((r) => r.id === defaultRole) || roles[0];
     setUserFormData({
       full_name: "",
@@ -235,7 +245,7 @@ export default function AdminRolesMatrixPage() {
     setIsAddUserModalOpen(true);
   };
 
-  const handleRoleSelectionChange = (newRole: "ADMIN" | "DISTRIBUTOR" | "CUSTOMER") => {
+  const handleRoleSelectionChange = (newRole: "ADMIN" | "DISTRIBUTOR" | "RETAILER" | "CUSTOMER") => {
     const roleDef = roles.find((r) => r.id === newRole);
     setUserFormData((prev) => ({
       ...prev,
@@ -278,7 +288,7 @@ export default function AdminRolesMatrixPage() {
       setIsAddUserModalOpen(false);
       setStatusMsg({
         type: "success",
-        text: `✓ User '${userFormData.full_name}' successfully created in database under '${userFormData.role}' role!`,
+        text: `✓ User '${userFormData.full_name}' created successfully with role ${userFormData.role}!`,
       });
     } catch (err: any) {
       setStatusMsg({ type: "error", text: err.message || "Failed to create user account." });
@@ -290,50 +300,46 @@ export default function AdminRolesMatrixPage() {
   return (
     <div className="space-y-6">
       {/* 1. Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/90 shadow-2xs">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-xl border border-slate-200/90 shadow-2xs">
         <div>
           <div className="flex items-center space-x-2">
-            <span className="text-[11px] font-extrabold text-[#0b2341] uppercase tracking-wider bg-blue-100/60 px-3 py-1 rounded-full border border-blue-200">
-              Database Core RBAC
+            <span className="text-[10px] font-extrabold text-[#0b2341] uppercase tracking-wider bg-[#F8EAF4] px-2.5 py-0.5 rounded-md border border-[#F3D0E9]">
+              User Roles &amp; Permissions
             </span>
-            <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-              PostgreSQL Schema Synced (3 Roles)
+            <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 font-bold">
+              ● 4 Store User Roles Active
             </span>
           </div>
-          <h1 className="text-2xl font-black text-[#0b2341] tracking-tight mt-2">
-            Platform Roles & Accessible Permissions
+          <h1 className="text-xl font-black text-[#0b2341] tracking-tight mt-1.5">
+            User Roles &amp; Access Permissions
           </h1>
-          <p className="text-xs text-slate-500">
-            PharmaLink database has 3 core roles: Super Admin, B2B Distributor, and Retail Customer. Configure module authorizations for each role below.
-          </p>
         </div>
 
         <button
           onClick={() => handleOpenAddUserModal("ADMIN")}
-          className="bg-[#0b2341] hover:bg-[#12315a] text-white px-5 py-3 rounded-2xl font-extrabold text-xs flex items-center space-x-2 shadow-xs transition-all cursor-pointer shrink-0"
+          className="bg-[#A71380] hover:bg-[#8E0F6D] text-white px-4 py-2.5 rounded-lg font-extrabold text-xs flex items-center space-x-2 shadow-xs transition-all cursor-pointer shrink-0"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
           </svg>
-          <span>+ Add User with Role</span>
+          <span>Add User with Role</span>
         </button>
       </div>
 
       {/* Status Alerts */}
       {statusMsg && (
         <div
-          className={`p-4 rounded-2xl text-xs font-bold border ${
-            statusMsg.type === "success"
-              ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-              : "bg-rose-50 text-rose-800 border-rose-200"
-          }`}
+          className={`p-4 rounded-[5px] text-xs font-bold border ${statusMsg.type === "success"
+            ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+            : "bg-rose-50 text-rose-800 border-rose-200"
+            }`}
         >
           {statusMsg.text}
         </div>
       )}
 
-      {/* 2. THE 3 DATABASE ROLES CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      {/* 2. THE 4 DATABASE ROLES CARDS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {roles.map((role) => {
           const isSuperAdmin = role.id === "ADMIN";
           const isDistributor = role.id === "DISTRIBUTOR";
@@ -342,18 +348,18 @@ export default function AdminRolesMatrixPage() {
           const borderColor = isSuperAdmin
             ? "border-purple-200 hover:border-purple-400"
             : isDistributor
-            ? "border-emerald-200 hover:border-emerald-400"
-            : "border-blue-200 hover:border-blue-400";
+              ? "border-emerald-200 hover:border-emerald-400"
+              : "border-[#F3D0E9] hover:border-blue-400";
           const badgeBg = isSuperAdmin
             ? "bg-purple-50 text-purple-800 border-purple-200"
             : isDistributor
-            ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-            : "bg-blue-50 text-blue-800 border-blue-200";
+              ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+              : "bg-[#F8EAF4] text-[#A71380] border-[#F3D0E9]";
 
           return (
             <div
               key={role.id}
-              className={`bg-white border-2 ${borderColor} rounded-3xl p-6 shadow-2xs space-y-4 transition-all flex flex-col justify-between`}
+              className={`bg-white border-2 ${borderColor} rounded-[6px] p-6 shadow-2xs space-y-4 transition-all flex flex-col justify-between`}
             >
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
@@ -370,13 +376,12 @@ export default function AdminRolesMatrixPage() {
 
                 <div>
                   <h3 className="font-black text-lg text-[#0b2341]">{role.name}</h3>
-                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">{role.description}</p>
                 </div>
 
-                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100 space-y-1.5 text-xs">
+                <div className="bg-slate-50 p-3 rounded-[5px] border border-slate-100 space-y-1.5 text-xs">
                   <div className="flex items-center justify-between">
                     <span className="text-slate-500 font-bold text-[11px]">Portal Gateway:</span>
-                    <code className="text-blue-700 font-mono font-bold">{role.portal_url}</code>
+                    <code className="text-[#A71380] font-mono font-bold">{role.portal_url}</code>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-slate-500 font-bold text-[11px]">Authorized Modules:</span>
@@ -397,11 +402,10 @@ export default function AdminRolesMatrixPage() {
                       return (
                         <span
                           key={mod.id}
-                          className={`px-2 py-0.5 rounded-lg text-[10px] font-bold inline-flex items-center space-x-1 border ${
-                            hasAccess
-                              ? "bg-emerald-50 text-emerald-800 border-emerald-300 font-black shadow-2xs"
-                              : "bg-slate-100 text-slate-400 border-slate-200 opacity-40 line-through"
-                          }`}
+                          className={`px-2 py-0.5 rounded-[4px] text-[10px] font-bold inline-flex items-center space-x-1 border ${hasAccess
+                            ? "bg-emerald-50 text-emerald-800 border-emerald-300 font-black shadow-2xs"
+                            : "bg-slate-100 text-slate-400 border-slate-200 opacity-40 line-through"
+                            }`}
                         >
                           <span>{hasAccess ? "☑" : "☐"}</span>
                           <span>{mod.id.toUpperCase()}</span>
@@ -413,19 +417,26 @@ export default function AdminRolesMatrixPage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="pt-3 border-t border-slate-100 flex items-center gap-2">
+              <div className="pt-3 border-t border-slate-100 grid grid-cols-2 gap-2">
                 <button
                   onClick={() => handleOpenEditModal(role)}
-                  className="flex-1 bg-[#0b2341] hover:bg-[#12315a] text-white py-2.5 rounded-xl font-bold text-xs shadow-2xs transition-all cursor-pointer text-center"
+                  className="bg-[#A71380] hover:bg-[#8E0F6D] text-white py-2.5 px-3 rounded-lg font-extrabold text-xs shadow-xs transition-all cursor-pointer flex items-center justify-center space-x-1.5"
                 >
-                  ⚙️ Configure Tickmarks
+                  <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span>Manage</span>
                 </button>
                 <button
                   onClick={() => handleOpenAddUserModal(role.id)}
-                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 px-3 rounded-xl font-bold text-xs transition-all cursor-pointer"
+                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 px-3 rounded-lg font-bold text-xs transition-all cursor-pointer flex items-center justify-center space-x-1.5"
                   title={`Add user under ${role.id}`}
                 >
-                  + Add User
+                  <svg className="w-3.5 h-3.5 text-slate-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                  </svg>
+                  <span>Add User</span>
                 </button>
               </div>
             </div>
@@ -434,13 +445,12 @@ export default function AdminRolesMatrixPage() {
       </div>
 
       {/* 3. ROLES PERMISSIONS MATRIX COMPARISON TABLE */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl overflow-hidden shadow-2xs">
+      <div className="bg-white border border-slate-200/90 rounded-[6px] overflow-hidden shadow-2xs">
         <div className="p-5 border-b border-slate-100 flex items-center justify-between">
           <div>
             <h3 className="text-base font-black text-[#0b2341]">Subsystem Authorization Matrix</h3>
-            <p className="text-xs text-slate-500">Comparison of all 8 subsystems across the 3 core database roles.</p>
           </div>
-          <span className="text-[10px] font-bold bg-blue-50 text-blue-800 px-3 py-1 rounded-full border border-blue-200">
+          <span className="text-[10px] font-bold bg-[#F8EAF4] text-[#A71380] px-3 py-1 rounded-full border border-[#F3D0E9]">
             Database RBAC Matrix
           </span>
         </div>
@@ -450,63 +460,73 @@ export default function AdminRolesMatrixPage() {
             <thead>
               <tr className="border-b border-slate-200 text-slate-500 font-bold uppercase text-[11px] bg-slate-50">
                 <th className="py-3.5 px-5">Enterprise Subsystem Module</th>
-                <th className="py-3.5 px-5 text-center">🛡️ SUPER ADMIN</th>
-                <th className="py-3.5 px-5 text-center">🏢 DISTRIBUTOR</th>
-                <th className="py-3.5 px-5 text-center">👤 CUSTOMER</th>
+                <th className="py-3.5 px-4 text-center">🛡️ SUPER ADMIN</th>
+                <th className="py-3.5 px-4 text-center">🏪 RETAILER</th>
+                <th className="py-3.5 px-4 text-center">🏬 DISTRIBUTOR</th>
+                <th className="py-3.5 px-4 text-center">👤 CUSTOMER</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {SYSTEM_MODULES.map((mod) => {
                 const adminHas = roles.find((r) => r.id === "ADMIN")?.assigned_modules.includes(mod.id);
+                const retHas = roles.find((r) => r.id === "RETAILER")?.assigned_modules.includes(mod.id);
                 const distHas = roles.find((r) => r.id === "DISTRIBUTOR")?.assigned_modules.includes(mod.id);
                 const custHas = roles.find((r) => r.id === "CUSTOMER")?.assigned_modules.includes(mod.id);
 
                 return (
                   <tr key={mod.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-4 px-5">
+                    <td className="py-3.5 px-5">
                       <div className="flex items-center space-x-2.5">
                         <span className="text-xl">{mod.icon}</span>
                         <div>
                           <div className="font-bold text-[#0b2341] text-xs">{mod.name}</div>
-                          <div className="text-[10px] text-slate-400">{mod.description}</div>
                         </div>
                       </div>
                     </td>
 
                     {/* Admin Status */}
-                    <td className="py-4 px-5 text-center">
+                    <td className="py-4 px-4 text-center">
                       <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full font-black text-[10px] border ${
-                          adminHas
-                            ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                            : "bg-slate-100 text-slate-400 border-slate-200"
-                        }`}
+                        className={`inline-flex items-center px-2.5 py-1 rounded-full font-black text-[10px] border ${adminHas
+                          ? "bg-purple-50 text-purple-800 border-purple-200"
+                          : "bg-slate-100 text-slate-400 border-slate-200"
+                          }`}
                       >
                         {adminHas ? "✓ AUTHORIZED" : "✕ LOCKED"}
                       </span>
                     </td>
 
-                    {/* Distributor Status */}
-                    <td className="py-4 px-5 text-center">
+                    {/* Retailer Status */}
+                    <td className="py-4 px-4 text-center">
                       <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full font-black text-[10px] border ${
-                          distHas
-                            ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                            : "bg-slate-100 text-slate-400 border-slate-200"
-                        }`}
+                        className={`inline-flex items-center px-2.5 py-1 rounded-full font-black text-[10px] border ${retHas
+                          ? "bg-[#F8EAF4] text-[#A71380] border-[#F3D0E9]"
+                          : "bg-slate-100 text-slate-400 border-slate-200"
+                          }`}
+                      >
+                        {retHas ? "✓ AUTHORIZED" : "✕ LOCKED"}
+                      </span>
+                    </td>
+
+                    {/* Distributor Status */}
+                    <td className="py-4 px-4 text-center">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-1 rounded-full font-black text-[10px] border ${distHas
+                          ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                          : "bg-slate-100 text-slate-400 border-slate-200"
+                          }`}
                       >
                         {distHas ? "✓ AUTHORIZED" : "✕ LOCKED"}
                       </span>
                     </td>
 
                     {/* Customer Status */}
-                    <td className="py-4 px-5 text-center">
+                    <td className="py-4 px-4 text-center">
                       <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full font-black text-[10px] border ${
-                          custHas
-                            ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                            : "bg-slate-100 text-slate-400 border-slate-200"
-                        }`}
+                        className={`inline-flex items-center px-2.5 py-1 rounded-full font-black text-[10px] border ${custHas
+                          ? "bg-blue-50 text-blue-800 border-blue-200"
+                          : "bg-slate-100 text-slate-400 border-slate-200"
+                          }`}
                       >
                         {custHas ? "✓ AUTHORIZED" : "✕ LOCKED"}
                       </span>
@@ -522,10 +542,10 @@ export default function AdminRolesMatrixPage() {
       {/* 4. MODAL: ADD USER WITH ROLE */}
       {isAddUserModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white border border-slate-200 rounded-3xl max-w-xl w-full p-6 space-y-5 shadow-2xl max-h-[92vh] overflow-y-auto">
+          <div className="bg-white border border-slate-200 rounded-[6px] max-w-xl w-full p-6 space-y-5 shadow-2xl max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <span className="text-[10px] font-extrabold uppercase bg-blue-100/60 text-[#0b2341] px-2.5 py-0.5 rounded-md border border-blue-200">
+                <span className="text-[10px] font-extrabold uppercase bg-[#F8EAF4] text-[#0b2341] px-2.5 py-0.5 rounded-md border border-[#F3D0E9]">
                   User Onboarding
                 </span>
                 <h3 className="text-lg font-black text-[#0b2341] mt-1">Add User & Assign Core Role</h3>
@@ -542,7 +562,7 @@ export default function AdminRolesMatrixPage() {
               {/* User Role Selector */}
               <div>
                 <label className="block font-bold text-slate-700 mb-1.5">Select User Role (PostgreSQL Enum) *</label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {roles.map((r) => {
                     const isSelected = userFormData.role === r.id;
                     return (
@@ -550,11 +570,10 @@ export default function AdminRolesMatrixPage() {
                         key={r.id}
                         type="button"
                         onClick={() => handleRoleSelectionChange(r.id)}
-                        className={`p-3 rounded-2xl border text-center transition-all cursor-pointer ${
-                          isSelected
-                            ? "bg-blue-50/80 border-blue-600 ring-2 ring-blue-600/20 shadow-xs"
-                            : "bg-slate-50 border-slate-200 hover:bg-slate-100"
-                        }`}
+                        className={`p-3 rounded-[5px] border text-center transition-all cursor-pointer ${isSelected
+                          ? "bg-[#F8EAF4] border-[#A71380] ring-2 ring-[#A71380]/20 shadow-xs"
+                          : "bg-slate-50 border-slate-200 hover:bg-slate-100"
+                          }`}
                       >
                         <span className="text-xl block mb-1">{r.icon}</span>
                         <span className="font-extrabold text-[#0b2341] text-xs block">{r.id}</span>
@@ -575,7 +594,7 @@ export default function AdminRolesMatrixPage() {
                     placeholder="e.g. Rajesh Kumar"
                     value={userFormData.full_name}
                     onChange={(e) => setUserFormData({ ...userFormData, full_name: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 font-medium focus:bg-white focus:outline-none focus:border-blue-600"
+                    className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 font-medium focus:bg-white focus:outline-none focus:border-[#A71380]"
                   />
                 </div>
 
@@ -587,7 +606,7 @@ export default function AdminRolesMatrixPage() {
                     placeholder="rajesh@example.com"
                     value={userFormData.email}
                     onChange={(e) => setUserFormData({ ...userFormData, email: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 font-medium focus:bg-white focus:outline-none focus:border-blue-600"
+                    className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 font-medium focus:bg-white focus:outline-none focus:border-[#A71380]"
                   />
                 </div>
               </div>
@@ -601,7 +620,7 @@ export default function AdminRolesMatrixPage() {
                     placeholder="Min 6 characters"
                     value={userFormData.password}
                     onChange={(e) => setUserFormData({ ...userFormData, password: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 font-medium focus:bg-white focus:outline-none focus:border-blue-600"
+                    className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 font-medium focus:bg-white focus:outline-none focus:border-[#A71380]"
                   />
                 </div>
 
@@ -612,7 +631,7 @@ export default function AdminRolesMatrixPage() {
                     placeholder="+91 9876543210"
                     value={userFormData.phone}
                     onChange={(e) => setUserFormData({ ...userFormData, phone: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 font-medium focus:bg-white focus:outline-none focus:border-blue-600"
+                    className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 font-medium focus:bg-white focus:outline-none focus:border-[#A71380]"
                   />
                 </div>
               </div>
@@ -629,16 +648,15 @@ export default function AdminRolesMatrixPage() {
                       <label
                         key={mod.id}
                         onClick={() => toggleUserModule(mod.id)}
-                        className={`flex items-center space-x-2.5 p-2.5 rounded-xl border transition-all cursor-pointer ${
-                          isChecked
-                            ? "bg-emerald-50/80 border-emerald-500 ring-1 ring-emerald-500/20"
-                            : "bg-slate-50 border-slate-200 hover:bg-slate-100"
-                        }`}
+                        className={`flex items-center space-x-2.5 p-2.5 rounded-[5px] border transition-all cursor-pointer ${isChecked
+                          ? "bg-emerald-50/80 border-emerald-500 ring-1 ring-emerald-500/20"
+                          : "bg-slate-50 border-slate-200 hover:bg-slate-100"
+                          }`}
                       >
                         <input
                           type="checkbox"
                           checked={isChecked}
-                          onChange={() => {}}
+                          onChange={() => { }}
                           className="w-3.5 h-3.5 text-emerald-600 rounded cursor-pointer"
                         />
                         <div className="min-w-0">
@@ -656,14 +674,14 @@ export default function AdminRolesMatrixPage() {
                 <button
                   type="button"
                   onClick={() => setIsAddUserModalOpen(false)}
-                  className="px-4 py-2.5 border border-slate-200 rounded-xl font-bold text-slate-600 hover:bg-slate-100 cursor-pointer"
+                  className="px-4 py-2.5 border border-slate-200 rounded-[5px] font-bold text-slate-600 hover:bg-slate-100 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitLoading}
-                  className="bg-[#0b2341] hover:bg-[#12315a] text-white px-6 py-2.5 rounded-xl font-extrabold shadow-xs transition-all cursor-pointer disabled:opacity-50"
+                  className="bg-[#A71380] hover:bg-[#8E0F6D] text-white px-6 py-2.5 rounded-[5px] font-extrabold shadow-md shadow-[#A71380]/20 transition-all cursor-pointer disabled:opacity-50"
                 >
                   {submitLoading ? "Creating User..." : "Save & Create User"}
                 </button>
@@ -676,10 +694,10 @@ export default function AdminRolesMatrixPage() {
       {/* 5. MODAL: EDIT ROLE PERMISSION TICKMARKS */}
       {isEditModalOpen && selectedRole && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white border border-slate-200 rounded-3xl max-w-xl w-full p-6 space-y-5 shadow-2xl max-h-[92vh] overflow-y-auto">
+          <div className="bg-white border border-slate-200 rounded-[6px] max-w-xl w-full p-6 space-y-5 shadow-2xl max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <span className="text-[10px] font-extrabold uppercase bg-blue-100/60 text-[#0b2341] px-2.5 py-0.5 rounded-md border border-blue-200">
+                <span className="text-[10px] font-extrabold uppercase bg-[#F8EAF4] text-[#0b2341] px-2.5 py-0.5 rounded-md border border-[#F3D0E9]">
                   Role Permissions Configurator
                 </span>
                 <h3 className="text-lg font-black text-[#0b2341] mt-1">
@@ -695,7 +713,7 @@ export default function AdminRolesMatrixPage() {
             </div>
 
             <form onSubmit={handleUpdateRoleSubmit} className="space-y-4 text-xs">
-              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
+              <div className="p-3.5 bg-slate-50 rounded-[5px] border border-slate-100 flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <span className="text-2xl">{selectedRole.icon}</span>
                   <div>
@@ -703,7 +721,7 @@ export default function AdminRolesMatrixPage() {
                     <div className="text-[11px] text-slate-500 font-mono">{selectedRole.portal_url}</div>
                   </div>
                 </div>
-                <span className="bg-purple-50 text-purple-800 font-extrabold px-3 py-1 rounded-xl border border-purple-200 text-[10px]">
+                <span className="bg-purple-50 text-purple-800 font-extrabold px-3 py-1 rounded-[5px] border border-purple-200 text-[10px]">
                   {selectedRole.id}
                 </span>
               </div>
@@ -720,17 +738,16 @@ export default function AdminRolesMatrixPage() {
                       <label
                         key={mod.id}
                         onClick={() => toggleRoleModule(mod.id)}
-                        className={`flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer ${
-                          isChecked
-                            ? "bg-emerald-50/80 border-emerald-500"
-                            : "bg-slate-50/60 border-slate-200 hover:bg-slate-100"
-                        }`}
+                        className={`flex items-center justify-between p-3 rounded-[5px] border transition-all cursor-pointer ${isChecked
+                          ? "bg-emerald-50/80 border-emerald-500"
+                          : "bg-slate-50/60 border-slate-200 hover:bg-slate-100"
+                          }`}
                       >
                         <div className="flex items-center space-x-3">
                           <input
                             type="checkbox"
                             checked={isChecked}
-                            onChange={() => {}}
+                            onChange={() => { }}
                             className="w-4 h-4 text-emerald-600 rounded cursor-pointer"
                           />
                           <div>
@@ -738,16 +755,14 @@ export default function AdminRolesMatrixPage() {
                               <span>{mod.icon}</span>
                               <span>{mod.name}</span>
                             </div>
-                            <p className="text-[10px] text-slate-500 mt-0.5">{mod.description}</p>
                           </div>
                         </div>
 
                         <span
-                          className={`text-[10px] font-extrabold px-2.5 py-1 rounded-lg border shrink-0 ${
-                            isChecked
-                              ? "bg-emerald-100 text-emerald-900 border-emerald-300"
-                              : "bg-slate-100 text-slate-400 border-slate-200"
-                          }`}
+                          className={`text-[10px] font-extrabold px-2.5 py-1 rounded-[4px] border shrink-0 ${isChecked
+                            ? "bg-emerald-100 text-emerald-900 border-emerald-300"
+                            : "bg-slate-100 text-slate-400 border-slate-200"
+                            }`}
                         >
                           {isChecked ? "AUTHORIZED" : "LOCKED"}
                         </span>
@@ -761,15 +776,15 @@ export default function AdminRolesMatrixPage() {
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
-                  className="px-4 py-2.5 border border-slate-200 rounded-xl font-bold text-slate-600 hover:bg-slate-100 cursor-pointer"
+                  className="px-4 py-2.5 border border-slate-200 rounded-[5px] font-bold text-slate-600 hover:bg-slate-100 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-[#0b2341] hover:bg-[#12315a] text-white px-6 py-2.5 rounded-xl font-extrabold shadow-xs transition-all cursor-pointer"
+                  className="bg-[#A71380] hover:bg-[#8E0F6D] text-white px-6 py-2.5 rounded-[5px] font-extrabold shadow-md shadow-[#A71380]/20 transition-all cursor-pointer"
                 >
-                  Save Permission Tickmarks
+                  Save Role Permissions
                 </button>
               </div>
             </form>

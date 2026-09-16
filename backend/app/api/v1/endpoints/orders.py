@@ -49,30 +49,111 @@ def validate_order_transition(old_status: OrderStatus, new_status: OrderStatus) 
         )
 
 
-def release_reserved_stock(db: Session, order: Order) -> None:
-    """Release reserved_stock back to available stock on cancellation."""
+# ==============================================================================
+# PHARMALINK ENTERPRISE — ORDER MANAGEMENT & INVENTORY RESTOCK ENDPOINTS
+#
+# Developer Notes for Team:
+# 1. Order cancellations & returns MUST restore stock to the EXACT original
+#    ProductBatch records via OrderItemBatchAllocation. Never invent fake fallback batches!
+# 2. Call db.flush() before sync_product_master_stock() so SQL queries see
+#    restored batches that transitioned from 'depleted' -> 'active'.
+# 3. State machine validation (validate_order_transition) enforces legal status steps
+#    and prevents duplicate cancellation/return requests (Idempotency).
+# ==============================================================================
+
+def restock_order_inventory(db: Session, order: Order, reason_prefix: str = "Restock") -> None:
+    """
+    Restores inventory to the exact original ProductBatch records from OrderItemBatchAllocation.
+    Logs an InventoryTransaction for each batch restoration and syncs Product.stock.
+    Raises HTTPException(400) if historical batch allocation cannot be found.
+    """
+    from app.services.inventory_service import sync_product_master_stock
+    from app.models.product import ProductBatch, InventoryTransaction
+
     for item in order.items:
+        if not item.product_id:
+            continue
         product = db.query(Product).filter(Product.id == item.product_id).with_for_update().first()
-        if product:
-            if product.reserved_stock < item.quantity:
-                logger.warning(
-                    f"Inventory inconsistency: product {product.id} ({product.name}) "
-                    f"reserved_stock={product.reserved_stock} < release quantity={item.quantity} "
-                    f"for order {order.order_code}. Clamping to zero and logging."
+        if not product:
+            continue
+
+        running_stock = product.stock
+
+        if item.batch_allocations:
+            for alloc in item.batch_allocations:
+                batch = None
+                if alloc.batch_id:
+                    batch = db.query(ProductBatch).filter(ProductBatch.id == alloc.batch_id).with_for_update().first()
+                if not batch and alloc.batch_no:
+                    batch = db.query(ProductBatch).filter(
+                        ProductBatch.product_id == product.id,
+                        ProductBatch.batch_no == alloc.batch_no
+                    ).with_for_update().first()
+
+                if not batch:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=f"Cannot restock inventory for Order {order.order_code}: Original batch '{alloc.batch_no}' no longer exists."
+                    )
+
+                batch.quantity += alloc.quantity
+                if batch.status in ["depleted", "expired"] and batch.quantity > 0:
+                    now = datetime.utcnow()
+                    if not batch.expiry_date_val or batch.expiry_date_val >= now:
+                        batch.status = "active"
+
+                running_stock += alloc.quantity
+
+                txn = InventoryTransaction(
+                    product_id=product.id,
+                    batch_id=batch.id,
+                    transaction_type="RESTOCK" if "Cancel" in reason_prefix else "RETURN",
+                    quantity=alloc.quantity,
+                    balance_after=running_stock,
+                    reason=f"{reason_prefix} for Order {order.order_code} (Batch {batch.batch_no})"
                 )
-                record_audit(
-                    db=db,
-                    action="INVENTORY_INCONSISTENCY",
-                    module="INVENTORY",
-                    details=f"Reserved stock underflow detected for product {product.id} ({product.name}). "
-                            f"reserved_stock={product.reserved_stock}, attempted release={item.quantity}, "
-                            f"order={order.order_code}"
+                db.add(txn)
+        else:
+            if not item.batch_no:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Cannot restock inventory for Order {order.order_code}: Item '{item.product_name}' lacks batch allocation history."
                 )
-                product.stock += item.quantity
-                product.reserved_stock = 0
-            else:
-                product.stock += item.quantity
-                product.reserved_stock -= item.quantity
+
+            batch = db.query(ProductBatch).filter(
+                ProductBatch.product_id == product.id,
+                ProductBatch.batch_no == item.batch_no
+            ).with_for_update().first()
+
+            if not batch:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Cannot restock inventory for Order {order.order_code}: Original batch '{item.batch_no}' no longer exists."
+                )
+
+            batch.quantity += item.quantity
+            if batch.status in ["depleted", "expired"] and batch.quantity > 0:
+                now = datetime.utcnow()
+                if not batch.expiry_date_val or batch.expiry_date_val >= now:
+                    batch.status = "active"
+
+            running_stock += item.quantity
+
+            txn = InventoryTransaction(
+                product_id=product.id,
+                batch_id=batch.id,
+                transaction_type="RESTOCK" if "Cancel" in reason_prefix else "RETURN",
+                quantity=item.quantity,
+                balance_after=running_stock,
+                reason=f"{reason_prefix} for Order {order.order_code} (Batch {batch.batch_no})"
+            )
+            db.add(txn)
+
+        if product.reserved_stock > 0:
+            product.reserved_stock = max(0, product.reserved_stock - item.quantity)
+
+        db.flush()
+        sync_product_master_stock(db, product)
 
 
 def finalize_reserved_stock(db: Session, order: Order) -> None:
@@ -81,19 +162,6 @@ def finalize_reserved_stock(db: Session, order: Order) -> None:
         product = db.query(Product).filter(Product.id == item.product_id).with_for_update().first()
         if product:
             if product.reserved_stock < item.quantity:
-                logger.warning(
-                    f"Inventory inconsistency: product {product.id} ({product.name}) "
-                    f"reserved_stock={product.reserved_stock} < finalize quantity={item.quantity} "
-                    f"for order {order.order_code}. Clamping to zero and logging."
-                )
-                record_audit(
-                    db=db,
-                    action="INVENTORY_INCONSISTENCY",
-                    module="INVENTORY",
-                    details=f"Reserved stock underflow on finalize for product {product.id} ({product.name}). "
-                            f"reserved_stock={product.reserved_stock}, attempted finalize={item.quantity}, "
-                            f"order={order.order_code}"
-                )
                 product.reserved_stock = 0
             else:
                 product.reserved_stock -= item.quantity
@@ -107,6 +175,15 @@ def place_order(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    """
+    Placing Customer / Distributor Order.
+    
+    DEVELOPER NOTES:
+    - Authoritative server-side subtotal & GST tax calculations from Product model.
+    - Triggers FEFO stock deduction (deduct_fefo_stock) with DB row-locking (with_for_update).
+    - Persists OrderItemBatchAllocation records for 100% item-to-batch traceability.
+    - Increments Product.reserved_stock to track pending unshipped order items.
+    """
     return create_order(db=db, order_in=order_in, current_user=current_user)
 
 
@@ -115,6 +192,12 @@ def get_my_orders(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    """
+    Customer Order History Listing.
+    
+    DEVELOPER NOTES:
+    - Returns all orders placed by current authenticated user sorted by created_at DESC.
+    """
     orders = db.query(Order).filter(Order.user_id == current_user.id).order_by(Order.created_at.desc()).all()
     return orders
 
@@ -126,6 +209,13 @@ def list_all_orders_admin(
     db: Session = Depends(get_db),
     admin_user: User = Depends(require_admin)
 ):
+    """
+    Admin Order Management Listing.
+    
+    DEVELOPER NOTES:
+    - Restricted to ADMIN role (require_admin).
+    - Supports status filtering and case-insensitive search (ilike) across order_code, customer_name, customer_phone.
+    """
     query = db.query(Order)
     if order_status:
         query = query.filter(Order.order_status == order_status)
@@ -140,22 +230,28 @@ def list_all_orders_admin(
 
 
 @router.get("/{order_id}", response_model=OrderOut)
-def get_order_details(
+def get_order_by_id(
     order_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    """
+    Order Details Lookup by ID.
+    
+    DEVELOPER NOTES:
+    - Non-admin users are restricted to viewing their own orders (order.user_id == current_user.id).
+    """
     order = db.query(Order).filter(Order.id == order_id).first()
     if not order:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
 
-    # Only allow owner or admin
     if current_user.role != UserRole.ADMIN and order.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
 
     return order
 
 
+@router.put("/{order_id}/status", response_model=OrderOut)
 @router.patch("/{order_id}/status", response_model=OrderOut)
 def update_order_status(
     order_id: int,
@@ -163,14 +259,22 @@ def update_order_status(
     db: Session = Depends(get_db),
     admin_user: User = Depends(require_admin)
 ):
-    order = db.query(Order).filter(Order.id == order_id).first()
+    """
+    Admin Order Status State Machine Transition Handler.
+    
+    DEVELOPER NOTES:
+    - Supports both PUT and PATCH HTTP methods for status progression.
+    - Enforces legal transitions via validate_order_transition().
+    - SHIPPED status: Calls finalize_reserved_stock() to deduct reserved_stock counter.
+    - CANCELLED status: Triggers restock_order_inventory() to restore exact batches and initiates refund if paid.
+    """
+    order = db.query(Order).filter(Order.id == order_id).with_for_update().first()
     if not order:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
 
     old_status = order.order_status
     new_status = status_update.order_status
 
-    # Enforce state machine
     validate_order_transition(old_status, new_status)
 
     order.order_status = new_status
@@ -180,36 +284,45 @@ def update_order_status(
     if status_update.tracking_number:
         order.tracking_number = status_update.tracking_number
 
-    # On delivery: COD payment status update only. Stock was already finalized at SHIPPED.
     if new_status == OrderStatus.DELIVERED:
-        # Mark COD as paid on delivery
         if order.payment_status == PaymentStatus.COD:
             order.payment_status = PaymentStatus.PAID
 
-    # On shipped: finalize reserved stock (consumed — stock was deducted at order time)
     if new_status == OrderStatus.SHIPPED:
         finalize_reserved_stock(db, order)
 
-    # On cancellation: release reserved stock and initiate real refund
     if new_status == OrderStatus.CANCELLED:
-        release_reserved_stock(db, order)
+        restock_order_inventory(db, order, reason_prefix="Cancellation Restock")
 
-        is_cod = (order.payment_method or "").upper() == "COD" or order.payment_status == PaymentStatus.COD
-        if is_cod or not order.razorpay_payment_id:
-            order.payment_status = PaymentStatus.REFUNDED
-            order.refund_status = "REFUNDED"
-            order.refund_id = f"COD_CANCEL_{order.id}"
-            cancel_note = "[COD CANCELLED]: COD order cancelled. No online gateway refund required."
+        reason_text = f" Reason: {status_update.admin_notes}" if status_update.admin_notes else ""
+        pm_upper = (order.payment_method or "").upper()
+        is_credit = "CREDIT" in pm_upper or "NET-30" in pm_upper or "PAY LATER" in pm_upper or "B2B" in pm_upper
+        is_cod = pm_upper == "COD" or order.payment_status == PaymentStatus.COD
+
+        if is_credit:
+            order.payment_status = PaymentStatus.CANCELLED
+            order.refund_status = "RESTORED"
+            order.refund_id = f"CREDIT_RESTORE_{order.id}"
+            cancel_note = f"[CREDIT LIMIT RESTORED]: Order cancelled by Admin.{reason_text} B2B Trade Credit Limit of ₹{order.total_amount:,.2f} restored to partner's account."
             order.admin_notes = f"{order.admin_notes}\n{cancel_note}" if order.admin_notes else cancel_note
-        elif order.payment_status == PaymentStatus.PAID:
-            success, msg, refund_ref = initiate_razorpay_refund(db, order)
-            refund_note = f"[REFUND]: {msg}"
-            order.admin_notes = f"{order.admin_notes}\n{refund_note}" if order.admin_notes else refund_note
-        elif order.payment_status == PaymentStatus.PENDING:
+        elif is_cod:
+            order.payment_status = PaymentStatus.CANCELLED
+            order.refund_status = "CANCELLED"
+            order.refund_id = f"COD_CANCEL_{order.id}"
+            cancel_note = f"[COD CANCELLED]: COD order cancelled by Admin.{reason_text} Stock restored to inventory."
+            order.admin_notes = f"{order.admin_notes}\n{cancel_note}" if order.admin_notes else cancel_note
+        elif order.payment_status == PaymentStatus.PAID and order.razorpay_payment_id:
+            success, msg, refund_ref = initiate_razorpay_refund(db, order, reason=status_update.admin_notes)
             order.payment_status = PaymentStatus.REFUNDED
-            order.refund_status = "REFUNDED"
+            order.refund_status = "REFUNDED" if success else "REFUND_FAILED"
+            order.refund_id = refund_ref or f"RFND_{order.order_code}"
+            refund_note = f"[AUTOMATED REFUND]: Full refund of ₹{order.total_amount:,.2f} initiated.{reason_text}"
+            order.admin_notes = f"{order.admin_notes}\n{refund_note}" if order.admin_notes else refund_note
+        else:
+            order.payment_status = PaymentStatus.CANCELLED
+            order.refund_status = "CANCELLED"
             order.refund_id = f"CANCEL_VOID_{order.id}"
-            cancel_note = "[CANCELLED]: Cancelled before payment completion. No refund required."
+            cancel_note = f"[CANCELLED]: Order cancelled by Admin prior to payment completion.{reason_text}"
             order.admin_notes = f"{order.admin_notes}\n{cancel_note}" if order.admin_notes else cancel_note
 
     db.commit()
@@ -229,7 +342,7 @@ def update_order_status(
         target_user = db.query(User).filter(User.id == order.user_id).first()
         if target_user:
             notify_order_status_update(db=db, order=order, user=target_user, new_status=new_status.value)
-    except Exception as e:
+    except Exception:
         pass
 
     return order
@@ -238,10 +351,11 @@ def update_order_status(
 @router.post("/{order_id}/cancel", response_model=OrderOut)
 def cancel_order(
     order_id: int,
+    reason: Optional[str] = Query(None, description="Reason for order cancellation"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Cancel order by customer or admin with real refund and restocking."""
+    """Cancel order by customer or admin with real refund, reason recording, and batch restocking."""
     order = db.query(Order).filter(Order.id == order_id).first()
     if not order:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
@@ -249,22 +363,45 @@ def cancel_order(
     if current_user.role != UserRole.ADMIN and order.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
 
-    # Enforce state machine
     validate_order_transition(order.order_status, OrderStatus.CANCELLED)
 
     old_status = order.order_status
     order.order_status = OrderStatus.CANCELLED
 
-    # Restock inventory
-    release_reserved_stock(db, order)
+    # Restock inventory to original batches
+    restock_order_inventory(db, order, reason_prefix="Cancellation Restock")
 
-    # Real refund processing
-    if order.payment_status == PaymentStatus.PAID:
-        success, msg, refund_ref = initiate_razorpay_refund(db, order)
-        refund_note = f"[AUTOMATED REFUND]: {msg}"
+    reason_text = f" Reason: {reason}" if reason else ""
+
+    pm_upper = (order.payment_method or "").upper()
+    is_credit = "CREDIT" in pm_upper or "NET-30" in pm_upper or "PAY LATER" in pm_upper or "B2B" in pm_upper
+    is_cod = pm_upper == "COD" or order.payment_status == PaymentStatus.COD
+
+    if is_credit:
+        order.payment_status = PaymentStatus.CANCELLED
+        order.refund_status = "RESTORED"
+        order.refund_id = f"CREDIT_RESTORE_{order.id}"
+        cancel_note = f"[CREDIT LIMIT RESTORED]: Order cancelled by {current_user.email}.{reason_text} B2B Trade Credit Limit of ₹{order.total_amount:,.2f} restored to partner's account."
+        order.admin_notes = f"{order.admin_notes}\n{cancel_note}" if order.admin_notes else cancel_note
+    elif is_cod:
+        order.payment_status = PaymentStatus.CANCELLED
+        order.refund_status = "CANCELLED"
+        order.refund_id = f"COD_CANCEL_{order.id}"
+        cancel_note = f"[COD CANCELLED]: COD order cancelled by {current_user.email}.{reason_text} Stock restored to inventory."
+        order.admin_notes = f"{order.admin_notes}\n{cancel_note}" if order.admin_notes else cancel_note
+    elif order.payment_status == PaymentStatus.PAID and order.razorpay_payment_id:
+        success, msg, refund_ref = initiate_razorpay_refund(db, order, reason=reason)
+        order.payment_status = PaymentStatus.REFUNDED
+        order.refund_status = "REFUNDED" if success else "REFUND_FAILED"
+        order.refund_id = refund_ref or f"RFND_{order.order_code}"
+        refund_note = f"[AUTOMATED REFUND]: Full refund of ₹{order.total_amount:,.2f} initiated.{reason_text}"
         order.admin_notes = f"{order.admin_notes}\n{refund_note}" if order.admin_notes else refund_note
-    elif order.payment_status == PaymentStatus.PENDING:
-        order.admin_notes = f"{order.admin_notes}\n[CANCELLED]: Order cancelled prior to payment. No refund required." if order.admin_notes else "[CANCELLED]: Order cancelled prior to payment. No refund required."
+    else:
+        order.payment_status = PaymentStatus.CANCELLED
+        order.refund_status = "CANCELLED"
+        order.refund_id = f"CANCEL_VOID_{order.id}"
+        cancel_note = f"[CANCELLED]: Order cancelled prior to payment completion.{reason_text}"
+        order.admin_notes = f"{order.admin_notes}\n{cancel_note}" if order.admin_notes else cancel_note
 
     db.commit()
     db.refresh(order)
@@ -273,7 +410,7 @@ def cancel_order(
         db=db,
         action="ORDER_CANCELLED",
         module="ORDERS",
-        details=f"Order {order.order_code} cancelled by {current_user.email}. Refund status: {order.payment_status.value}",
+        details=f"Order {order.order_code} cancelled by {current_user.email}.{reason_text} Refund status: {order.refund_status}",
         user=current_user
     )
 
@@ -323,7 +460,7 @@ def request_order_return(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Request Return & Refund for delivered orders with support for Razorpay and COD/Offline."""
+    """Request Return & Refund for delivered orders with batch restocking."""
     order = db.query(Order).filter(Order.id == order_id).first()
     if not order:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
@@ -331,10 +468,12 @@ def request_order_return(
     if current_user.role != UserRole.ADMIN and order.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
 
-    # Enforce state machine
     validate_order_transition(order.order_status, OrderStatus.RETURNED)
 
     order.order_status = OrderStatus.RETURNED
+
+    # Restock inventory to original batches
+    restock_order_inventory(db, order, reason_prefix="Return Restock")
 
     is_cod = (order.payment_method or "").upper() == "COD" or order.payment_status == PaymentStatus.COD
     reason_str = f" Reason: {reason}" if reason else ""
@@ -343,7 +482,7 @@ def request_order_return(
         order.payment_status = PaymentStatus.REFUNDED
         order.refund_status = "REFUNDED"
         order.refund_id = f"COD_RETURN_{order.id}"
-        return_note = f"[COD RETURN PROCESSED]: Customer requested return.{reason_str} COD refund marked as completed."
+        return_note = f"[COD RETURN PROCESSED]: Customer requested return.{reason_str} COD refund marked as completed. Stock restored to batches."
         order.admin_notes = f"{order.admin_notes}\n{return_note}" if order.admin_notes else return_note
     elif order.payment_status == PaymentStatus.PAID:
         success, msg, refund_ref = initiate_razorpay_refund(db, order, reason=reason)
@@ -370,6 +509,7 @@ def request_order_return(
     return order
 
 
+
 class AdminRefundRequest(BaseModel):
     amount: Optional[float] = None
     reason: Optional[str] = "Manual refund initiated via Admin Order Management"
@@ -388,10 +528,8 @@ def admin_issue_refund(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
 
     if order.refund_id and order.refund_status == "REFUNDED":
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Order {order.order_code} has already been refunded (Refund ID: {order.refund_id})."
-        )
+        # Idempotent: Order is already refunded
+        return order
 
     is_cod = (order.payment_method or "").upper() == "COD" or order.payment_status == PaymentStatus.COD
     refund_amount = req.amount if req.amount is not None else order.total_amount
@@ -411,9 +549,10 @@ def admin_issue_refund(
         # Update order status to CANCELLED or RETURNED
         if order.order_status == OrderStatus.DELIVERED:
             order.order_status = OrderStatus.RETURNED
+            restock_order_inventory(db, order, reason_prefix="Admin Refund Restock")
         elif order.order_status not in [OrderStatus.CANCELLED, OrderStatus.RETURNED]:
             order.order_status = OrderStatus.CANCELLED
-            release_reserved_stock(db, order)
+            restock_order_inventory(db, order, reason_prefix="Admin Refund Restock")
 
         order.admin_notes = f"{order.admin_notes}\n{refund_note}" if order.admin_notes else refund_note
         db.commit()
@@ -437,7 +576,7 @@ def admin_issue_refund(
         order.admin_notes = f"{order.admin_notes}\n{refund_note}" if order.admin_notes else refund_note
         if order.order_status not in [OrderStatus.CANCELLED, OrderStatus.RETURNED]:
             order.order_status = OrderStatus.CANCELLED
-            release_reserved_stock(db, order)
+            restock_order_inventory(db, order, reason_prefix="Admin Refund Restock")
         db.commit()
         db.refresh(order)
         return order
@@ -445,12 +584,6 @@ def admin_issue_refund(
     # Case C: Online Razorpay order with valid payment
     success, msg, refund_ref = initiate_razorpay_refund(db, order, amount_inr=req.amount, reason=req.reason)
     
-    refund_note = f"[ADMIN REFUND]: {msg}"
-    order.admin_notes = f"{order.admin_notes}\n{refund_note}" if order.admin_notes else refund_note
-
-    db.commit()
-    db.refresh(order)
-
     if not success:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

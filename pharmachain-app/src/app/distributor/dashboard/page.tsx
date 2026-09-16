@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { DistributorPortal } from "@/components/DistributorPortal";
+import { DistributorPortal } from "@/components/b2b/DistributorPortal";
 
 export default function DistributorDashboardPage() {
   return (

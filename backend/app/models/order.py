@@ -21,6 +21,7 @@ class PaymentStatus(str, enum.Enum):
     FAILED = "Failed"
     COD = "COD"
     REFUNDED = "Refunded"
+    CANCELLED = "Cancelled"
 
 
 class Order(Base):
@@ -90,3 +91,20 @@ class OrderItem(Base):
     # Relationships
     order = relationship("Order", back_populates="items")
     product = relationship("Product", back_populates="order_items")
+    batch_allocations = relationship("OrderItemBatchAllocation", back_populates="order_item", cascade="all, delete-orphan")
+
+
+class OrderItemBatchAllocation(Base):
+    __tablename__ = "order_item_batch_allocations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    order_item_id = Column(Integer, ForeignKey("order_items.id", ondelete="CASCADE"), nullable=False, index=True)
+    batch_id = Column(Integer, ForeignKey("product_batches.id", ondelete="SET NULL"), nullable=True, index=True)
+    batch_no = Column(String(100), nullable=False)
+    quantity = Column(Integer, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    order_item = relationship("OrderItem", back_populates="batch_allocations")
+    batch = relationship("ProductBatch")
+

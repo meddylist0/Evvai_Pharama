@@ -3,44 +3,24 @@
 import React, { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { CustomerSidebar } from "@/components/CustomerSidebar";
+import { CustomerSidebar } from "@/components/b2b/CustomerSidebar";
 import { getStoredUser, StoredUser, authAPI } from "@/lib/api";
+import { usePlatform } from "@/lib/platform";
+import { useAuth } from "@/context/AuthContext";
+import { useCart } from "@/context/CartContext";
 
 export default function CustomerLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const platform = usePlatform();
+  const { user } = useAuth();
+  const { cartCount } = useCart();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [user, setUser] = useState<StoredUser | null>(null);
-  const [cartCount, setCartCount] = useState(0);
 
-  // Load user data & cart count
-  const syncUserState = () => {
-    setUser(getStoredUser());
-    if (typeof window !== "undefined") {
-      try {
-        const savedCart = localStorage.getItem("pharmalink_cart");
-        if (savedCart) {
-          const items = JSON.parse(savedCart);
-          const total = items.reduce((acc: number, it: any) => acc + (it.quantity || 1), 0);
-          setCartCount(total);
-        } else {
-          setCartCount(0);
-        }
-      } catch {
-        setCartCount(0);
-      }
-    }
-  };
-
-  useEffect(() => {
-    syncUserState();
-    window.addEventListener("pharmalink_user_updated", syncUserState);
-    window.addEventListener("storage", syncUserState);
-    return () => {
-      window.removeEventListener("pharmalink_user_updated", syncUserState);
-      window.removeEventListener("storage", syncUserState);
-    };
-  }, []);
+  // In mobile viewports and native apps, let dedicated mobile views render their own native MobileAppShell
+  if (platform.isNative || platform.isMobile) {
+    return <>{children}</>;
+  }
 
   const defaultAvatar = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80";
 

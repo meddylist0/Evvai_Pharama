@@ -52,7 +52,7 @@ export default function CustomerWishlistPage() {
       }
       localStorage.setItem("pharmalink_cart", JSON.stringify(cart));
       window.dispatchEvent(new Event("storage"));
-      router.push("/customer/checkout");
+      router.push(`/customer/checkout?buy_now_id=${product.id}`);
     } catch (e) {
       console.error(e);
     }
@@ -94,7 +94,7 @@ export default function CustomerWishlistPage() {
             href="/customer/catalog"
             className="inline-block bg-[#0b2341] text-white px-5 py-2.5 rounded-2xl text-xs font-bold cursor-pointer hover:bg-[#12315a]"
           >
-            Browse Formulation Catalog
+            Browse Products
           </Link>
         </div>
       ) : (

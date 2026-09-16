@@ -184,7 +184,7 @@ function CreateSecondaryInvoicePageInner() {
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/90 shadow-2xs">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-[6px] border border-slate-200/90 shadow-2xs">
         <div>
           <div className="flex items-center space-x-2">
             <span className="text-[11px] font-extrabold text-[#0b2341] uppercase tracking-wider bg-violet-100/60 px-3 py-1 rounded-full border border-violet-200">
@@ -201,7 +201,7 @@ function CreateSecondaryInvoicePageInner() {
 
         <button
           onClick={() => router.push("/distributor/sales")}
-          className="border border-slate-200 hover:bg-slate-50 font-bold px-4 py-2.5 rounded-2xl text-xs transition-all shrink-0 cursor-pointer text-slate-700"
+          className="border border-slate-200 hover:bg-slate-50 font-bold px-4 py-2.5 rounded-[5px] text-xs transition-all shrink-0 cursor-pointer text-slate-700"
         >
           ← View All Secondary Invoices
         </button>
@@ -210,7 +210,7 @@ function CreateSecondaryInvoicePageInner() {
       {/* Status Msg */}
       {statusMsg && (
         <div
-          className={`p-4 rounded-2xl text-xs font-bold border transition-all ${statusMsg.type === "success" ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-rose-50 text-rose-800 border-rose-200"
+          className={`p-4 rounded-[5px] text-xs font-bold border transition-all ${statusMsg.type === "success" ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-rose-50 text-rose-800 border-rose-200"
             }`}
         >
           {statusMsg.text}
@@ -220,10 +220,10 @@ function CreateSecondaryInvoicePageInner() {
       {/* Invoice Generator Form */}
       <form onSubmit={handleCreateInvoice} className="space-y-6">
         {/* Buyer Selection Card */}
-        <div className="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-2xs space-y-4">
+        <div className="bg-white p-6 rounded-[6px] border border-slate-200/90 shadow-2xs space-y-4">
           <h3 className="text-sm font-black text-[#0b2341] border-b border-slate-100 pb-3 flex items-center justify-between">
             <span>1. Select Local Buyer / RMP Doctor</span>
-            <a href="/distributor/buyers" className="text-xs text-blue-600 font-bold hover:underline">
+            <a href="/distributor/buyers" className="text-xs text-[#A71380] font-bold hover:underline">
               + Register New Buyer
             </a>
           </h3>
@@ -234,7 +234,7 @@ function CreateSecondaryInvoicePageInner() {
               <select
                 value={selectedBuyerId}
                 onChange={(e) => setSelectedBuyerId(e.target.value)}
-                className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600 font-bold text-[#0b2341]"
+                className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#A71380] font-bold text-[#0b2341]"
               >
                 {buyers.map((b) => (
                   <option key={b.id} value={b.id}>
@@ -245,10 +245,10 @@ function CreateSecondaryInvoicePageInner() {
             </div>
 
             {selectedBuyer && (
-              <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80 space-y-1">
+              <div className="bg-slate-50 p-3.5 rounded-[5px] border border-slate-200/80 space-y-1">
                 <div className="flex justify-between items-center">
                   <span className="font-bold text-[#0b2341] text-xs">{selectedBuyer.name}</span>
-                  <span className="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  <span className="bg-[#F8EAF4] text-[#A71380] text-[10px] font-bold px-2 py-0.5 rounded-full">
                     {selectedBuyer.type}
                   </span>
                 </div>
@@ -263,13 +263,13 @@ function CreateSecondaryInvoicePageInner() {
         </div>
 
         {/* Formulations & Items Card */}
-        <div className="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-2xs space-y-4">
+        <div className="bg-white p-6 rounded-[6px] border border-slate-200/90 shadow-2xs space-y-4">
           <div className="flex justify-between items-center border-b border-slate-100 pb-3">
             <h3 className="text-sm font-black text-[#0b2341]">2. Formulations & Batch Line Items</h3>
             <button
               type="button"
               onClick={handleAddLineItem}
-              className="bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold px-3 py-1.5 rounded-xl text-xs transition-colors cursor-pointer"
+              className="bg-[#F8EAF4] hover:bg-[#F8EAF4] text-[#A71380] font-bold px-3 py-1.5 rounded-[5px] text-xs transition-colors cursor-pointer"
             >
               + Add Item Line
             </button>
@@ -277,14 +277,14 @@ function CreateSecondaryInvoicePageInner() {
 
           <div className="space-y-3">
             {lineItems.map((item, idx) => (
-              <div key={idx} className="p-4 rounded-2xl border border-slate-200/80 bg-slate-50/50 space-y-3 text-xs">
+              <div key={idx} className="p-4 rounded-[5px] border border-slate-200/80 bg-slate-50/50 space-y-3 text-xs">
                 <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
                   <div className="md:col-span-2">
                     <label className="block text-slate-600 font-bold mb-1">Formulation Product *</label>
                     <select
                       value={item.productId}
                       onChange={(e) => handleProductChange(idx, e.target.value)}
-                      className="w-full border border-slate-200 rounded-xl p-2.5 bg-white font-bold text-[#0b2341]"
+                      className="w-full border border-slate-200 rounded-[5px] p-2.5 bg-white font-bold text-[#0b2341]"
                     >
                       {products.map((p) => (
                         <option key={p.id} value={p.id}>
@@ -296,7 +296,7 @@ function CreateSecondaryInvoicePageInner() {
 
                   <div>
                     <label className="block text-slate-600 font-bold mb-1">Batch & Expiry</label>
-                    <div className="font-mono font-bold text-[#0b2341] bg-white p-2.5 rounded-xl border border-slate-200 text-[11px]">
+                    <div className="font-mono font-bold text-[#0b2341] bg-white p-2.5 rounded-[5px] border border-slate-200 text-[11px]">
                       {item.batchNo} ({item.expiryDate})
                     </div>
                   </div>
@@ -308,7 +308,7 @@ function CreateSecondaryInvoicePageInner() {
                       min={1}
                       value={item.quantity}
                       onChange={(e) => handleQuantityChange(idx, Number(e.target.value))}
-                      className="w-full border border-slate-200 rounded-xl p-2 bg-white font-bold text-center text-[#0b2341]"
+                      className="w-full border border-slate-200 rounded-[5px] p-2 bg-white font-bold text-center text-[#0b2341]"
                     />
                   </div>
 
@@ -319,7 +319,7 @@ function CreateSecondaryInvoicePageInner() {
                       min={0}
                       value={item.tradePrice}
                       onChange={(e) => handleTradePriceChange(idx, Number(e.target.value))}
-                      className="w-full border border-slate-200 rounded-xl p-2 bg-white font-bold text-center text-emerald-700"
+                      className="w-full border border-slate-200 rounded-[5px] p-2 bg-white font-bold text-center text-emerald-700"
                     />
                   </div>
                 </div>
@@ -345,7 +345,7 @@ function CreateSecondaryInvoicePageInner() {
         </div>
 
         {/* Payment Terms & Summary Card */}
-        <div className="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-2xs space-y-4">
+        <div className="bg-white p-6 rounded-[6px] border border-slate-200/90 shadow-2xs space-y-4">
           <h3 className="text-sm font-black text-[#0b2341] border-b border-slate-100 pb-3">3. Commercials & Credit Payment Terms</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
@@ -355,7 +355,7 @@ function CreateSecondaryInvoicePageInner() {
                 <select
                   value={paymentMode}
                   onChange={(e) => setPaymentMode(e.target.value as any)}
-                  className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600 font-bold text-[#0b2341]"
+                  className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#A71380] font-bold text-[#0b2341]"
                 >
                   <option value="CREDIT_15_DAYS">💳 15 Days Credit Term (Post-Dated Payment)</option>
                   <option value="CREDIT_30_DAYS">💳 30 Days Credit Term (Monthly Statement)</option>
@@ -373,14 +373,14 @@ function CreateSecondaryInvoicePageInner() {
                     max={grandTotal}
                     value={paidAmount}
                     onChange={(e) => setPaidAmount(Number(e.target.value))}
-                    className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600 font-bold text-emerald-700"
+                    className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#A71380] font-bold text-emerald-700"
                   />
                 </div>
               )}
             </div>
 
             {/* Calculations Box */}
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-2 text-xs">
+            <div className="bg-slate-50 p-4 rounded-[5px] border border-slate-200/80 space-y-2 text-xs">
               <div className="flex justify-between text-slate-600">
                 <span>Subtotal (Trade Cost):</span>
                 <span className="font-bold">₹{subtotal.toLocaleString("en-IN")}</span>
@@ -407,7 +407,7 @@ function CreateSecondaryInvoicePageInner() {
 
           <button
             type="submit"
-            className="w-full bg-[#0b2341] hover:bg-[#12315a] text-white font-bold py-4 rounded-2xl shadow-xs transition-all text-sm cursor-pointer mt-4"
+            className="w-full bg-[#0b2341] hover:bg-[#12315a] text-white font-bold py-4 rounded-[5px] shadow-xs transition-all text-sm cursor-pointer mt-4"
           >
             ✓ Generate & Issue B2B GST Tax Invoice
           </button>
@@ -417,7 +417,7 @@ function CreateSecondaryInvoicePageInner() {
       {/* Generated Invoice View Modal */}
       {generatedInvoice && (
         <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-150">
-          <div className="bg-white border border-slate-200 rounded-3xl max-w-2xl w-full p-8 space-y-6 shadow-2xl overflow-y-auto max-h-[90vh]">
+          <div className="bg-white border border-slate-200 rounded-[6px] max-w-2xl w-full p-8 space-y-6 shadow-2xl overflow-y-auto max-h-[90vh]">
             <div className="flex justify-between items-start border-b border-slate-200 pb-4">
               <div>
                 <span className="text-[10px] font-black tracking-widest text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 uppercase">
@@ -435,7 +435,7 @@ function CreateSecondaryInvoicePageInner() {
             </div>
 
             {/* Billed To / From */}
-            <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs">
+            <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-[5px] border border-slate-200 text-xs">
               <div>
                 <span className="font-bold text-slate-400 uppercase text-[10px]">Issued By (Distributor)</span>
                 <div className="font-bold text-[#0b2341] mt-0.5">PharmaLink Wholesale Distributor</div>
@@ -449,7 +449,7 @@ function CreateSecondaryInvoicePageInner() {
             </div>
 
             {/* Invoice Line Items */}
-            <div className="border border-slate-200 rounded-2xl overflow-hidden">
+            <div className="border border-slate-200 rounded-[5px] overflow-hidden">
               <table className="w-full text-left text-xs">
                 <thead className="bg-slate-100 font-bold text-slate-600 uppercase text-[10px]">
                   <tr>
@@ -478,7 +478,7 @@ function CreateSecondaryInvoicePageInner() {
             </div>
 
             {/* Totals */}
-            <div className="flex justify-between items-center bg-slate-900 text-white p-5 rounded-2xl">
+            <div className="flex justify-between items-center bg-slate-900 text-white p-5 rounded-[5px]">
               <div>
                 <div className="text-xs text-slate-300">Payment Terms: <span className="font-bold text-amber-400">{generatedInvoice.paymentMode.replace("_", " ")}</span></div>
                 <div className="text-xs text-slate-300">Outstanding Due: <span className="font-bold text-rose-400">₹{generatedInvoice.balanceAmount.toLocaleString("en-IN")}</span></div>
@@ -493,7 +493,7 @@ function CreateSecondaryInvoicePageInner() {
             <div className="grid grid-cols-2 gap-3 pt-2">
               <button
                 onClick={() => window.print()}
-                className="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-3 rounded-xl text-xs transition-colors cursor-pointer"
+                className="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-3 rounded-[5px] text-xs transition-colors cursor-pointer"
               >
                 🖨️ Print / Download PDF
               </button>
@@ -504,7 +504,7 @@ function CreateSecondaryInvoicePageInner() {
                   );
                   window.open(`https://wa.me/?text=${text}`, "_blank");
                 }}
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-xs shadow-xs transition-colors cursor-pointer"
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-[5px] text-xs shadow-xs transition-colors cursor-pointer"
               >
                 📲 Send via WhatsApp
               </button>
@@ -518,7 +518,7 @@ function CreateSecondaryInvoicePageInner() {
 
 export default function CreateSecondaryInvoicePageWrapper() {
   return (
-    <Suspense fallback={<div className="text-center py-16"><div className="animate-spin w-9 h-9 border-3 border-blue-600 border-t-transparent rounded-full mx-auto mb-2"></div><p className="text-xs font-bold text-slate-500">Loading...</p></div>}>
+    <Suspense fallback={<div className="text-center py-16"><div className="animate-spin w-9 h-9 border-3 border-[#A71380] border-t-transparent rounded-full mx-auto mb-2"></div><p className="text-xs font-bold text-slate-500">Loading...</p></div>}>
       <CreateSecondaryInvoicePageInner />
     </Suspense>
   );

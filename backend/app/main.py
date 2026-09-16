@@ -39,11 +39,11 @@ if settings.ENVIRONMENT.lower() == "production":
         allow_headers=["Authorization", "Content-Type", "Accept", "X-Requested-With"],
     )
 else:
-    # Development / Staging Mode: Supports localhost & Local Area Network (LAN) testing
+    # Development / Staging Mode: Supports localhost, Capacitor Android/iOS, & LAN testing
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.BACKEND_CORS_ORIGINS,
-        allow_origin_regex=r"^http://(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+)(:\d+)?$",
+        allow_origin_regex=r"^(https?://(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+)(:\d+)?|capacitor://localhost|ionic://localhost)$",
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

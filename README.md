@@ -13,12 +13,12 @@ PharmaLink Enterprise is a full-stack B2B Wholesale and B2C Retail Pharmaceutica
 
 ## 🌟 Key Features
 
-- **🛍️ Dual B2B Wholesale & B2C Retail Storefront**: Seamless experience for end-consumers, verified distributors, and super-admins.
-- **🏷️ Dynamic Role-Based Pricing**: Retail MRP vs. Verified Distributor Wholesale Price vs. Tiered Bulk MOQ Pricing.
+- **🛍️ Multi-Role B2B Wholesale & B2C Retail Storefront**: Seamless experience for end-consumers, pharmacy retailers, verified distributors, and super-admins.
+- **🏷️ Dynamic Role-Based Pricing**: Retail MRP vs. Pharmacy Retailer Rates vs. Verified Distributor Wholesale Price vs. Tiered Bulk MOQ Pricing.
 - **📜 License Verification & KYC Workflow**: GSTIN and Drug License (Form 20B/21B) validation workflow for B2B portal access.
 - **🔒 Enterprise Security Standard**:
   - Short-lived JWT (15-min access tokens) with secure HTTP-only cookies / authorization headers.
-  - Granular RBAC authorization rules (`SUPER_ADMIN`, `DISTRIBUTOR`, `CUSTOMER`).
+  - Granular RBAC authorization rules (`SUPER_ADMIN`, `DISTRIBUTOR`, `RETAILER`, `CUSTOMER`).
   - Strict IDOR/BOLA resource ownership validation.
   - In-memory rate limiting against brute-force attacks.
   - HMAC-SHA256 signature verification for Razorpay payment webhooks.
@@ -69,6 +69,7 @@ npm run dev
 | :--- | :--- | :--- | :--- |
 | **Super Admin** | `admin@pharmalink.com` | `Admin@123` | Full System Control, Inventory & KYC Approvals |
 | **Distributor** | `distributor@medplus.com` | `Dist@123` | B2B Wholesale Purchasing & Bulk Discounts |
+| **Retailer** | `retailer@evvaipharma.com` | `retailer123` | Pharmacy Store B2B Purchasing, Credit Limit & Claims |
 | **Customer** | `customer@gmail.com` | `Cust@123` | B2C Retail Ordering |
 
 ---

@@ -7,6 +7,10 @@ from app.models.order import OrderStatus, PaymentStatus
 class OrderItemCreate(BaseModel):
     product_id: int
     quantity: int
+    carton_quantity: Optional[int] = 0
+    pack_quantity: Optional[int] = None
+    scheme_free_quantity: Optional[int] = 0
+    scheme_name: Optional[str] = None
 
 
 class OrderCreateRequest(BaseModel):
@@ -27,6 +31,18 @@ class OrderStatusUpdateRequest(BaseModel):
     tracking_number: Optional[str] = None
 
 
+class OrderItemBatchAllocationOut(BaseModel):
+    id: int
+    order_item_id: int
+    batch_id: Optional[int] = None
+    batch_no: str
+    quantity: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 class OrderItemOut(BaseModel):
     id: int
     product_id: Optional[int] = None  # nullable after product hard-delete
@@ -36,9 +52,11 @@ class OrderItemOut(BaseModel):
     unit_price: float
     quantity: int
     total_price: float
+    batch_allocations: List[OrderItemBatchAllocationOut] = []
 
     class Config:
         from_attributes = True
+
 
 
 class OrderOut(BaseModel):

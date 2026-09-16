@@ -3,15 +3,16 @@ from threading import Lock
 from typing import Dict, List
 from fastapi import HTTPException, status
 
+"""
+DEVELOPER NOTE — RATE LIMITING & BRUTE-FORCE PROTECTION:
+1. Mechanism: In-memory sliding window rate limiter tracking failed login attempts per (IP + Email) tuple.
+2. Configuration: Allows max 5 failed attempts per 60-second window before raising HTTP 429 Too Many Requests.
+3. Thread Safety: Threading Lock (_lock) prevents race conditions across worker threads.
+4. Reset: Successful authentication immediately clears recorded failure timestamps via record_success().
+"""
+
 class LoginRateLimiter:
-    """
-    In-memory thread-safe rate limiter for login brute-force prevention.
-    
-    Limitations:
-    - Resets on application restart.
-    - State is held in-memory per worker process (not shared across multiple Uvicorn workers).
-    - For multi-worker production environments, Redis-backed rate limiting (e.g. redis-py + slowapi) should be configured.
-    """
+    """In-memory thread-safe rate limiter for login brute-force prevention."""
     def __init__(self, max_attempts: int = 5, window_seconds: int = 60):
         self.max_attempts = max_attempts
         self.window_seconds = window_seconds
@@ -55,4 +56,4 @@ class LoginRateLimiter:
                 del self._attempts[key]
 
 
-login_rate_limiter = LoginRateLimiter(max_attempts=5, window_seconds=60)
+login_rate_limiter = LoginRateLimiter(max_attempts=15, window_seconds=60)

@@ -16,8 +16,8 @@ class Settings(BaseSettings):
     # Security & JWT
     SECRET_KEY: str = "pharmalink-dev-secret-key-32-chars-minimum-sec-hash-random-2026!"
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # Default 24 hours for customer/distributor
-    ADMIN_ACCESS_TOKEN_EXPIRE_MINUTES: int = 60  # Restricted 1 hour for admin
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 43200  # Extended 30 days for retailer/distributor/customer
+    ADMIN_ACCESS_TOKEN_EXPIRE_MINUTES: int = 10080  # Extended 7 days for admin
     JWT_ISSUER: str = "pharmalink-api"
     JWT_AUDIENCE: str = "pharmalink-app"
     
@@ -30,6 +30,12 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3000",
         "http://localhost:3001",
         "http://127.0.0.1:3001",
+        "http://localhost",
+        "https://localhost",
+        "capacitor://localhost",
+        "ionic://localhost",
+        "http://192.168.0.155:3000",
+        "http://192.168.0.155:8000",
     ]
     
     # Razorpay Payment Gateway Settings

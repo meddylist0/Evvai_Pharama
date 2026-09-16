@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { DistributorSidebar } from "@/components/DistributorSidebar";
+import { DistributorSidebar } from "@/components/b2b/DistributorSidebar";
 import { getStoredUser, StoredUser, authAPI, setStoredUser } from "@/lib/api";
 
 export default function DistributorLayout({ children }: { children: React.ReactNode }) {
@@ -105,7 +105,7 @@ export default function DistributorLayout({ children }: { children: React.ReactN
             {/* Hamburger Menu button for Mobile view */}
             <button
               onClick={() => setSidebarOpen(true)}
-              className="md:hidden p-2 rounded-xl border border-slate-200 text-[#0b2341] hover:bg-slate-50 transition-colors cursor-pointer"
+              className="md:hidden p-2 rounded-[5px] border border-slate-200 text-[#0b2341] hover:bg-slate-50 transition-colors cursor-pointer"
               aria-label="Open Sidebar Menu"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -131,7 +131,7 @@ export default function DistributorLayout({ children }: { children: React.ReactN
               onClick={handleManualRefresh}
               disabled={refreshing}
               title="Refresh KYC verification status from database"
-              className="border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold px-3 py-1.5 rounded-xl transition-all flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
+              className="border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold px-3 py-1.5 rounded-[5px] transition-all flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
             >
               <span className={refreshing ? "animate-spin" : ""}>🔄</span>
               <span className="hidden sm:inline">Refresh Status</span>
@@ -141,10 +141,10 @@ export default function DistributorLayout({ children }: { children: React.ReactN
             <div className="flex items-center space-x-3">
               <Link 
                 href="/distributor/profile"
-                className="flex items-center space-x-2.5 p-1.5 pr-3 rounded-2xl border border-slate-200 bg-slate-50/70 hover:bg-slate-100 transition-all cursor-pointer"
+                className="flex items-center space-x-2.5 p-1.5 pr-3 rounded-[5px] border border-slate-200 bg-slate-50/70 hover:bg-slate-100 transition-all cursor-pointer"
                 title="Click to view & edit Distributor Profile"
               >
-                <div className="w-8 h-8 rounded-xl overflow-hidden border border-slate-300 bg-blue-100 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-[5px] overflow-hidden border border-slate-300 bg-[#F8EAF4] flex items-center justify-center shrink-0">
                   <img
                     src={user?.avatar || defaultAvatar}
                     alt={user?.full_name || "Distributor"}
@@ -158,7 +158,7 @@ export default function DistributorLayout({ children }: { children: React.ReactN
                   <div className="text-xs font-black text-[#0b2341] leading-tight max-w-[140px] truncate">
                     {user?.full_name || "Pharma Distributor"}
                   </div>
-                  <div className="text-[10px] font-bold text-blue-700 leading-none">
+                  <div className="text-[10px] font-bold text-[#A71380] leading-none">
                     {isApproved ? "DISTRIBUTOR (KYC ✓)" : "DISTRIBUTOR (PENDING)"}
                   </div>
                 </div>

@@ -1254,8 +1254,9 @@ def run_full_security_suite(verbose_discovery: bool = False):
     reporter.log("Security Headers & CORS", "SEC-001", "OWASP Security Headers (nosniff, DENY, XSS mode=block)", sec_ok, lat, "క్లిక్‌జాకింగ్ మరియు XSS సెక్యూరిటీ హెడర్లు సక్రమంగా ఉన్నాయి.", requests_made=1, assertions_made=3)
 
     # CORS Multi-device LAN preflight
-    res_cors = client.options("/api/v1/products", headers={"Origin": "http://192.168.0.154:3000", "Access-Control-Request-Method": "GET"})
-    cors_ok = res_cors.headers.get("access-control-allow-origin") == "http://192.168.0.154:3000"
+    test_origin = f"http://{get_local_ip()}:3000"
+    res_cors = client.options("/api/v1/products", headers={"Origin": test_origin, "Access-Control-Request-Method": "GET"})
+    cors_ok = res_cors.headers.get("access-control-allow-origin") == test_origin
     reporter.log("Security Headers & CORS", "SEC-002", "Dynamic LAN Multi-Device CORS Preflight Enforcement", cors_ok, 5.0, "లోకల్ వై-ఫై నెట్‌వర్క్ పరికరాలకు CORS యాక్సెస్ అనుమతించబడింది.", requests_made=1, assertions_made=1)
 
     # Malicious Origin CORS Blocked

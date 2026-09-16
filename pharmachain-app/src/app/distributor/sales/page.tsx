@@ -101,7 +101,7 @@ export default function SecondarySalesDashboardPage() {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/90 shadow-2xs">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-[6px] border border-slate-200/90 shadow-2xs">
         <div>
           <div className="flex items-center space-x-2">
             <span className="text-[11px] font-extrabold text-[#0b2341] uppercase tracking-wider bg-emerald-100/60 px-3 py-1 rounded-full border border-emerald-200">
@@ -121,7 +121,7 @@ export default function SecondarySalesDashboardPage() {
 
         <Link
           href="/distributor/sales/new"
-          className="bg-[#0b2341] hover:bg-[#12315a] text-white font-bold px-5 py-3 rounded-2xl shadow-xs transition-all text-xs flex items-center space-x-2 shrink-0 cursor-pointer"
+          className="bg-[#0b2341] hover:bg-[#12315a] text-white font-bold px-5 py-3 rounded-[5px] shadow-xs transition-all text-xs flex items-center space-x-2 shrink-0 cursor-pointer"
         >
           <span>+ Create B2B Sales Invoice</span>
         </Link>
@@ -129,22 +129,22 @@ export default function SecondarySalesDashboardPage() {
 
       {/* Metrics Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-1">
+        <div className="bg-white p-5 rounded-[5px] border border-slate-200/90 shadow-2xs space-y-1">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Sales Turnover</span>
           <div className="text-2xl font-black text-[#0b2341]">₹{totalRevenue.toLocaleString("en-IN")}</div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-1">
+        <div className="bg-white p-5 rounded-[5px] border border-slate-200/90 shadow-2xs space-y-1">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Credit Collectibles (Outstanding)</span>
           <div className="text-2xl font-black text-rose-600">₹{totalOutstanding.toLocaleString("en-IN")}</div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-1">
+        <div className="bg-white p-5 rounded-[5px] border border-slate-200/90 shadow-2xs space-y-1">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Settled / Paid Invoices</span>
           <div className="text-2xl font-black text-emerald-600">{paidCount} Paid</div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-1">
+        <div className="bg-white p-5 rounded-[5px] border border-slate-200/90 shadow-2xs space-y-1">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Pending Credit Invoices</span>
           <div className="text-2xl font-black text-amber-600">{pendingCount} Pending</div>
         </div>
@@ -153,7 +153,7 @@ export default function SecondarySalesDashboardPage() {
       {/* Status Msg */}
       {statusMsg && (
         <div
-          className={`p-4 rounded-2xl text-xs font-bold border transition-all ${
+          className={`p-4 rounded-[5px] text-xs font-bold border transition-all ${
             statusMsg.type === "success" ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-rose-50 text-rose-800 border-rose-200"
           }`}
         >
@@ -162,13 +162,13 @@ export default function SecondarySalesDashboardPage() {
       )}
 
       {/* Admin Controls Bar: Search + Filter + View Mode Toggle + Per Page + Pagination Info */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs text-xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-[5px] border border-slate-200/90 shadow-2xs text-xs">
         <input
           type="text"
           placeholder="Search invoice no, buyer name, village, payment mode..."
           value={searchTerm}
           onChange={(e) => handleSearchChange(e.target.value)}
-          className="border border-slate-200 rounded-xl px-4 py-2 bg-slate-50 font-medium w-full sm:w-80 focus:bg-white focus:outline-none"
+          className="border border-slate-200 rounded-[5px] px-4 py-2 bg-slate-50 font-medium w-full sm:w-80 focus:bg-white focus:outline-none"
         />
 
         <div className="flex flex-wrap items-center gap-3">
@@ -177,7 +177,7 @@ export default function SecondarySalesDashboardPage() {
             <select
               value={statusFilter}
               onChange={(e) => handleStatusFilterChange(e.target.value)}
-              className="border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 font-bold text-[#0b2341] cursor-pointer"
+              className="border border-slate-200 rounded-[5px] px-3 py-2 bg-slate-50 font-bold text-[#0b2341] cursor-pointer"
             >
               <option value="ALL">All Statuses ({invoices.length})</option>
               <option value="PAID">PAID ({paidCount})</option>
@@ -186,10 +186,10 @@ export default function SecondarySalesDashboardPage() {
           </div>
 
           {/* View Toggle (Table vs Grid Cards) */}
-          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+          <div className="flex items-center bg-slate-100 p-1 rounded-[5px] border border-slate-200">
             <button
               onClick={() => setViewMode("table")}
-              className={`px-3 py-1 rounded-lg font-extrabold text-[11px] transition-all cursor-pointer ${
+              className={`px-3 py-1 rounded-[4px] font-extrabold text-[11px] transition-all cursor-pointer ${
                 viewMode === "table" ? "bg-white text-[#0b2341] shadow-2xs" : "text-slate-500 hover:text-slate-800"
               }`}
             >
@@ -197,7 +197,7 @@ export default function SecondarySalesDashboardPage() {
             </button>
             <button
               onClick={() => setViewMode("grid")}
-              className={`px-3 py-1 rounded-lg font-extrabold text-[11px] transition-all cursor-pointer ${
+              className={`px-3 py-1 rounded-[4px] font-extrabold text-[11px] transition-all cursor-pointer ${
                 viewMode === "grid" ? "bg-white text-[#0b2341] shadow-2xs" : "text-slate-500 hover:text-slate-800"
               }`}
             >
@@ -218,7 +218,7 @@ export default function SecondarySalesDashboardPage() {
                 setPageSize(Number(e.target.value));
                 setCurrentPage(1);
               }}
-              className="border border-slate-200 rounded-lg px-2 py-1.5 bg-slate-50 font-bold text-[#0b2341] cursor-pointer"
+              className="border border-slate-200 rounded-[4px] px-2 py-1.5 bg-slate-50 font-bold text-[#0b2341] cursor-pointer"
             >
               <option value={5}>5</option>
               <option value={8}>8</option>
@@ -230,7 +230,7 @@ export default function SecondarySalesDashboardPage() {
       </div>
 
       {/* Main Content Container (Table View vs Grid View) */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl overflow-hidden shadow-2xs">
+      <div className="bg-white border border-slate-200/90 rounded-[6px] overflow-hidden shadow-2xs">
         {filteredInvoices.length === 0 ? (
           <div className="p-12 text-center text-slate-400 font-bold text-xs">
             No secondary invoices match your search or filter criteria.
@@ -261,7 +261,7 @@ export default function SecondarySalesDashboardPage() {
                       </td>
                       <td className="py-4 px-6">
                         <div className="font-bold text-[#0b2341]">{inv.buyerName}</div>
-                        <div className="text-[10px] text-blue-600 font-bold">{inv.buyerType.replace("_", " ")}</div>
+                        <div className="text-[10px] text-[#A71380] font-bold">{inv.buyerType.replace("_", " ")}</div>
                       </td>
                       <td className="py-4 px-6 font-semibold text-slate-700">{inv.villageTown}</td>
                       <td className="py-4 px-6">
@@ -294,14 +294,14 @@ export default function SecondarySalesDashboardPage() {
                         {inv.balanceAmount > 0 && (
                           <button
                             onClick={() => handleMarkAsPaid(inv.id)}
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2.5 py-1.5 rounded-lg text-[11px] transition-all cursor-pointer shadow-2xs"
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2.5 py-1.5 rounded-[4px] text-[11px] transition-all cursor-pointer shadow-2xs"
                           >
                             Mark Paid
                           </button>
                         )}
                         <button
                           onClick={() => setSelectedInvoice(inv)}
-                          className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold px-2.5 py-1.5 rounded-lg text-[11px] transition-all cursor-pointer"
+                          className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold px-2.5 py-1.5 rounded-[4px] text-[11px] transition-all cursor-pointer"
                         >
                           View Bill
                         </button>
@@ -327,7 +327,7 @@ export default function SecondarySalesDashboardPage() {
                   <button
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                    className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px] font-bold text-slate-700"
+                    className="px-3 py-1.5 rounded-[4px] border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px] font-bold text-slate-700"
                     title="Previous Page"
                   >
                     ‹ Prev
@@ -337,7 +337,7 @@ export default function SecondarySalesDashboardPage() {
                     <button
                       key={pageNum}
                       onClick={() => setCurrentPage(pageNum)}
-                      className={`w-8 h-8 rounded-lg border text-xs font-black transition-all cursor-pointer flex items-center justify-center ${
+                      className={`w-8 h-8 rounded-[4px] border text-xs font-black transition-all cursor-pointer flex items-center justify-center ${
                         currentPage === pageNum
                           ? "bg-[#0b2341] text-white border-[#0b2341] shadow-xs"
                           : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
@@ -350,7 +350,7 @@ export default function SecondarySalesDashboardPage() {
                   <button
                     disabled={currentPage === totalPages}
                     onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                    className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px] font-bold text-slate-700"
+                    className="px-3 py-1.5 rounded-[4px] border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px] font-bold text-slate-700"
                     title="Next Page"
                   >
                     Next ›
@@ -364,7 +364,7 @@ export default function SecondarySalesDashboardPage() {
           <div className="p-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {paginatedInvoices.map((inv) => (
-                <div key={inv.id} className="border border-slate-200/90 rounded-2xl p-5 bg-white hover:shadow-md transition-all space-y-3">
+                <div key={inv.id} className="border border-slate-200/90 rounded-[5px] p-5 bg-white hover:shadow-md transition-all space-y-3">
                   <div className="flex justify-between items-start">
                     <div>
                       <span className="font-mono text-sm font-black text-[#0b2341]">{inv.invoiceNo}</span>
@@ -381,9 +381,9 @@ export default function SecondarySalesDashboardPage() {
                     )}
                   </div>
 
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80 space-y-1 text-xs">
+                  <div className="bg-slate-50 p-3 rounded-[5px] border border-slate-200/80 space-y-1 text-xs">
                     <div className="font-bold text-[#0b2341]">{inv.buyerName}</div>
-                    <div className="text-[11px] text-blue-600 font-bold">{inv.buyerType.replace("_", " ")} | Location: {inv.villageTown}</div>
+                    <div className="text-[11px] text-[#A71380] font-bold">{inv.buyerType.replace("_", " ")} | Location: {inv.villageTown}</div>
                     <div className="text-[11px] text-slate-500">Terms: <span className="font-bold">{inv.paymentMode.replace("_", " ")}</span></div>
                   </div>
 
@@ -406,14 +406,14 @@ export default function SecondarySalesDashboardPage() {
                     {inv.balanceAmount > 0 && (
                       <button
                         onClick={() => handleMarkAsPaid(inv.id)}
-                        className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-xs transition-all cursor-pointer shadow-2xs"
+                        className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-[5px] text-xs transition-all cursor-pointer shadow-2xs"
                       >
                         Mark Paid
                       </button>
                     )}
                     <button
                       onClick={() => setSelectedInvoice(inv)}
-                      className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2 rounded-xl text-xs transition-all cursor-pointer"
+                      className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2 rounded-[5px] text-xs transition-all cursor-pointer"
                     >
                       View Invoice
                     </button>
@@ -423,7 +423,7 @@ export default function SecondarySalesDashboardPage() {
             </div>
 
             {/* Grid Pagination Bar */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 bg-slate-50/70 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-600">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 bg-slate-50/70 rounded-[5px] border border-slate-200 text-xs font-semibold text-slate-600">
               <div>
                 <span>
                   Showing <span className="font-bold text-[#0b2341]">{(currentPage - 1) * pageSize + 1}</span> to{" "}
@@ -437,7 +437,7 @@ export default function SecondarySalesDashboardPage() {
                   <button
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                    className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px] font-bold text-slate-700"
+                    className="px-3 py-1.5 rounded-[4px] border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px] font-bold text-slate-700"
                   >
                     ‹ Prev
                   </button>
@@ -446,7 +446,7 @@ export default function SecondarySalesDashboardPage() {
                     <button
                       key={pageNum}
                       onClick={() => setCurrentPage(pageNum)}
-                      className={`w-8 h-8 rounded-lg border text-xs font-black transition-all cursor-pointer flex items-center justify-center ${
+                      className={`w-8 h-8 rounded-[4px] border text-xs font-black transition-all cursor-pointer flex items-center justify-center ${
                         currentPage === pageNum
                           ? "bg-[#0b2341] text-white border-[#0b2341] shadow-xs"
                           : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
@@ -459,7 +459,7 @@ export default function SecondarySalesDashboardPage() {
                   <button
                     disabled={currentPage === totalPages}
                     onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                    className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px] font-bold text-slate-700"
+                    className="px-3 py-1.5 rounded-[4px] border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px] font-bold text-slate-700"
                   >
                     Next ›
                   </button>
@@ -473,7 +473,7 @@ export default function SecondarySalesDashboardPage() {
       {/* Invoice Detail Modal with WhatsApp & Print */}
       {selectedInvoice && (
         <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-150">
-          <div className="bg-white border border-slate-200 rounded-3xl max-w-xl w-full p-6 space-y-4 shadow-2xl overflow-y-auto max-h-[90vh]">
+          <div className="bg-white border border-slate-200 rounded-[6px] max-w-xl w-full p-6 space-y-4 shadow-2xl overflow-y-auto max-h-[90vh]">
             <div className="flex justify-between items-start border-b border-slate-200 pb-3">
               <div>
                 <span className="text-[10px] font-black tracking-widest text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 uppercase">
@@ -490,7 +490,7 @@ export default function SecondarySalesDashboardPage() {
               </button>
             </div>
 
-            <div className="border border-slate-200 rounded-2xl overflow-hidden text-xs">
+            <div className="border border-slate-200 rounded-[5px] overflow-hidden text-xs">
               <table className="w-full text-left">
                 <thead className="bg-slate-50 font-bold text-slate-600 uppercase text-[10px]">
                   <tr>
@@ -516,7 +516,7 @@ export default function SecondarySalesDashboardPage() {
               </table>
             </div>
 
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-1 text-xs">
+            <div className="bg-slate-50 p-4 rounded-[5px] border border-slate-200 space-y-1 text-xs">
               <div className="flex justify-between font-bold text-[#0b2341]">
                 <span>Total Invoice Amount:</span>
                 <span>₹{selectedInvoice.totalAmount.toLocaleString("en-IN")}</span>
@@ -535,14 +535,14 @@ export default function SecondarySalesDashboardPage() {
               {selectedInvoice.balanceAmount > 0 && (
                 <button
                   onClick={() => handleMarkAsPaid(selectedInvoice.id)}
-                  className="col-span-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-xs transition-colors cursor-pointer"
+                  className="col-span-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-[5px] text-xs transition-colors cursor-pointer"
                 >
                   ✓ Mark Balance as Paid
                 </button>
               )}
               <button
                 onClick={() => window.print()}
-                className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2.5 rounded-xl text-xs transition-colors cursor-pointer"
+                className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2.5 rounded-[5px] text-xs transition-colors cursor-pointer"
               >
                 🖨️ Print PDF
               </button>
@@ -553,7 +553,7 @@ export default function SecondarySalesDashboardPage() {
                   );
                   window.open(`https://wa.me/?text=${text}`, "_blank");
                 }}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs shadow-xs transition-colors cursor-pointer"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-[5px] text-xs shadow-xs transition-colors cursor-pointer"
               >
                 📲 WhatsApp Share
               </button>

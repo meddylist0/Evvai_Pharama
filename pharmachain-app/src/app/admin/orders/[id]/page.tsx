@@ -1,6 +1,6 @@
 import React from "react";
 import { INITIAL_ORDERS } from "@/data/mockData";
-import { AdminOrderDetailClientView } from "@/components/AdminOrderDetailClientView";
+import { AdminOrderDetailClientView } from "@/components/admin/AdminOrderDetailClientView";
 
 // Required for Next.js static HTML export (output: 'export')
 export async function generateStaticParams() {

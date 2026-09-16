@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from app.core.database import Base, engine, SessionLocal
 from app.core.security import get_password_hash
-from app.models.user import User, UserRole, CustomerProfile, DistributorProfile, KYCStatus
+from app.models.user import User, UserRole, CustomerProfile, DistributorProfile, RetailerProfile, KYCStatus
 from app.models.product import Category, Product
 from app.models.order import Order, OrderItem, OrderStatus, PaymentStatus
 from app.models.kyc import DistributorKYC
@@ -191,11 +191,31 @@ def seed_database():
             }
         ]
 
+        from app.services.inventory_service import record_inventory_receipt
+
         created_products = []
         for p_item in products_data:
+            init_batch_no = p_item.get("batch_no") or "EV2026-INIT"
+            init_expiry = p_item.get("expiry_date") or "12/2028"
+            init_stock = p_item.get("stock", 0)
+
+            p_item["stock"] = 0
+            p_item["batch_no"] = None
+            p_item["expiry_date"] = None
+
             prod = Product(**p_item)
             db.add(prod)
             db.flush()
+
+            if init_stock > 0 and init_batch_no and init_expiry:
+                record_inventory_receipt(
+                    db=db,
+                    product=prod,
+                    batch_no=init_batch_no,
+                    expiry_date=init_expiry,
+                    quantity=init_stock,
+                    reason="Initial Seed Stock Receipt"
+                )
             created_products.append(prod)
 
         # 3. Seed Users
@@ -310,6 +330,35 @@ def seed_database():
             pincode="500081"
         )
         db.add(cust_profile)
+        db.flush()
+
+        # Retailer (Pharmacy Shop) User
+        retailer = User(
+            email="retailer@evvaipharma.com",
+            hashed_password=get_password_hash("retailer123"),
+            full_name="Srikanth Reddy (Srikanth MedPlus Pharmacy)",
+            phone="+91 9876501234",
+            role=UserRole.RETAILER,
+            is_active=True,
+            is_verified=True
+        )
+        db.add(retailer)
+        db.flush()
+
+        ret_profile = RetailerProfile(
+            user_id=retailer.id,
+            shop_name="Srikanth MedPlus Medical & General Store",
+            owner_name="Srikanth Reddy",
+            gstin="36AABCS4321E1Z5",
+            drug_license_no="DL-HYD-20B-77491",
+            shop_address="Shop #4, Main Road, KPHB Colony",
+            city="Hyderabad",
+            state="Telangana",
+            pincode="500072",
+            kyc_status=KYCStatus.APPROVED,
+            credit_limit=100000.0
+        )
+        db.add(ret_profile)
         db.flush()
 
         # 4. Seed Initial Orders

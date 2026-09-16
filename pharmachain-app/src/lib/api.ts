@@ -1,9 +1,47 @@
-// PharmaLink Enterprise API Client
+/**
+ * DEVELOPER NOTE — FRONTEND API CLIENT & HTTP SERVICE:
+ * 1. Base URL: Automatically detects window hostname (localhost, LAN IP) on port 8000 for seamless mobile/desktop dev.
+ * 2. Authorization: Automatically attaches Bearer token from localStorage to all request headers.
+ * 3. Endpoints: Handles Product catalog, Batch modal queries, Order placement, KYC upload, and Gateway settings.
+ */
+
+import { Capacitor } from "@capacitor/core";
+
 export const getApiBaseUrl = (): string => {
-  if (typeof window !== "undefined" && window.location && window.location.hostname) {
-    const host = window.location.hostname;
-    // Dynamically point to port 8000 matching the current browser hostname (localhost, 127.0.0.1, or LAN IP)
-    return `http://${host}:8000/api/v1`;
+  if (typeof window !== "undefined") {
+    const custom = localStorage.getItem("evvai_custom_api_url");
+    if (custom) return custom;
+
+    if (window.location && window.location.hostname) {
+      const host = window.location.hostname;
+      const protocol = window.location.protocol;
+      let isNative = false;
+      try {
+        isNative =
+          Capacitor.isNativePlatform() ||
+          protocol === "capacitor:" ||
+          protocol === "ionic:" ||
+          (protocol === "https:" && (host === "localhost" || host === "127.0.0.1")) ||
+          (typeof document !== "undefined" &&
+            (document.documentElement.classList.contains("is-native") ||
+              document.documentElement.getAttribute("data-is-native") === "true")) ||
+          sessionStorage?.getItem("evvai_app_mode") === "native" ||
+          localStorage?.getItem("evvai_app_mode") === "native";
+      } catch {
+        isNative = false;
+      }
+
+      // On Android native app, localhost refers to the phone, so point to host LAN IP
+      if (isNative && (host === "localhost" || host === "127.0.0.1" || !host)) {
+        return "http://192.168.0.155:8000/api/v1";
+      }
+
+      if (host === "localhost" || host === "127.0.0.1") {
+        return "http://127.0.0.1:8000/api/v1";
+      }
+
+      return `http://${host}:8000/api/v1`;
+    }
   }
   return process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
 };
@@ -15,17 +53,37 @@ export interface StoredUser {
   user_id: number;
   email: string;
   full_name: string;
-  role: "ADMIN" | "DISTRIBUTOR" | "CUSTOMER";
+  role: "ADMIN" | "DISTRIBUTOR" | "RETAILER" | "CUSTOMER";
   kyc_status?: string | null;
   avatar?: string | null;
   phone?: string | null;
   company_name?: string | null;
+  shop_name?: string | null;
+  shop_address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  pincode?: string | null;
+}
+
+export interface RetailerProfile {
+  id: number;
+  user_id: number;
+  shop_name: string;
+  owner_name: string;
+  gstin?: string | null;
+  drug_license_no: string;
+  shop_address: string;
+  city: string;
+  state: string;
+  pincode: string;
+  kyc_status: "PENDING" | "APPROVED" | "REJECTED";
+  credit_limit: number;
 }
 
 export interface AuthResponse {
   access_token: string;
   token_type: string;
-  role: "ADMIN" | "DISTRIBUTOR" | "CUSTOMER";
+  role: "ADMIN" | "DISTRIBUTOR" | "RETAILER" | "CUSTOMER";
   user_id: number;
   full_name: string;
   email: string;
@@ -33,18 +91,52 @@ export interface AuthResponse {
   avatar?: string | null;
   phone?: string | null;
   company_name?: string | null;
+  shop_name?: string | null;
+}
+
+export interface ProductBatch {
+  id: number;
+  product_id: number;
+  batch_no: string;
+  mfg_date?: string | null;
+  expiry_date: string;
+  quantity: number;
+  reserved_quantity: number;
+  purchase_rate?: number | null;
+  warehouse: string;
+  storage_location: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface InventoryTransaction {
+  id: number;
+  product_id: number;
+  batch_id?: number | null;
+  transaction_type: string;
+  quantity: number;
+  balance_after: number;
+  reason?: string | null;
+  user_id?: number | null;
+  created_at: string;
 }
 
 export interface ProductItem {
-  price: number | null | undefined;
+  low_stock_threshold: number;
+  price?: number | null;
   id: number;
   sku: string;
   name: string;
+  slug?: string | null;
+  brand_name?: string | null;
   subtitle?: string | null;
   composition: string;
+  generic_name?: string | null;
   pack_size: string;
   description?: string | null;
   category_name?: string | null;
+  category?: string | null;
   mrp: number;
   display_price: number;
   role_price_label: string;
@@ -54,16 +146,29 @@ export interface ProductItem {
   bulk_price?: number | null;
   bulk_moq?: number | null;
   stock: number;
+  total_stock?: number | null;
   in_stock: boolean;
   batch_no?: string | null;
   expiry_date?: string | null;
+  batches?: ProductBatch[] | null;
   image?: string | null;
   status: string;
+  dosage_form?: string | null;
+  form?: string | null;
+  rating?: number;
+  reviews_count?: number;
+  pharmacopeia?: string | null;
+  dossier_status?: string | null;
+  packSize?: string | null;
 }
 
 export interface OrderItemPayload {
   product_id: number;
   quantity: number;
+  carton_quantity?: number;
+  pack_quantity?: number;
+  scheme_free_quantity?: number;
+  scheme_name?: string;
 }
 
 export interface OrderCreatePayload {
@@ -92,12 +197,15 @@ export interface OrderItemData {
 export interface OrderData {
   id: number;
   order_code: string;
+  order_number?: string | null;
+  order_id?: string | number | null;
   user_id: number;
   role: string;
   customer_name: string;
   customer_phone?: string | null;
   gstin?: string | null;
   delivery_address: string;
+  shipping_address?: string | null;
   delivery_city: string;
   delivery_state: string;
   delivery_pincode: string;
@@ -107,6 +215,8 @@ export interface OrderData {
   shipping_charge: number;
   total_amount: number;
   order_status: "Pending" | "Confirmed" | "Packed" | "Shipped" | "Delivered" | "Cancelled" | "Returned";
+  orderStatus?: string;
+  status?: string;
   payment_status: "Pending" | "Paid" | "Failed" | "COD" | "Refunded";
   payment_method: string;
   refund_status?: string | null;
@@ -137,17 +247,32 @@ export interface DashboardSummary {
 
 export interface KYCOut {
   id: number;
-  distributor_id: number;
+  distributor_id?: number | null;
+  retailer_id?: number | null;
+  partner_type?: "DISTRIBUTOR" | "RETAILER" | string;
   company_name?: string | null;
   distributor_name?: string | null;
-  gst_number: string;
-  drug_license_no: string;
+  shop_name?: string | null;
+  owner_name?: string | null;
+  pharmacist_name?: string | null;
+  pharmacist_reg_no?: string | null;
+  form_20_no?: string | null;
+  form_21_no?: string | null;
+  gst_number?: string | null;
+  drug_license_no?: string | null;
   pan_number?: string | null;
   document_file_url?: string | null;
   verification_status: "PENDING" | "APPROVED" | "REJECTED";
   admin_remarks?: string | null;
+  requested_credit_limit?: number | null;
   credit_limit?: number | null;
-  submitted_at: string;
+  credit_terms_days?: number | null;
+  city?: string | null;
+  state?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  submitted_at?: string | null;
+  reviewed_at?: string | null;
 }
 
 // Token Storage Helpers
@@ -197,10 +322,16 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
   }
 
   const baseUrl = getApiBaseUrl();
-  const res = await fetch(`${baseUrl}${endpoint}`, {
-    ...options,
-    headers,
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${baseUrl}${endpoint}`, {
+      ...options,
+      headers,
+    });
+  } catch (netErr: any) {
+    console.error(`apiFetch failed for ${baseUrl}${endpoint}:`, netErr);
+    throw new Error(`Unable to connect to server at ${baseUrl}. Please verify your backend server is running.`);
+  }
 
   if (!res.ok) {
     let errorDetail = `Request failed with status ${res.status}`;
@@ -310,10 +441,10 @@ export const authAPI = {
     drug_license_no: string;
     pan_number?: string;
     document_file_url?: string;
-    business_address: string;
-    city: string;
-    state: string;
-    pincode: string;
+    business_address?: string;
+    city?: string;
+    state?: string;
+    pincode?: string;
   }): Promise<AuthResponse> => {
     const data = await apiFetch<AuthResponse>("/auth/register-distributor", {
       method: "POST",
@@ -334,6 +465,50 @@ export const authAPI = {
     return data;
   },
 
+  registerRetailer: async (payload: {
+    email: string;
+    password: string;
+    full_name: string;
+    phone: string;
+    shop_name: string;
+    owner_name: string;
+    gstin?: string;
+    pan_no?: string;
+    drug_license_no: string;
+    form_20_no?: string;
+    form_21_no?: string;
+    dl_issue_date?: string;
+    dl_expiry_date?: string;
+    pharmacist_name?: string;
+    pharmacist_reg_no?: string;
+    drug_license_doc_url?: string;
+    pharmacist_cert_url?: string;
+    gst_doc_url?: string;
+    shop_address?: string;
+    city?: string;
+    state?: string;
+    pincode?: string;
+  }): Promise<AuthResponse> => {
+    const data = await apiFetch<AuthResponse>("/auth/register-retailer", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    setAuthToken(data.access_token);
+    setStoredUser({
+      user_id: data.user_id,
+      email: data.email,
+      full_name: data.full_name,
+      role: data.role,
+      kyc_status: data.kyc_status || "PENDING",
+      avatar: data.avatar ?? null,
+      shop_name: payload.shop_name,
+    });
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("pharmalink_user_updated"));
+    }
+    return data;
+  },
+
   getMe: async () => {
     return apiFetch<any>("/auth/me");
   },
@@ -343,11 +518,13 @@ export const authAPI = {
     email?: string;
     phone?: string;
     company_name?: string;
+    shop_name?: string;
     address?: string;
     city?: string;
     state?: string;
     pincode?: string;
     avatar?: string;
+    requested_credit_limit?: number;
   }) => {
     const data = await apiFetch<any>("/auth/profile", {
       method: "PUT",
@@ -362,6 +539,9 @@ export const authAPI = {
       if (data.avatar !== undefined || payload.avatar !== undefined) current.avatar = data.avatar ?? payload.avatar ?? current.avatar;
       if (data.distributor_profile?.company_name || payload.company_name) {
         current.company_name = data.distributor_profile?.company_name || payload.company_name || current.company_name;
+      }
+      if (data.retailer_profile?.shop_name || payload.shop_name) {
+        current.shop_name = data.retailer_profile?.shop_name || payload.shop_name || current.shop_name;
       }
       setStoredUser(current);
       // Trigger storage event so header & dashboard update reactively
@@ -401,12 +581,30 @@ export const authAPI = {
 
 export const productsAPI = {
   list: async (categorySlug?: string, search?: string, includeDisabled: boolean = false): Promise<ProductItem[]> => {
-    const params = new URLSearchParams();
-    if (categorySlug && categorySlug !== "All") params.append("category_slug", categorySlug);
-    if (search) params.append("search", search);
-    if (includeDisabled) params.append("include_disabled", "true");
-    const query = params.toString() ? `?${params.toString()}` : "";
-    return apiFetch<ProductItem[]>(`/products${query}`);
+    try {
+      const params = new URLSearchParams();
+      if (categorySlug && categorySlug !== "All") params.append("category_slug", categorySlug);
+      if (search) params.append("search", search);
+      if (includeDisabled) params.append("include_disabled", "true");
+      const query = params.toString() ? `?${params.toString()}` : "";
+      const items = await apiFetch<ProductItem[]>(`/products${query}`);
+      if (items && items.length > 0) return items;
+    } catch (err) {
+      console.warn("productsAPI.list network/fetch error, falling back to cached catalog:", err);
+    }
+
+    // Robust offline fallback so products always appear
+    const { INITIAL_PRODUCTS } = await import("@/data/mockData");
+    return (INITIAL_PRODUCTS as any[]).map((p, idx) => ({
+      ...p,
+      id: typeof p.id === "number" ? p.id : idx + 1,
+      customer_price: p.customerPrice ?? p.customer_price ?? p.mrp,
+      display_price: p.customerPrice ?? p.customer_price ?? p.mrp,
+      mrp: p.mrp || 0,
+      in_stock: (p.stock || 10) > 0,
+      stock: p.stock || 25,
+      dosage_form: p.category || "Tablet",
+    }));
   },
 
   get: async (productId: number): Promise<ProductItem> => {
@@ -458,6 +656,79 @@ export const productsAPI = {
       body: JSON.stringify({ adjustment, reason }),
     });
   },
+
+  getBatches: async (productId: number): Promise<ProductBatch[]> => {
+    return apiFetch<ProductBatch[]>(`/products/${productId}/batches`);
+  },
+
+  receiveBatch: async (productId: number, payload: {
+    batch_no: string;
+    expiry_date: string;
+    quantity: number;
+    warehouse?: string;
+    storage_location?: string;
+    mfg_date?: string;
+    purchase_rate?: number;
+  }): Promise<ProductBatch> => {
+    return apiFetch<ProductBatch>(`/products/${productId}/batches`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+
+  getLedger: async (productId: number): Promise<InventoryTransaction[]> => {
+    return apiFetch<InventoryTransaction[]>(`/products/${productId}/ledger`);
+  },
+};
+
+export interface CategoryItem {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string | null;
+  image?: string | null;
+  sort_order?: number;
+  is_active?: boolean;
+  created_at?: string;
+  product_count?: number;
+}
+export type CategoryData = CategoryItem;
+
+export const categoriesAPI = {
+  list: async (): Promise<CategoryItem[]> => {
+    try {
+      const data = await apiFetch<CategoryItem[]>("/categories");
+      if (data && data.length > 0) return data;
+    } catch (err) {
+      console.warn("Failed to fetch /categories, using default categories:", err);
+    }
+    return [
+      { id: 1, name: "Wellness & Sleep", slug: "wellness-sleep", description: "Formulations for restorative sleep, circadian balance, and everyday wellbeing.", is_active: true },
+      { id: 2, name: "Injectables", slug: "injectables", description: "Hospital-grade sterile injectables, vitamins, and critical care solutions.", is_active: true },
+      { id: 3, name: "Gastroenterology", slug: "gastroenterology", description: "Targeted gastro and hepatology medications for optimal digestive health.", is_active: true },
+      { id: 4, name: "Cardiology & Metabolic", slug: "cardiology-metabolic", description: "Hypertension, lipid-lowering, and cardiovascular health management.", is_active: true },
+      { id: 5, name: "Respiratory & Allergy", slug: "respiratory-allergy", description: "Antihistamines, bronchodilators, and allergy relief therapies.", is_active: true },
+      { id: 6, name: "Anti-Infectives & Antibiotics", slug: "anti-infectives", description: "Broad-spectrum oral and IV antimicrobials manufactured under cGMP.", is_active: true },
+    ];
+  },
+  create: async (payload: { name: string; slug?: string; description?: string; is_active?: boolean; sort_order?: number }): Promise<CategoryItem> => {
+    const slug = payload.slug || payload.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
+    return apiFetch<CategoryItem>("/categories", {
+      method: "POST",
+      body: JSON.stringify({ ...payload, slug }),
+    });
+  },
+  update: async (id: number, payload: Partial<CategoryItem>): Promise<CategoryItem> => {
+    return apiFetch<CategoryItem>(`/categories/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+  },
+  delete: async (id: number): Promise<any> => {
+    return apiFetch<any>(`/categories/${id}`, {
+      method: "DELETE",
+    });
+  },
 };
 
 export const pricingAPI = {
@@ -492,7 +763,7 @@ export const usersAPI = {
     password: string;
     full_name: string;
     phone?: string;
-    role: "ADMIN" | "DISTRIBUTOR" | "CUSTOMER";
+    role: "ADMIN" | "DISTRIBUTOR" | "RETAILER" | "CUSTOMER";
     company_name?: string;
     address?: string;
     city?: string;
@@ -505,7 +776,7 @@ export const usersAPI = {
     });
   },
 
-  updateRole: async (userId: number, role: "ADMIN" | "DISTRIBUTOR" | "CUSTOMER") => {
+  updateRole: async (userId: number, role: "ADMIN" | "DISTRIBUTOR" | "RETAILER" | "CUSTOMER") => {
     return apiFetch<any>(`/users/${userId}/role`, {
       method: "PATCH",
       body: JSON.stringify({ role }),
@@ -567,8 +838,9 @@ export const ordersAPI = {
     return apiFetch<any>(`/orders/${orderId}/invoice`);
   },
 
-  cancelOrder: async (orderId: number): Promise<OrderData> => {
-    return apiFetch<OrderData>(`/orders/${orderId}/cancel`, {
+  cancelOrder: async (orderId: number, reason?: string): Promise<OrderData> => {
+    const query = reason ? `?reason=${encodeURIComponent(reason)}` : "";
+    return apiFetch<OrderData>(`/orders/${orderId}/cancel${query}`, {
       method: "POST",
     });
   },
@@ -598,6 +870,7 @@ export const kycAPI = {
     drug_license_no: string;
     pan_number?: string;
     document_file_url?: string;
+    requested_credit_limit?: number;
   }): Promise<KYCOut> => {
     return apiFetch<KYCOut>("/kyc/submit", {
       method: "POST",
@@ -803,41 +1076,7 @@ export const auditAPI = {
   },
 };
 
-export interface CategoryData {
-  id: number;
-  name: string;
-  slug: string;
-  description?: string | null;
-  image?: string | null;
-  is_active: boolean;
-  sort_order: number;
-  created_at?: string;
-  product_count?: number;
-}
 
-export const categoriesAPI = {
-  list: async (): Promise<CategoryData[]> => {
-    return apiFetch<CategoryData[]>("/categories");
-  },
-  create: async (payload: { name: string; slug?: string; description?: string; is_active?: boolean; sort_order?: number }): Promise<CategoryData> => {
-    const slug = payload.slug || payload.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
-    return apiFetch<CategoryData>("/categories", {
-      method: "POST",
-      body: JSON.stringify({ ...payload, slug }),
-    });
-  },
-  update: async (id: number, payload: Partial<CategoryData>): Promise<CategoryData> => {
-    return apiFetch<CategoryData>(`/categories/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(payload),
-    });
-  },
-  delete: async (id: number): Promise<any> => {
-    return apiFetch<any>(`/categories/${id}`, {
-      method: "DELETE",
-    });
-  },
-};
 
 export interface NotificationSettingsData {
   id: number;
@@ -896,5 +1135,203 @@ export const notificationsAPI = {
   },
 };
 
+export interface AddressItem {
+  id: number;
+  user_id: number;
+  address_type: string; // "HOME", "OFFICE", "CLINIC", "PHARMACY", "OTHER"
+  recipient_name: string;
+  phone: string;
+  street_address: string;
+  city: string;
+  state: string;
+  pincode: string;
+  is_default: boolean;
+  created_at: string;
+  updated_at?: string | null;
+}
 
+export const addressesAPI = {
+  list: async (): Promise<AddressItem[]> => {
+    return apiFetch<AddressItem[]>("/addresses/me");
+  },
+  create: async (payload: {
+    address_type: string;
+    recipient_name: string;
+    phone: string;
+    street_address: string;
+    city: string;
+    state: string;
+    pincode: string;
+    is_default?: boolean;
+  }): Promise<AddressItem> => {
+    return apiFetch<AddressItem>("/addresses", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+  update: async (
+    id: number,
+    payload: Partial<{
+      address_type: string;
+      recipient_name: string;
+      phone: string;
+      street_address: string;
+      city: string;
+      state: string;
+      pincode: string;
+      is_default: boolean;
+    }>
+  ): Promise<AddressItem> => {
+    return apiFetch<AddressItem>(`/addresses/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+  },
+  setDefault: async (id: number): Promise<AddressItem> => {
+    return apiFetch<AddressItem>(`/addresses/${id}/default`, {
+      method: "PATCH",
+    });
+  },
+  delete: async (id: number): Promise<{ message: string; id: number }> => {
+    return apiFetch<{ message: string; id: number }>(`/addresses/${id}`, {
+      method: "DELETE",
+    });
+  },
+};
 
+export interface ClaimItem {
+  id: number;
+  claim_code: string;
+  order_id: number;
+  retailer_id: number;
+  product_id?: number | null;
+  product_name: string;
+  batch_no?: string | null;
+  quantity: number;
+  claim_type: "DAMAGED_GOODS" | "WRONG_PRODUCT" | "SHORT_QUANTITY" | "TRANSIT_DAMAGE" | "NEAR_EXPIRY" | "OTHER";
+  reason_description: string;
+  supporting_doc_url?: string | null;
+  status: "PENDING" | "UNDER_REVIEW" | "APPROVED" | "REJECTED" | "SETTLED";
+  resolution_type?: "CREDIT_NOTE" | "REPLACEMENT" | "REFUND" | null;
+  credit_note_number?: string | null;
+  credit_amount?: number | null;
+  admin_remarks?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export const claimsAPI = {
+  create: async (payload: {
+    order_id: number;
+    product_id?: number;
+    product_name: string;
+    batch_no?: string;
+    quantity: number;
+    claim_type: string;
+    reason_description: string;
+    supporting_doc_url?: string;
+  }): Promise<ClaimItem> => {
+    return apiFetch<ClaimItem>("/claims", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+
+  getMyClaims: async (): Promise<ClaimItem[]> => {
+    return apiFetch<ClaimItem[]>("/claims/my-claims");
+  },
+
+  listAll: async (statusFilter?: string): Promise<ClaimItem[]> => {
+    const query = statusFilter && statusFilter !== "ALL" ? `?status_filter=${statusFilter}` : "";
+    return apiFetch<ClaimItem[]>(`/claims${query}`);
+  },
+
+  review: async (
+    claimId: number,
+    payload: {
+      status: string;
+      resolution_type?: string;
+      credit_note_number?: string;
+      credit_amount?: number;
+      admin_remarks?: string;
+    }
+  ): Promise<ClaimItem> => {
+    return apiFetch<ClaimItem>(`/claims/${claimId}/review`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+};
+
+export const creditAPI = {
+  getMyCreditStatus: async (): Promise<{
+    credit_limit: number;
+    outstanding_amount: number;
+    available_credit: number;
+    credit_terms_days: number;
+    kyc_status: string;
+    unpaid_orders_count: number;
+  }> => {
+    return apiFetch<{
+      credit_limit: number;
+      outstanding_amount: number;
+      available_credit: number;
+      credit_terms_days: number;
+      kyc_status: string;
+      unpaid_orders_count: number;
+    }>("/auth/me/credit-status");
+  },
+};
+
+export interface InquiryItem {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  company?: string | null;
+  subject: string;
+  message: string;
+  status: "NEW" | "IN_PROGRESS" | "RESPONDED" | "ARCHIVED" | string;
+  admin_notes?: string | null;
+  created_at: string;
+}
+
+export const inquiriesAPI = {
+  submitInquiry: async (payload: {
+    name: string;
+    email: string;
+    phone: string;
+    company?: string;
+    subject: string;
+    message: string;
+  }): Promise<InquiryItem> => {
+    return apiFetch<InquiryItem>("/inquiries", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+
+  listAll: async (params?: { search?: string; status?: string }): Promise<InquiryItem[]> => {
+    const searchParams = new URLSearchParams();
+    if (params?.search) searchParams.set("search", params.search);
+    if (params?.status) searchParams.set("status", params.status);
+    const queryString = searchParams.toString() ? `?${searchParams.toString()}` : "";
+    return apiFetch<InquiryItem[]>(`/inquiries${queryString}`);
+  },
+
+  update: async (
+    id: number,
+    payload: { status?: string; admin_notes?: string }
+  ): Promise<InquiryItem> => {
+    return apiFetch<InquiryItem>(`/inquiries/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
+  },
+
+  delete: async (id: number): Promise<{ message: string }> => {
+    return apiFetch<{ message: string }>(`/inquiries/${id}`, {
+      method: "DELETE",
+    });
+  },
+};

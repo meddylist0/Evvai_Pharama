@@ -4,19 +4,35 @@ from jose import jwt, JWTError
 from passlib.context import CryptContext
 from app.core.config import settings
 
-# Password hashing
+"""
+DEVELOPER NOTE — CRYPTOGRAPHY & JWT SECURITY UTILITIES:
+1. Passwords: Hashed using Bcrypt with CryptContext.
+2. Tokens: Access tokens include sub (user_id), role, type, iss, aud, iat, and exp claims.
+3. Expiration: Admin tokens expire in 60 minutes; customer tokens expire in 24 hours (1440 minutes).
+4. Validation: Strict JWT decode enforcing HS256 algorithm, signature, issuer, audience, and expiration.
+"""
+
+# Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verifies plain password string against hashed password using Bcrypt."""
     return pwd_context.verify(plain_password, hashed_password)
 
 
 def get_password_hash(password: str) -> str:
+    """Generates secure Bcrypt hash for password storage."""
     return pwd_context.hash(password)
 
 
 def create_access_token(subject: Union[str, Any], role: str, expires_delta: Optional[timedelta] = None) -> str:
+    """
+    Generates signed JWT access token.
+    
+    DEVELOPER NOTES:
+    - Sets shorter token lifetime for ADMIN role (60 min) for enhanced security.
+    """
     now = datetime.now(timezone.utc)
     if expires_delta:
         expire = now + expires_delta

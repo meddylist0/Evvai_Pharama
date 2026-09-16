@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { Header } from "@/components/Header";
-import { FooterSection } from "@/components/FooterSection";
+import { Header } from "@/components/shared/Header";
+import { FooterSection } from "@/components/shared/FooterSection";
 
 export default function TermsOfServicePage() {
   return (

@@ -47,6 +47,12 @@ export default function DistributorProfilePage() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
 
+  // Credit Limit Request State
+  const [requestedCreditLimitInput, setRequestedCreditLimitInput] = useState<string>("500000");
+  const [creditReqNote, setCreditReqNote] = useState<string>("");
+  const [creditReqMsg, setCreditReqMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [submittingCreditReq, setSubmittingCreditReq] = useState(false);
+
   const loadData = async () => {
     const stored = getStoredUser();
     setUser(stored);
@@ -74,6 +80,10 @@ export default function DistributorProfilePage() {
           pincode: me.distributor_profile?.pincode || "500033",
           address: me.distributor_profile?.business_address || "",
         });
+
+        const reqLimit = me.distributor_profile?.requested_credit_limit;
+        const appLimit = me.distributor_profile?.credit_limit;
+        setRequestedCreditLimitInput(String(reqLimit ?? appLimit ?? 500000));
       }
     } catch (err) {
       console.warn("Failed fetching profile:", err);
@@ -227,10 +237,42 @@ export default function DistributorProfilePage() {
     }
   };
 
+  // Handle Credit Limit Increase Request
+  const handleRequestCreditLimit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const limitNum = Number(requestedCreditLimitInput);
+    if (!limitNum || limitNum <= 0) {
+      setCreditReqMsg({ type: "error", text: "Please enter a valid credit limit amount greater than zero." });
+      return;
+    }
+
+    setSubmittingCreditReq(true);
+    setCreditReqMsg(null);
+    try {
+      await authAPI.updateProfile({
+        requested_credit_limit: limitNum,
+      });
+
+      setCreditReqMsg({
+        type: "success",
+        text: `✓ Credit Limit Increase Request for ₹${limitNum.toLocaleString('en-IN')} submitted successfully to Admin!`,
+      });
+      await loadData();
+    } catch (err: any) {
+      setCreditReqMsg({
+        type: "error",
+        text: err.message || "Failed to submit credit limit request. Please try again.",
+      });
+    } finally {
+      setSubmittingCreditReq(false);
+      setTimeout(() => setCreditReqMsg(null), 6000);
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-4xl w-full">
       {/* Header Status Banner */}
-      <div className={`p-6 md:p-8 rounded-3xl border shadow-2xs ${isRejected
+      <div className={`p-6 md:p-8 rounded-[6px] border shadow-2xs ${isRejected
         ? "bg-rose-50/70 border-rose-200 text-rose-950"
         : isApproved
           ? "bg-emerald-50/70 border-emerald-200 text-emerald-950"
@@ -254,17 +296,15 @@ export default function DistributorProfilePage() {
         <h1 className="text-2xl font-black text-[#0b2341] tracking-tight">
           Distributor Account Profile & KYC Settings
         </h1>
-        <p className="text-xs text-slate-500 mt-1">
-          Manage your account profile picture, contact email, GSTIN, Drug License, and password security.
-        </p>
+
 
         {isRejected && (
-          <div className="mt-4 p-4 bg-rose-100/80 border-2 border-rose-300 rounded-2xl space-y-1 text-xs text-rose-900 shadow-inner">
+          <div className="mt-4 p-4 bg-rose-100/80 border-2 border-rose-300 rounded-[5px] space-y-1 text-xs text-rose-900 shadow-inner">
             <div className="flex items-center space-x-2 font-black text-rose-950 uppercase text-[11px]">
               <span>⚠️</span>
               <span>Rejection Reason from Compliance Officer:</span>
             </div>
-            <p className="font-semibold text-rose-900 bg-white/70 p-2.5 rounded-xl border border-rose-200 leading-relaxed">
+            <p className="font-semibold text-rose-900 bg-white/70 p-2.5 rounded-[5px] border border-rose-200 leading-relaxed">
               "{adminRemarks || "Document uploaded is invalid or illegible. Please provide a clear active Drug License (Form 20B/21B) and matching GSTIN."}"
             </p>
             <p className="text-[11px] text-rose-800 pt-1">
@@ -275,7 +315,7 @@ export default function DistributorProfilePage() {
       </div>
 
       {statusMsg && (
-        <div className={`text-xs p-4 rounded-2xl font-bold border transition-all ${statusMsg.type === "error"
+        <div className={`text-xs p-4 rounded-[5px] font-bold border transition-all ${statusMsg.type === "error"
           ? "bg-rose-50 border-rose-200 text-rose-800"
           : "bg-emerald-50 border-emerald-200 text-emerald-800"
           }`}>
@@ -286,7 +326,7 @@ export default function DistributorProfilePage() {
       {/* Main Profile Form */}
       <form onSubmit={handleSaveProfile} className="space-y-6">
         {/* Card 1: Avatar / Profile Photo */}
-        <div className="bg-white border border-slate-200/90 rounded-3xl p-6 md:p-8 shadow-2xs space-y-5">
+        <div className="bg-white border border-slate-200/90 rounded-[6px] p-6 md:p-8 shadow-2xs space-y-5">
           <div className="border-b border-slate-100 pb-3">
             <h3 className="text-sm font-extrabold text-[#0b2341] uppercase tracking-wider">
               Profile Photo & Avatar
@@ -298,7 +338,7 @@ export default function DistributorProfilePage() {
 
           <div className="flex flex-col sm:flex-row items-center gap-6">
             <div className="relative group shrink-0">
-              <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-blue-600 shadow-md bg-slate-100">
+              <div className="w-20 h-20 rounded-[5px] overflow-hidden border-2 border-[#A71380] shadow-md bg-slate-100">
                 <img
                   src={selectedAvatar || PRESET_AVATARS[0].url}
                   alt="Profile"
@@ -314,8 +354,8 @@ export default function DistributorProfilePage() {
                     key={av.id}
                     type="button"
                     onClick={() => setSelectedAvatar(av.url)}
-                    className={`w-10 h-10 rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${selectedAvatar === av.url
-                      ? "border-blue-600 ring-2 ring-blue-400/40 scale-105"
+                    className={`w-10 h-10 rounded-[5px] overflow-hidden border-2 transition-all cursor-pointer ${selectedAvatar === av.url
+                      ? "border-[#A71380] ring-2 ring-blue-400/40 scale-105"
                       : "border-slate-200 hover:border-slate-400 opacity-70 hover:opacity-100"
                       }`}
                     title={av.label}
@@ -336,7 +376,7 @@ export default function DistributorProfilePage() {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl transition-all flex items-center space-x-1.5 cursor-pointer shadow-2xs border border-slate-200"
+                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-3.5 py-2 rounded-[5px] transition-all flex items-center space-x-1.5 cursor-pointer shadow-2xs border border-slate-200"
                 >
                   <svg className="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -350,7 +390,7 @@ export default function DistributorProfilePage() {
         </div>
 
         {/* Card 2: Contact & Account Details */}
-        <div className="bg-white border border-slate-200/90 rounded-3xl p-6 md:p-8 shadow-2xs space-y-5 text-xs">
+        <div className="bg-white border border-slate-200/90 rounded-[6px] p-6 md:p-8 shadow-2xs space-y-5 text-xs">
           <div className="border-b border-slate-100 pb-3">
             <h3 className="text-sm font-extrabold text-[#0b2341] uppercase tracking-wider">
               Personal & Contact Information
@@ -368,7 +408,7 @@ export default function DistributorProfilePage() {
                 required
                 value={form.distributorName}
                 onChange={(e) => setForm({ ...form, distributorName: e.target.value })}
-                className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600 font-medium"
+                className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#A71380] font-medium"
               />
             </div>
             <div>
@@ -378,7 +418,7 @@ export default function DistributorProfilePage() {
                 required
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600 font-medium"
+                className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#A71380] font-medium"
               />
             </div>
           </div>
@@ -391,7 +431,7 @@ export default function DistributorProfilePage() {
                 required
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600 font-medium"
+                className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#A71380] font-medium"
               />
             </div>
             <div>
@@ -400,14 +440,14 @@ export default function DistributorProfilePage() {
                 type="text"
                 readOnly
                 value="DISTRIBUTOR (Wholesale B2B)"
-                className="w-full border border-slate-200 rounded-xl p-3 bg-slate-100 text-slate-500 font-bold cursor-not-allowed"
+                className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-100 text-slate-500 font-bold cursor-not-allowed"
               />
             </div>
           </div>
         </div>
 
         {/* Card 3: Company & Regulatory Credentials */}
-        <div className="bg-white border border-slate-200/90 rounded-3xl p-6 md:p-8 shadow-2xs space-y-5 text-xs">
+        <div className="bg-white border border-slate-200/90 rounded-[6px] p-6 md:p-8 shadow-2xs space-y-5 text-xs">
           <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
             <div>
               <h3 className="text-sm font-extrabold text-[#0b2341] uppercase tracking-wider">
@@ -417,7 +457,7 @@ export default function DistributorProfilePage() {
                 GSTIN and Drug License numbers for wholesale tax invoices and DCA verification.
               </p>
             </div>
-            <span className="text-[10px] font-mono font-bold bg-blue-50 text-blue-800 border border-blue-200 px-2.5 py-1 rounded-full">
+            <span className="text-[10px] font-mono font-bold bg-[#F8EAF4] text-[#A71380] border border-[#F3D0E9] px-2.5 py-1 rounded-full">
               Form 20B / 21B
             </span>
           </div>
@@ -430,7 +470,7 @@ export default function DistributorProfilePage() {
                 required
                 value={form.companyName}
                 onChange={(e) => setForm({ ...form, companyName: e.target.value })}
-                className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600 font-medium"
+                className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#A71380] font-medium"
               />
             </div>
             <div>
@@ -440,7 +480,7 @@ export default function DistributorProfilePage() {
                 required
                 value={form.gstNumber}
                 onChange={(e) => setForm({ ...form, gstNumber: e.target.value.toUpperCase() })}
-                className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600 font-mono font-bold text-blue-900"
+                className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#A71380] font-mono font-bold text-[#A71380]"
               />
             </div>
           </div>
@@ -453,7 +493,7 @@ export default function DistributorProfilePage() {
                 required
                 value={form.drugLicenseNo}
                 onChange={(e) => setForm({ ...form, drugLicenseNo: e.target.value.toUpperCase() })}
-                className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600 font-mono font-bold text-slate-900"
+                className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#A71380] font-mono font-bold text-slate-900"
               />
             </div>
             <div>
@@ -463,7 +503,7 @@ export default function DistributorProfilePage() {
                 placeholder="e.g. AAECP1234F"
                 value={form.panNumber}
                 onChange={(e) => setForm({ ...form, panNumber: e.target.value.toUpperCase() })}
-                className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600 font-mono"
+                className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#A71380] font-mono"
               />
             </div>
           </div>
@@ -475,7 +515,7 @@ export default function DistributorProfilePage() {
                 type="text"
                 value={form.city}
                 onChange={(e) => setForm({ ...form, city: e.target.value })}
-                className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600 font-medium"
+                className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#A71380] font-medium"
               />
             </div>
             <div>
@@ -484,7 +524,7 @@ export default function DistributorProfilePage() {
                 type="text"
                 value={form.state}
                 onChange={(e) => setForm({ ...form, state: e.target.value })}
-                className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600 font-medium"
+                className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#A71380] font-medium"
               />
             </div>
             <div>
@@ -493,7 +533,7 @@ export default function DistributorProfilePage() {
                 type="text"
                 value={form.pincode}
                 onChange={(e) => setForm({ ...form, pincode: e.target.value })}
-                className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600 font-medium"
+                className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#A71380] font-medium"
               />
             </div>
           </div>
@@ -504,7 +544,7 @@ export default function DistributorProfilePage() {
               rows={2}
               value={form.address}
               onChange={(e) => setForm({ ...form, address: e.target.value })}
-              className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600 font-medium"
+              className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#A71380] font-medium"
             />
           </div>
 
@@ -514,8 +554,8 @@ export default function DistributorProfilePage() {
               disabled={saving}
               className={`${isRejected
                 ? "bg-rose-600 hover:bg-rose-700"
-                : "bg-[#0b2341] hover:bg-[#1d4ed8]"
-                } text-white px-6 py-3 rounded-xl font-extrabold text-xs shadow-md transition-all cursor-pointer disabled:opacity-50 flex items-center space-x-2`}
+                : "bg-[#0b2341] hover:bg-[#A71380]"
+                } text-white px-6 py-3 rounded-[5px] font-extrabold text-xs shadow-md transition-all cursor-pointer disabled:opacity-50 flex items-center space-x-2`}
             >
               <span>{saving ? "Saving Changes..." : isRejected ? "📝 Save & Re-submit KYC Documents" : "Save Profile Changes"}</span>
             </button>
@@ -523,8 +563,118 @@ export default function DistributorProfilePage() {
         </div>
       </form>
 
-      {/* Card 4: Account Security & Password Change */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 md:p-8 shadow-2xs space-y-5 text-xs">
+      {/* Card 4: B2B Wholesale Credit Limit & Financial Terms Request */}
+      <div className="bg-white border border-slate-200/90 rounded-[6px] p-6 md:p-8 shadow-2xs space-y-5 text-xs">
+        <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-extrabold text-[#0b2341] uppercase tracking-wider">
+              B2B Credit Limit & Trade Terms Request
+            </h3>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              Request a credit limit increase for wholesale purchasing and Net-30 bulk order billing.
+            </p>
+          </div>
+          <span className="text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-1 rounded-full">
+            💳 Active Credit Facility
+          </span>
+        </div>
+
+        {/* Status display of current limit vs requested */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-50 rounded-[6px] border border-slate-200/80">
+          <div className="space-y-1">
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Current Approved Limit</span>
+            <div className="text-xl font-black text-[#0b2341] font-mono">
+              ₹{Number(profileData?.distributor_profile?.credit_limit || 0).toLocaleString("en-IN")}
+            </div>
+            <span className="text-[10px] text-slate-400">Approved by Risk & Credit Compliance</span>
+          </div>
+
+          <div className="space-y-1">
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Requested Limit Status</span>
+            <div className="text-xl font-black text-[#A71380] font-mono">
+              ₹{Number(profileData?.distributor_profile?.requested_credit_limit || requestedCreditLimitInput || 500000).toLocaleString("en-IN")}
+            </div>
+            <span className="text-[10px] text-amber-700 font-medium">Pending Admin Review & Sanction</span>
+          </div>
+        </div>
+
+        {creditReqMsg && (
+          <div className={`p-4 rounded-[5px] font-bold border transition-all ${creditReqMsg.type === "success"
+            ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+            : "bg-rose-50 text-rose-800 border-rose-200"
+            }`}>
+            {creditReqMsg.text}
+          </div>
+        )}
+
+        <form onSubmit={handleRequestCreditLimit} className="space-y-4">
+          <div>
+            <label className="block font-bold text-slate-700 mb-1">
+              New Requested Credit Limit (₹) *
+            </label>
+            <div className="relative">
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-bold text-slate-400 font-mono">₹</span>
+              <input
+                type="number"
+                required
+                min={10000}
+                step={50000}
+                value={requestedCreditLimitInput}
+                onChange={(e) => setRequestedCreditLimitInput(e.target.value)}
+                placeholder="e.g. 1000000"
+                className="w-full border border-slate-200 rounded-[5px] p-3 pl-8 bg-slate-50 font-mono font-bold text-slate-900 focus:bg-white focus:outline-none focus:border-[#A71380]"
+              />
+            </div>
+            <p className="text-[10px] text-slate-400 mt-1">
+              Specify the credit facility limit required for monthly stock orders.
+            </p>
+          </div>
+
+          {/* Quick preset buttons */}
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <span className="text-[11px] font-bold text-slate-500 mr-1">Quick Select:</span>
+            {[250000, 500000, 1000000, 2500000, 5000000].map((amt) => (
+              <button
+                key={amt}
+                type="button"
+                onClick={() => setRequestedCreditLimitInput(String(amt))}
+                className={`px-3 py-1 text-[11px] font-bold rounded-[4px] border transition-all cursor-pointer ${Number(requestedCreditLimitInput) === amt
+                  ? "bg-[#A71380] text-white border-[#A71380]"
+                  : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200"
+                  }`}
+              >
+                ₹{(amt / 100000).toFixed(amt % 100000 === 0 ? 0 : 1)} Lakhs
+              </button>
+            ))}
+          </div>
+
+          <div>
+            <label className="block font-bold text-slate-700 mb-1">
+              Justification / Business Volume Note (Optional)
+            </label>
+            <textarea
+              rows={2}
+              value={creditReqNote}
+              onChange={(e) => setCreditReqNote(e.target.value)}
+              placeholder="e.g. Expanding wholesale distribution coverage across 15 new retail pharmacy chains in Hyderabad region."
+              className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 font-medium focus:bg-white focus:outline-none focus:border-[#A71380]"
+            />
+          </div>
+
+          <div className="pt-2">
+            <button
+              type="submit"
+              disabled={submittingCreditReq}
+              className="bg-[#A71380] hover:bg-[#8E0F6D] text-white px-6 py-3 rounded-[5px] font-extrabold text-xs shadow-md transition-all cursor-pointer disabled:opacity-50 flex items-center space-x-2"
+            >
+              <span>{submittingCreditReq ? "Submitting Request..." : "💳 Submit Credit Increase Request to Admin"}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* Card 5: Account Security & Password Change */}
+      <div className="bg-white border border-slate-200/90 rounded-[6px] p-6 md:p-8 shadow-2xs space-y-5 text-xs">
         <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-extrabold text-[#0b2341] uppercase tracking-wider">
@@ -540,7 +690,7 @@ export default function DistributorProfilePage() {
         </div>
 
         {passwordMsg && (
-          <div className={`p-3.5 rounded-xl font-bold border transition-all ${passwordMsg.type === "success"
+          <div className={`p-3.5 rounded-[5px] font-bold border transition-all ${passwordMsg.type === "success"
             ? "bg-emerald-50 text-emerald-800 border-emerald-200"
             : "bg-rose-50 text-rose-800 border-rose-200"
             }`}>
@@ -558,7 +708,7 @@ export default function DistributorProfilePage() {
                 value={passwordForm.current_password}
                 onChange={(e) => setPasswordForm({ ...passwordForm, current_password: e.target.value })}
                 placeholder="Enter current password"
-                className="w-full border border-slate-200 rounded-xl p-3 pr-10 bg-slate-50 font-medium focus:bg-white focus:outline-none focus:border-blue-600"
+                className="w-full border border-slate-200 rounded-[5px] p-3 pr-10 bg-slate-50 font-medium focus:bg-white focus:outline-none focus:border-[#A71380]"
               />
               <button
                 type="button"
@@ -580,7 +730,7 @@ export default function DistributorProfilePage() {
                   value={passwordForm.new_password}
                   onChange={(e) => setPasswordForm({ ...passwordForm, new_password: e.target.value })}
                   placeholder="Min 6 characters"
-                  className="w-full border border-slate-200 rounded-xl p-3 pr-10 bg-slate-50 font-medium focus:bg-white focus:outline-none focus:border-blue-600"
+                  className="w-full border border-slate-200 rounded-[5px] p-3 pr-10 bg-slate-50 font-medium focus:bg-white focus:outline-none focus:border-[#A71380]"
                 />
                 <button
                   type="button"
@@ -600,7 +750,7 @@ export default function DistributorProfilePage() {
                 value={passwordForm.confirm_password}
                 onChange={(e) => setPasswordForm({ ...passwordForm, confirm_password: e.target.value })}
                 placeholder="Re-type new password"
-                className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 font-medium focus:bg-white focus:outline-none focus:border-blue-600"
+                className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 font-medium focus:bg-white focus:outline-none focus:border-[#A71380]"
               />
             </div>
           </div>
@@ -609,7 +759,7 @@ export default function DistributorProfilePage() {
             <button
               type="submit"
               disabled={changingPassword}
-              className="bg-[#0b2341] hover:bg-[#1d4ed8] text-white px-5 py-2.5 rounded-xl font-extrabold text-xs shadow-xs transition-all cursor-pointer disabled:opacity-50"
+              className="bg-[#0b2341] hover:bg-[#A71380] text-white px-5 py-2.5 rounded-[5px] font-extrabold text-xs shadow-xs transition-all cursor-pointer disabled:opacity-50"
             >
               {changingPassword ? "Updating Password..." : "Update Password"}
             </button>

@@ -1,17 +1,21 @@
-from app.models.user import User, UserRole, CustomerProfile, DistributorProfile, KYCStatus
+from app.models.user import User, UserRole, CustomerProfile, DistributorProfile, RetailerProfile, KYCStatus, UserAddress
 from app.models.product import Category, Product
 from app.models.order import Order, OrderItem, OrderStatus, PaymentStatus
 from app.models.kyc import DistributorKYC
 from app.models.audit import AuditLog
 from app.models.payment import PaymentGatewaySetting, PaymentTransaction
 from app.models.notification import NotificationSetting, NotificationLog
+from app.models.claim import RetailerClaim, ClaimType, ClaimStatus, ClaimResolutionType
+from app.models.inquiry import ContactInquiry
 
 __all__ = [
     "User",
     "UserRole",
     "CustomerProfile",
     "DistributorProfile",
+    "RetailerProfile",
     "KYCStatus",
+    "UserAddress",
     "Category",
     "Product",
     "Order",
@@ -23,6 +27,10 @@ __all__ = [
     "PaymentGatewaySetting",
     "PaymentTransaction",
     "NotificationSetting",
-    "NotificationLog"
+    "NotificationLog",
+    "RetailerClaim",
+    "ClaimType",
+    "ClaimStatus",
+    "ClaimResolutionType",
+    "ContactInquiry"
 ]
-

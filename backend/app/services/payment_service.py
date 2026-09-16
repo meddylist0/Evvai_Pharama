@@ -267,20 +267,42 @@ def create_verified_paid_order(
                 detail=f"Insufficient inventory for '{product.name}'. Available: {product.stock}, Requested: {item_data['quantity']}"
             )
 
-        # Deduct stock and increment reserved stock
-        product.stock -= item_data["quantity"]
-        product.reserved_stock += item_data["quantity"]
+        # Deduct stock across batches using FEFO and record ledger transaction
+        from app.services.inventory_service import deduct_fefo_stock
+        from app.models.order import OrderItemBatchAllocation
+        allocations = deduct_fefo_stock(
+            db=db,
+            product=product,
+            required_qty=item_data["quantity"],
+            transaction_type="SALE",
+            reason=f"Paid Order {order_code} Fulfillment (Razorpay: {verify_req.razorpay_payment_id})",
+            user=current_user
+        )
+
+        primary_batch_no = allocations[0][0].batch_no if allocations else (product.batch_no or "N/A")
 
         order_item = OrderItem(
             product_id=product.id,
             product_name=product.name,
             sku=product.sku,
-            batch_no=product.batch_no,
+            batch_no=primary_batch_no,
             unit_price=item_data["unit_price"],
             quantity=item_data["quantity"],
             total_price=item_data["total_price"]
         )
+
+        product.reserved_stock = (product.reserved_stock or 0) + item_data["quantity"]
+
+        for batch, qty in allocations:
+            batch_alloc = OrderItemBatchAllocation(
+                batch_id=batch.id,
+                batch_no=batch.batch_no,
+                quantity=qty
+            )
+            order_item.batch_allocations.append(batch_alloc)
+
         order_items_to_create.append(order_item)
+
 
     new_order = Order(
         order_code=order_code,
@@ -316,9 +338,6 @@ def create_verified_paid_order(
     transaction.application_order_id = new_order.id
     transaction.updated_at = datetime.utcnow()
 
-    db.commit()
-    db.refresh(new_order)
-
     record_audit(
         db=db,
         action="ORDER_PAID_RAZORPAY",
@@ -326,6 +345,9 @@ def create_verified_paid_order(
         details=f"Payment verified via Razorpay ({verify_req.razorpay_payment_id}) for order {order_code} (₹{total_amount})",
         user=current_user
     )
+
+    db.commit()
+    db.refresh(new_order)
 
     try:
         from app.services.notification_service import notify_order_created

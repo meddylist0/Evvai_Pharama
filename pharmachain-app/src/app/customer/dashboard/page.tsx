@@ -4,9 +4,19 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { productsAPI, ordersAPI, getStoredUser, StoredUser, ProductItem, OrderData } from "@/lib/api";
+import { getOrderStatusDisplay } from "@/lib/pricingUtils";
+import { getProductImageUrl, getCategoryFallbackImage } from "@/lib/packagingUtils";
+import { usePlatform } from "@/lib/platform";
+import { MobileCustomerDashboard } from "@/components/mobile/customer/MobileCustomerDashboard";
 
 export default function CustomerDashboardPage() {
   const router = useRouter();
+  const platform = usePlatform();
+
+  if (platform.isNative || platform.isMobile) {
+    return <MobileCustomerDashboard />;
+  }
+
   const [user, setUser] = useState<StoredUser | null>(null);
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [orders, setOrders] = useState<OrderData[]>([]);
@@ -56,21 +66,6 @@ export default function CustomerDashboardPage() {
   const deliveredCount = orders.filter((o) => o.order_status === "Delivered").length;
   const totalCount = orders.length;
 
-  const getProductImageUrl = (prod: ProductItem) => {
-    if (prod.image && prod.image.trim().length > 0) {
-      if (prod.image.startsWith("http") || prod.image.startsWith("/")) return prod.image;
-      return `/images/${prod.image}`;
-    }
-    const name = (prod.name || "").toLowerCase();
-    if (name.includes("zene") || name.includes("melatonin")) return "/images/product_zene.png";
-    if (name.includes("nxtnerve") || name.includes("b12")) return "/images/product_nxtnerve.png";
-    if (name.includes("bilevia")) return "/images/product_bilevia.jpg";
-    if (name.includes("evi ova")) return "/images/product_evi_ova.jpg";
-    if (name.includes("gestogen")) return "/images/product_gestogen.jpg";
-    if (name.includes("nxtlife")) return "/images/product_nxtlife.jpg";
-    return "/images/dolotab_blister.jpg";
-  };
-
   const handleAddToCart = (product: ProductItem) => {
     if (typeof window === "undefined") return;
     try {
@@ -102,7 +97,7 @@ export default function CustomerDashboardPage() {
   return (
     <div className="space-y-8">
       {/* ─── 1. ELITE PHARMA ENTERPRISE HERO BANNER ─── */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-[#0b2341] via-[#12315a] to-[#1e4a7a] text-white rounded-3xl p-7 md:p-8 shadow-xl border border-slate-700/50">
+      <div className="relative overflow-hidden bg-gradient-to-br from-[#0b2341] via-[#12315a] to-[#1e4a7a] text-white rounded-[6px] p-7 md:p-8 shadow-xl border border-slate-700/50">
         <div className="absolute right-0 top-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
         <div className="absolute left-1/3 bottom-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
 
@@ -124,16 +119,16 @@ export default function CustomerDashboardPage() {
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
               Welcome Back, {displayName}
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            {/* <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
               Real-time access to verified pharmaceutical formulations, government-audited COA batch testing certificates, and end-to-end cold-chain order fulfillment.
-            </p>
+            </p> */}
           </div>
 
           {/* Quick Action Pill Buttons */}
           <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 shrink-0">
             <Link
               href="/customer/checkout"
-              className="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-4 py-3 rounded-2xl font-bold text-xs transition-all backdrop-blur-md flex items-center space-x-2 shadow-xs cursor-pointer"
+              className="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-4 py-3 rounded-[5px] font-bold text-xs transition-all backdrop-blur-md flex items-center space-x-2 shadow-xs cursor-pointer"
             >
               <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -148,9 +143,9 @@ export default function CustomerDashboardPage() {
 
             <Link
               href="/customer/catalog"
-              className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-2xl font-extrabold text-xs transition-all shadow-lg hover:shadow-blue-600/30 flex items-center space-x-1.5 cursor-pointer"
+              className="bg-[#A71380] hover:bg-[#8E0F6D] text-white px-5 py-3 rounded-[5px] font-extrabold text-xs transition-all shadow-lg hover:shadow-blue-600/30 flex items-center space-x-1.5 cursor-pointer"
             >
-              <span>Browse Catalog</span>
+              <span>Browse Products</span>
               <span>&rarr;</span>
             </Link>
           </div>
@@ -161,7 +156,7 @@ export default function CustomerDashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {/* Card 1: Total Orders */}
         <Link href="/customer/orders" className="block">
-          <div className="bg-[#f7f6f4] border border-[#e8e6e2] rounded-2xl p-5 shadow-2xs flex items-center justify-between hover:shadow-xs hover:border-blue-300 transition-all cursor-pointer">
+          <div className="bg-[#f7f6f4] border border-[#e8e6e2] rounded-[5px] p-5 shadow-2xs flex items-center justify-between hover:shadow-xs hover:border-[#A71380]/40 transition-all cursor-pointer">
             <div className="space-y-1">
               <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 block">Total Orders</span>
               <div className="text-3xl font-extrabold text-[#0b2341] tracking-tight">
@@ -171,7 +166,7 @@ export default function CustomerDashboardPage() {
                 <span>{pendingOrders.length} active in transit</span>
               </div>
             </div>
-            <div className="w-11 h-11 rounded-xl bg-[#0b2341] text-white flex items-center justify-center shadow-xs shrink-0">
+            <div className="w-11 h-11 rounded-[5px] bg-[#0b2341] text-white flex items-center justify-center shadow-xs shrink-0">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
@@ -181,7 +176,7 @@ export default function CustomerDashboardPage() {
 
         {/* Card 2: Completed Deliveries */}
         <Link href="/customer/orders" className="block">
-          <div className="bg-[#f7f6f4] border border-[#e8e6e2] rounded-2xl p-5 shadow-2xs flex items-center justify-between hover:shadow-xs hover:border-emerald-300 transition-all cursor-pointer">
+          <div className="bg-[#f7f6f4] border border-[#e8e6e2] rounded-[5px] p-5 shadow-2xs flex items-center justify-between hover:shadow-xs hover:border-emerald-300 transition-all cursor-pointer">
             <div className="space-y-1">
               <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 block">Delivered Orders</span>
               <div className="text-3xl font-extrabold text-[#0b2341] tracking-tight">
@@ -191,7 +186,7 @@ export default function CustomerDashboardPage() {
                 <span>Doorstep Fulfilled &rarr;</span>
               </div>
             </div>
-            <div className="w-11 h-11 rounded-xl bg-emerald-100 border border-emerald-200 text-emerald-800 flex items-center justify-center shadow-xs shrink-0">
+            <div className="w-11 h-11 rounded-[5px] bg-emerald-100 border border-emerald-200 text-emerald-800 flex items-center justify-center shadow-xs shrink-0">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -201,17 +196,17 @@ export default function CustomerDashboardPage() {
 
         {/* Card 3: Active Cart Items */}
         <Link href="/customer/checkout" className="block">
-          <div className="bg-[#f7f6f4] border border-[#e8e6e2] rounded-2xl p-5 shadow-2xs flex items-center justify-between hover:shadow-xs hover:border-blue-300 transition-all cursor-pointer">
+          <div className="bg-[#f7f6f4] border border-[#e8e6e2] rounded-[5px] p-5 shadow-2xs flex items-center justify-between hover:shadow-xs hover:border-[#A71380]/40 transition-all cursor-pointer">
             <div className="space-y-1">
               <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 block">Active Cart Items</span>
               <div className="text-3xl font-extrabold text-[#0b2341] tracking-tight">
                 {cartCount}
               </div>
-              <div className="text-[11px] font-bold text-blue-700">
+              <div className="text-[11px] font-bold text-[#A71380]">
                 Proceed to Checkout &rarr;
               </div>
             </div>
-            <div className="w-11 h-11 rounded-xl bg-[#0b2341] text-white flex items-center justify-center shadow-xs shrink-0">
+            <div className="w-11 h-11 rounded-[5px] bg-[#0b2341] text-white flex items-center justify-center shadow-xs shrink-0">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
@@ -221,7 +216,7 @@ export default function CustomerDashboardPage() {
 
         {/* Card 4: Verified Formulations */}
         <Link href="/customer/catalog" className="block">
-          <div className="bg-[#f7f6f4] border border-[#e8e6e2] rounded-2xl p-5 shadow-2xs flex items-center justify-between hover:shadow-xs hover:border-blue-300 transition-all cursor-pointer">
+          <div className="bg-[#f7f6f4] border border-[#e8e6e2] rounded-[5px] p-5 shadow-2xs flex items-center justify-between hover:shadow-xs hover:border-[#A71380]/40 transition-all cursor-pointer">
             <div className="space-y-1">
               <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 block">Live Formulations</span>
               <div className="text-3xl font-extrabold text-[#0b2341] tracking-tight">
@@ -231,7 +226,7 @@ export default function CustomerDashboardPage() {
                 Schedule M Audited &rarr;
               </div>
             </div>
-            <div className="w-11 h-11 rounded-xl bg-[#0b2341] text-white flex items-center justify-center shadow-xs shrink-0">
+            <div className="w-11 h-11 rounded-[5px] bg-[#0b2341] text-white flex items-center justify-center shadow-xs shrink-0">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
@@ -241,7 +236,7 @@ export default function CustomerDashboardPage() {
       </div>
 
       {/* ─── 3. PHARMA COLD-CHAIN & QUALITY ASSURANCE PILLARS ─── */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-2xs">
+      <div className="bg-white border border-slate-200/90 rounded-[6px] p-6 shadow-2xs">
         <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
           <div>
             <h2 className="text-sm font-black text-[#0b2341] uppercase tracking-wider">
@@ -249,14 +244,14 @@ export default function CustomerDashboardPage() {
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">Quality benchmarks maintained across manufacturing and door delivery</p>
           </div>
-          <Link href="/customer/coa" className="text-xs font-bold text-blue-700 hover:underline">
+          <Link href="/customer/coa" className="text-xs font-bold text-[#A71380] hover:underline">
             View COA Reports &rarr;
           </Link>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
-          <div className="p-4 rounded-2xl bg-blue-50/50 border border-blue-100 space-y-2">
-            <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center">
+          <div className="p-4 rounded-[5px] bg-[#F8EAF4]/50 border border-[#F3D0E9] space-y-2">
+            <div className="w-8 h-8 rounded-lg bg-[#F8EAF4] text-[#A71380] flex items-center justify-center">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
@@ -267,7 +262,7 @@ export default function CustomerDashboardPage() {
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-emerald-50/50 border border-emerald-100 space-y-2">
+          <div className="p-4 rounded-[5px] bg-emerald-50/50 border border-emerald-100 space-y-2">
             <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -279,7 +274,7 @@ export default function CustomerDashboardPage() {
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100 space-y-2">
+          <div className="p-4 rounded-[5px] bg-indigo-50/50 border border-indigo-100 space-y-2">
             <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-800 flex items-center justify-center">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -291,7 +286,7 @@ export default function CustomerDashboardPage() {
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-purple-50/50 border border-purple-100 space-y-2">
+          <div className="p-4 rounded-[5px] bg-purple-50/50 border border-purple-100 space-y-2">
             <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-800 flex items-center justify-center">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
@@ -314,30 +309,30 @@ export default function CustomerDashboardPage() {
           </div>
           <Link
             href="/customer/orders"
-            className="text-xs font-bold text-blue-700 hover:text-[#0b2341] transition-colors"
+            className="text-xs font-bold text-[#A71380] hover:text-[#0b2341] transition-colors"
           >
             View All ({orders.length}) Orders &rarr;
           </Link>
         </div>
 
         {orders.length === 0 ? (
-          <div className="bg-white p-10 rounded-3xl text-center border border-slate-200 space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+          <div className="bg-white p-10 rounded-[6px] text-center border border-slate-200 space-y-3">
+            <div className="w-12 h-12 rounded-[5px] bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
               </svg>
             </div>
             <h3 className="font-bold text-slate-800 text-sm">No Orders Placed Yet</h3>
-            <p className="text-xs text-slate-400">Browse the certified formulation catalog to place your first healthcare order.</p>
+            <p className="text-xs text-slate-400">Browse the certified products to place your first healthcare order.</p>
             <Link
               href="/customer/catalog"
-              className="inline-block bg-[#0b2341] text-white px-5 py-2.5 rounded-xl text-xs font-bold mt-1 cursor-pointer"
+              className="inline-block bg-[#0b2341] text-white px-5 py-2.5 rounded-[5px] text-xs font-bold mt-1 cursor-pointer"
             >
-              Browse Formulation Catalog
+              Browse Products
             </Link>
           </div>
         ) : (
-          <div className="bg-white border border-slate-200/90 rounded-3xl overflow-hidden shadow-2xs">
+          <div className="bg-white border border-slate-200/90 rounded-[6px] overflow-hidden shadow-2xs">
             <table className="w-full text-left text-xs">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-extrabold uppercase text-[10px] tracking-wider">
@@ -357,7 +352,7 @@ export default function CustomerDashboardPage() {
 
                   return (
                     <tr key={ord.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-4 px-5 font-mono font-bold text-blue-700 whitespace-nowrap">
+                      <td className="py-4 px-5 font-mono font-bold text-[#A71380] whitespace-nowrap">
                         {ord.order_code || `#ORD-${ord.id}`}
                       </td>
                       <td className="py-4 px-5 text-slate-600 whitespace-nowrap">
@@ -391,28 +386,19 @@ export default function CustomerDashboardPage() {
                         ₹{Number(ord.total_amount).toLocaleString("en-IN")}
                       </td>
                       <td className="py-4 px-5 whitespace-nowrap">
-                        <span
-                          className={`px-3 py-1 rounded-full text-[10px] font-bold border inline-flex items-center space-x-1.5 ${
-                            ord.order_status === "Delivered"
-                              ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                              : ord.order_status === "Shipped"
-                              ? "bg-purple-50 text-purple-800 border-purple-200"
-                              : ord.order_status === "Packed"
-                              ? "bg-indigo-50 text-indigo-800 border-indigo-200"
-                              : ord.order_status === "Confirmed"
-                              ? "bg-blue-50 text-blue-800 border-blue-200"
-                              : ord.order_status === "Cancelled" || ord.order_status === "Returned"
-                              ? "bg-rose-50 text-rose-800 border-rose-200"
-                              : "bg-amber-50 text-amber-800 border-amber-200"
-                          }`}
-                        >
-                          <span>● {ord.order_status}</span>
-                        </span>
+                        {(() => {
+                          const st = getOrderStatusDisplay(ord.order_status, (ord as any).cancellation_reason, (ord as any).admin_notes);
+                          return (
+                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold border inline-flex items-center space-x-1.5 ${st.badgeClass}`}>
+                              <span>● {st.label}</span>
+                            </span>
+                          );
+                        })()}
                       </td>
                       <td className="py-4 px-5 text-right whitespace-nowrap">
                         <Link
                           href="/customer/orders"
-                          className="bg-slate-100 hover:bg-[#0b2341] hover:text-white text-slate-800 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer inline-block"
+                          className="bg-slate-100 hover:bg-[#A71380] hover:text-white text-slate-800 px-3 py-1.5 rounded-[5px] text-xs font-bold transition-all cursor-pointer inline-block"
                         >
                           Track &rarr;
                         </Link>
@@ -437,7 +423,7 @@ export default function CustomerDashboardPage() {
           </div>
           <Link
             href="/customer/catalog"
-            className="text-xs font-bold text-blue-700 hover:text-[#0b2341] transition-colors"
+            className="text-xs font-bold text-[#A71380] hover:text-[#0b2341] transition-colors"
           >
             View All {products.length} Products &rarr;
           </Link>
@@ -445,16 +431,16 @@ export default function CustomerDashboardPage() {
 
         {loading ? (
           <div className="py-12 text-center text-slate-400">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent mb-2"></div>
-            <p className="font-bold text-xs">Loading Live Products Catalog...</p>
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-[#A71380] border-t-transparent mb-2"></div>
+            <p className="font-bold text-xs">Loading Live Products...</p>
           </div>
         ) : products.length === 0 ? (
-          <div className="bg-white p-8 rounded-3xl text-center text-slate-400 border border-slate-200">
+          <div className="bg-white p-8 rounded-[6px] text-center text-slate-400 border border-slate-200">
             No products available.
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {products.slice(0, 6).map((prod) => {
+            {products.slice(0, 3).map((prod) => {
               const price = Number(prod.customer_price || prod.display_price || prod.mrp || 0);
               const mrp = Number(prod.mrp || (price > 0 ? price * 1.25 : 100));
               const inStock = prod.stock > 0;
@@ -463,12 +449,22 @@ export default function CustomerDashboardPage() {
               return (
                 <div
                   key={prod.id}
-                  className="bg-white border border-slate-200/90 rounded-3xl overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between shadow-2xs"
+                  className="bg-white border border-slate-200/90 rounded-[6px] overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between shadow-2xs"
                 >
-                  <div className="relative h-44 bg-slate-100/70 overflow-hidden flex items-center justify-center p-3">
-                    <img src={imageUrl} alt={prod.name} className="w-full h-full object-cover rounded-2xl" />
-                    <div className="absolute top-3 left-3 bg-[#0b2341]/85 backdrop-blur-xs text-white text-[9px] font-bold px-2.5 py-0.5 rounded-full">
-                      {prod.category_name || "Healthcare"}
+                  <div className="relative h-48 bg-slate-50 overflow-hidden flex items-center justify-center p-3 group border-b border-slate-100">
+                    <img
+                      src={imageUrl}
+                      alt={prod.name}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = getCategoryFallbackImage(
+                          prod.category_name || (prod as any).category,
+                          prod.pack_size || (prod as any).packSize
+                        );
+                      }}
+                      className="w-full h-full object-contain rounded-[5px] group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute top-3 left-3 bg-[#0b2341]/90 backdrop-blur-xs text-white text-[9px] font-extrabold px-2.5 py-1 rounded-md z-10 shadow-2xs">
+                      {prod.category_name || (prod as any).category || "Healthcare"}
                     </div>
                   </div>
 
@@ -506,14 +502,14 @@ export default function CustomerDashboardPage() {
                         <button
                           onClick={() => handleAddToCart(prod)}
                           disabled={!inStock}
-                          className="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 py-2 rounded-xl text-xs font-bold cursor-pointer disabled:opacity-40"
+                          className="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 py-2 rounded-[5px] text-xs font-bold cursor-pointer disabled:opacity-40"
                         >
                           Add to Cart
                         </button>
                         <button
                           onClick={() => handleInstantBuy(prod)}
                           disabled={!inStock}
-                          className="bg-[#0b2341] hover:bg-[#1d4ed8] text-white py-2 rounded-xl text-xs font-extrabold shadow-2xs cursor-pointer disabled:opacity-40 transition-all"
+                          className="bg-[#A71380] hover:bg-[#8E0F6D] text-white py-2 rounded-[5px] text-xs font-extrabold shadow-2xs cursor-pointer disabled:opacity-40 transition-all"
                         >
                           Buy Now
                         </button>

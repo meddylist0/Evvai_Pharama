@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, Text, UniqueConstraint
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 
@@ -59,3 +59,51 @@ class Product(Base):
     # Relationships
     category = relationship("Category", back_populates="products")
     order_items = relationship("OrderItem", back_populates="product")
+    batches = relationship("ProductBatch", back_populates="product", cascade="all, delete-orphan", order_by="ProductBatch.expiry_date_val.asc()")
+    transactions = relationship("InventoryTransaction", back_populates="product", cascade="all, delete-orphan", order_by="InventoryTransaction.created_at.desc()")
+
+
+class ProductBatch(Base):
+    __tablename__ = "product_batches"
+    __table_args__ = (
+        UniqueConstraint("product_id", "batch_no", name="uq_product_batch_no"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False, index=True)
+    batch_no = Column(String(100), nullable=False, index=True)
+    mfg_date = Column(String(50), nullable=True)
+    expiry_date = Column(String(50), nullable=False)  # Display string e.g. "12/2028"
+    expiry_date_val = Column(DateTime, nullable=True, index=True)  # Proper DB date for FEFO sorting & queries
+    quantity = Column(Integer, default=0, nullable=False)  # Active available quantity in this batch
+    reserved_quantity = Column(Integer, default=0, nullable=False)
+    purchase_rate = Column(Float, nullable=True)
+    warehouse = Column(String(100), default="Main Warehouse", nullable=False)
+    storage_location = Column(String(100), default="Cleanroom A", nullable=False)
+    status = Column(String(20), default="active", nullable=False)  # active, quarantine, expired, depleted
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    product = relationship("Product", back_populates="batches")
+    transactions = relationship("InventoryTransaction", back_populates="batch")
+
+
+class InventoryTransaction(Base):
+    __tablename__ = "inventory_transactions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False, index=True)
+    batch_id = Column(Integer, ForeignKey("product_batches.id"), nullable=True, index=True)
+    transaction_type = Column(String(50), nullable=False)  # RECEIPT, SALE, ADJUSTMENT_ADD, ADJUSTMENT_DEDUCT, DAMAGE, RETURN
+    quantity = Column(Integer, nullable=False)  # Signed (+ inward, - outward)
+    balance_after = Column(Integer, nullable=False)  # Stock balance after transaction
+    reason = Column(String(255), nullable=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+
+    # Relationships
+    product = relationship("Product", back_populates="transactions")
+    batch = relationship("ProductBatch", back_populates="transactions")
+

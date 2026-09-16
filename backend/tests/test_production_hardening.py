@@ -792,23 +792,14 @@ class TestKYCEnforcement(unittest.TestCase):
         self.assertEqual(order_res.status_code, 201,
                          f"Order creation failed: {order_res.json()}")
 
-        # Step 3: Hard-delete the temp product
+        # Step 3: Hard-delete the temp product with history -> MUST be rejected (400) to protect history
         res = client.delete(f"/api/v1/products/{temp_product_id}?hard_delete=true", headers=headers)
-        self.assertEqual(res.status_code, 200,
-                         f"Hard delete failed: {res.json()}")
-        self.assertIn("successfully updated/removed", res.json()["message"])
+        self.assertEqual(res.status_code, 400, "Hard delete on ordered product must be blocked")
+        self.assertIn("Disable the product instead", res.json()["detail"])
 
-        # Step 4: Verify the order still exists with preserved item snapshot
-        order_id = order_res.json()["id"]
-        order_check = client.get(f"/api/v1/orders/{order_id}", headers=headers)
-        self.assertEqual(order_check.status_code, 200, "Order disappeared after product hard delete")
-        items = order_check.json()["items"]
-        self.assertGreater(len(items), 0, "Order items wiped after product hard delete")
-        # product_id should be None (nullified), but product_name snapshot must remain
-        self.assertIsNone(items[0]["product_id"],
-                          "OrderItem.product_id should be NULL after hard delete")
-        self.assertIsNotNone(items[0]["product_name"],
-                             "OrderItem.product_name snapshot must be preserved")
+        # Step 4: Verify disabling product works
+        dis_res = client.delete(f"/api/v1/products/{temp_product_id}?hard_delete=false", headers=headers)
+        self.assertEqual(dis_res.status_code, 200, "Disabling product failed")
 
 
 if __name__ == "__main__":

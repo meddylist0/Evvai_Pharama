@@ -45,3 +45,6 @@ pnpm-debug.log*
 Thumbs.db
 backend/.env
 PharmaLink Enterprise application.zip
+*.zip
+*.apk
+

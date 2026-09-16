@@ -159,27 +159,31 @@ def update_distributor_credit_limit(
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-    if not user.distributor_profile:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="This user does not have an active distributor profile to assign a credit limit."
-        )
-
     if req.credit_limit < 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Credit limit cannot be negative."
         )
 
-    old_limit = user.distributor_profile.credit_limit or 0.0
-    user.distributor_profile.credit_limit = float(req.credit_limit)
+    if user.distributor_profile:
+        old_limit = user.distributor_profile.credit_limit or 0.0
+        user.distributor_profile.credit_limit = float(req.credit_limit)
+    elif user.retailer_profile:
+        old_limit = user.retailer_profile.credit_limit or 0.0
+        user.retailer_profile.credit_limit = float(req.credit_limit)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This user does not have a distributor or retailer profile to assign a credit limit."
+        )
+
     db.commit()
     db.refresh(user)
 
     record_audit(
         db=db,
         action="CREDIT_LIMIT_UPDATED",
-        module="DISTRIBUTOR",
+        module="USERS",
         details=f"Admin {admin_user.email} updated B2B credit limit for {user.email} from ₹{old_limit:,.2f} to ₹{req.credit_limit:,.2f}",
         user=admin_user
     )

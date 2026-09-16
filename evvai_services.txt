@@ -1,0 +1,55 @@
+﻿================================================================================
+EVVAI PHARMACEUTICALS — CORE ENTERPRISE SERVICES
+We deliver trusted medicines for better health outcomes
+Website: https://www.evvaipharma.com/services
+================================================================================
+
+1. PHARMACEUTICAL MANUFACTURING
+   - WHO-GMP & ISO certified cleanroom facilities
+   - High-potency solid oral dosages (Tablets, Capsules)
+   - Sterile injectables, ampoules, and vial filling lines
+   - Automated liquid suspensions, syrups, and therapeutic formulations
+   - Positive-pressure HVAC and HEPA filtration particle control
+
+2. PHARMACEUTICAL DISTRIBUTION & GLOBAL SUPPLY
+   - Comprehensive B2B supply chain for hospitals and retail pharmacy networks
+   - Regulated temperature-controlled cold chain logistics
+   - Direct hospital network tender execution and critical care dispatch
+   - Global export compliance across international destinations
+
+3. QUALITY CONTROL & ANALYTICAL ASSURANCE (QA/QC)
+   - In-house GLP accredited analytical testing laboratories
+   - HPLC (High Performance Liquid Chromatography) spectrographic assays
+   - In-vitro dissolution testing and particle count analysis
+   - 100% batch-level FEFO tracking and Digital Certificate of Analysis (COA)
+
+4. RESEARCH & DEVELOPMENT (R&D)
+   - Novel formulation development and bioavailability enhancement
+   - Bioequivalence studies and active pharmaceutical ingredient (API) profiling
+   - Advanced chemical synthesis and pharmacokinetic evaluation
+
+5. CLINICAL RESEARCH & MEDICAL VALIDATION
+   - Regulatory-compliant clinical research and therapeutic safety validation
+   - Phase-aligned pharmacokinetic and pharmacodynamic data profiling
+   - Good Clinical Practice (GCP) aligned research documentation
+
+6. CUSTOM DRUG FORMULATION & CONTRACT MANUFACTURING
+   - Third-party formulation scaling and pilot batch validation
+   - Custom dosage delivery mechanisms (extended release, enteric coated)
+   - Packaging innovations and private label pharmaceutical compounding
+
+7. STABILITY STUDIES & REGULATORY DOSSIER FILING
+   - Real-time and accelerated ICH climatic zone stability testing
+   - CTD / eCTD regulatory dossier preparation and submission
+   - Comprehensive compliance dossiers for domestic and international health authorities
+
+================================================================================
+CORE SERVICE PILLARS (Hexagon Layout):
+- Accurate Results & Analytical Precision
+- Global Standards & International Compliance
+- Advanced Technology & Automated Robotics
+- Dedicated Scientific Team
+- Scientific Integrity & Clinical Transparency
+- Ethical Research & GMP Governance
+- Reliable Supply & Healthcare Support
+================================================================================

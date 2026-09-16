@@ -247,20 +247,23 @@ export default function AdminAuditPage() {
 
   const getModuleBadgeColor = (mod: string) => {
     switch (mod.toUpperCase()) {
+      case "LEADS":
+      case "INQUIRIES":
+        return "bg-purple-50 text-purple-800 border-purple-200";
       case "ORDERS":
-        return "bg-blue-50 text-blue-800 border-blue-200";
+        return "bg-[#F8EAF4] text-[#A71380] border-[#F3D0E9]";
       case "KYC":
         return "bg-amber-50 text-amber-800 border-amber-200";
       case "PRODUCTS":
       case "INVENTORY":
         return "bg-emerald-50 text-emerald-800 border-emerald-200";
       case "PRICING":
-        return "bg-purple-50 text-purple-800 border-purple-200";
+        return "bg-indigo-50 text-indigo-800 border-indigo-200";
       case "AUTH":
       case "USERS":
         return "bg-slate-100 text-slate-800 border-slate-200";
       case "PAYMENTS":
-        return "bg-indigo-50 text-indigo-800 border-indigo-200";
+        return "bg-blue-50 text-blue-800 border-blue-200";
       default:
         return "bg-slate-100 text-slate-700 border-slate-200";
     }
@@ -269,13 +272,13 @@ export default function AdminAuditPage() {
   if (!mounted) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div className="bg-white p-6 rounded-3xl border border-slate-200 h-28"></div>
+        <div className="bg-white p-6 rounded-[6px] border border-slate-200 h-28"></div>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="bg-white p-4 rounded-2xl border border-slate-200 h-20"></div>
+            <div key={i} className="bg-white p-4 rounded-[5px] border border-slate-200 h-20"></div>
           ))}
         </div>
-        <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center text-slate-400 font-bold text-xs">
+        <div className="bg-white border border-slate-200 rounded-[6px] p-12 text-center text-slate-400 font-bold text-xs">
           Loading Audit Console...
         </div>
       </div>
@@ -285,30 +288,28 @@ export default function AdminAuditPage() {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/90 shadow-2xs">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-[6px] border border-slate-200/90 shadow-2xs">
         <div>
           <div className="flex items-center space-x-2">
-            <span className="text-[11px] font-extrabold text-[#0b2341] uppercase tracking-wider bg-blue-100/60 px-3 py-1 rounded-full border border-blue-200">
+            <span className="text-[11px] font-extrabold text-[#0b2341] uppercase tracking-wider bg-[#F8EAF4] px-3 py-1 rounded-full border border-[#F3D0E9]">
               Live Database Audit Trail
             </span>
-            <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center space-x-1">
+            {/* <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center space-x-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
               <span>PostgreSQL Real-Time</span>
-            </span>
+            </span> */}
           </div>
           <h1 className="text-2xl font-black text-[#0b2341] tracking-tight mt-2">
-            System Operations & Security Audit Logs
+            System Operations &amp; Security Audit Logs
           </h1>
-          <p className="text-xs text-slate-500">
-            Immutable database records of all actions: User registrations, distributor KYC reviews, PO placements, pricing overrides, and batch inventory edits.
-          </p>
+
         </div>
 
         <div className="flex items-center space-x-3 shrink-0">
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-4 py-3 rounded-xl transition-all flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
+            className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-4 py-3 rounded-[5px] transition-all flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
           >
             <svg className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -318,7 +319,7 @@ export default function AdminAuditPage() {
 
           <button
             onClick={handleExportCSV}
-            className="bg-[#0b2341] hover:bg-[#12315a] text-white text-xs font-extrabold px-5 py-3 rounded-xl shadow-xs transition-all flex items-center space-x-2 cursor-pointer"
+            className="bg-[#A71380] hover:bg-[#8E0F6D] text-white text-xs font-extrabold px-5 py-3 rounded-[5px] shadow-sm shadow-[#A71380]/20 transition-all flex items-center space-x-2 cursor-pointer"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -330,42 +331,43 @@ export default function AdminAuditPage() {
 
       {/* KPI Stats Overview Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5">
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs space-y-1">
+        <div className="bg-white p-4 rounded-[5px] border border-slate-200/90 shadow-2xs space-y-1">
           <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Total Recorded</span>
           <div className="text-xl font-black text-[#0b2341]">{totalCount}</div>
           <span className="text-[10px] text-slate-500">Live DB entries</span>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs space-y-1">
-          <span className="text-[10px] font-extrabold text-blue-600 uppercase tracking-wider block">Orders Placed</span>
-          <div className="text-xl font-black text-blue-600">{orderLogsCount}</div>
-          <span className="text-[10px] text-slate-500">B2B & Retail POs</span>
+        <div className="bg-white p-4 rounded-[5px] border border-slate-200/90 shadow-2xs space-y-1">
+          <span className="text-[10px] font-extrabold text-[#A71380] uppercase tracking-wider block">Orders Placed</span>
+          <div className="text-xl font-black text-[#A71380]">{orderLogsCount}</div>
+          <span className="text-[10px] text-slate-500">B2B &amp; Retail POs</span>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs space-y-1">
-          <span className="text-[10px] font-extrabold text-emerald-600 uppercase tracking-wider block">Product & Stock</span>
+        <div className="bg-white p-4 rounded-[5px] border border-slate-200/90 shadow-2xs space-y-1">
+          <span className="text-[10px] font-extrabold text-emerald-600 uppercase tracking-wider block">Product &amp; Stock</span>
           <div className="text-xl font-black text-emerald-600">{productLogsCount}</div>
           <span className="text-[10px] text-slate-500">Inventory events</span>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs space-y-1">
+        <div className="bg-white p-4 rounded-[5px] border border-slate-200/90 shadow-2xs space-y-1">
           <span className="text-[10px] font-extrabold text-amber-600 uppercase tracking-wider block">KYC Reviews</span>
           <div className="text-xl font-black text-amber-600">{kycLogsCount}</div>
           <span className="text-[10px] text-slate-500">Drug license audits</span>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs space-y-1 col-span-2 md:col-span-1">
-          <span className="text-[10px] font-extrabold text-indigo-600 uppercase tracking-wider block">Auth & Security</span>
+        <div className="bg-white p-4 rounded-[5px] border border-slate-200/90 shadow-2xs space-y-1 col-span-2 md:col-span-1">
+          <span className="text-[10px] font-extrabold text-indigo-600 uppercase tracking-wider block">Auth &amp; Security</span>
           <div className="text-xl font-black text-indigo-600">{securityLogsCount}</div>
-          <span className="text-[10px] text-slate-500">Logins & roles</span>
+          <span className="text-[10px] text-slate-500">Logins &amp; roles</span>
         </div>
       </div>
 
       {/* Filter Row 1: Module Categories & Search Input */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs text-xs">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-[5px] border border-slate-200/90 shadow-2xs text-xs">
         <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 md:pb-0">
           {[
             { id: "all", label: `All Logs (${logs.length})` },
+            { id: "LEADS", label: `B2B Leads (${logs.filter((l) => ["LEADS", "INQUIRIES"].includes(l.module.toUpperCase())).length})` },
             { id: "ORDERS", label: `Orders (${orderLogsCount})` },
             { id: "PRODUCTS", label: `Products` },
             { id: "INVENTORY", label: `Inventory` },
@@ -378,7 +380,7 @@ export default function AdminAuditPage() {
               <button
                 key={tab.id}
                 onClick={() => setModuleFilter(tab.id)}
-                className={`px-3.5 py-2 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer ${isActive ? "bg-[#0b2341] text-white shadow-xs" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                className={`px-3.5 py-2 rounded-[5px] font-bold whitespace-nowrap transition-all cursor-pointer ${isActive ? "bg-[#A71380] text-white shadow-xs shadow-[#A71380]/20" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                   }`}
               >
                 {tab.label}
@@ -386,6 +388,7 @@ export default function AdminAuditPage() {
             );
           })}
         </div>
+
 
         <div className="relative">
           <svg className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -396,13 +399,13 @@ export default function AdminAuditPage() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search action, email, module, details..."
-            className="border border-slate-200 rounded-xl pl-9 pr-4 py-2 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600 font-medium text-xs w-full md:w-72"
+            className="border border-slate-200 rounded-[5px] pl-9 pr-4 py-2 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#A71380] font-medium text-xs w-full md:w-72"
           />
         </div>
       </div>
 
       {/* Filter Row 2: Date-based Filter Bar (Today, Yesterday, 7 Days, 30 Days, Custom Range) */}
-      <div className="bg-[#f7f6f4] border border-[#e8e6e2] p-3.5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+      <div className="bg-[#f7f6f4] border border-[#e8e6e2] p-3.5 rounded-[5px] flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
         <div className="flex items-center space-x-2 overflow-x-auto pb-1 md:pb-0">
           <span className="font-extrabold text-[#0b2341] flex items-center space-x-1.5 shrink-0 pr-1">
             <svg className="w-3.5 h-3.5 text-[#0b2341]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -430,8 +433,8 @@ export default function AdminAuditPage() {
                     setEndDate("");
                   }
                 }}
-                className={`px-3 py-1.5 rounded-xl font-extrabold whitespace-nowrap transition-all cursor-pointer text-[11px] ${isActive
-                  ? "bg-[#0b2341] text-white shadow-2xs"
+                className={`px-3 py-1.5 rounded-[5px] font-extrabold whitespace-nowrap transition-all cursor-pointer text-[11px] ${isActive
+                  ? "bg-[#A71380] text-white shadow-xs shadow-[#A71380]/20"
                   : "bg-white text-slate-700 hover:bg-slate-200/80 border border-slate-200/80"
                   }`}
               >
@@ -443,7 +446,7 @@ export default function AdminAuditPage() {
 
         {/* Date Pickers for Custom Range or Quick Tuning */}
         <div className="flex items-center space-x-2 shrink-0">
-          <div className="flex items-center space-x-1.5 bg-white px-2.5 py-1 rounded-xl border border-slate-200/90 shadow-2xs">
+          <div className="flex items-center space-x-1.5 bg-white px-2.5 py-1 rounded-[5px] border border-slate-200/90 shadow-2xs">
             <span className="text-[10px] font-bold text-slate-400 uppercase">From:</span>
             <input
               type="date"
@@ -470,7 +473,7 @@ export default function AdminAuditPage() {
             />
           </div>
 
-          <div className="flex items-center space-x-1.5 bg-white px-2.5 py-1 rounded-xl border border-slate-200/90 shadow-2xs">
+          <div className="flex items-center space-x-1.5 bg-white px-2.5 py-1 rounded-[5px] border border-slate-200/90 shadow-2xs">
             <span className="text-[10px] font-bold text-slate-400 uppercase">To:</span>
             <input
               type="date"
@@ -504,7 +507,7 @@ export default function AdminAuditPage() {
                 setStartDate("");
                 setEndDate("");
               }}
-              className="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-2.5 py-1.5 rounded-xl font-bold text-[10px] transition-all cursor-pointer whitespace-nowrap flex items-center space-x-1"
+              className="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-2.5 py-1.5 rounded-[5px] font-bold text-[10px] transition-all cursor-pointer whitespace-nowrap flex items-center space-x-1"
               title="Reset Date Filter"
             >
               <span>✕ Clear Date</span>
@@ -514,10 +517,10 @@ export default function AdminAuditPage() {
       </div>
 
       {/* Audit Table */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl overflow-hidden shadow-2xs">
+      <div className="bg-white border border-slate-200/90 rounded-[6px] overflow-hidden shadow-2xs">
         {loading ? (
           <div className="py-20 text-center space-y-3">
-            <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <div className="w-8 h-8 border-3 border-[#A71380] border-t-transparent rounded-full animate-spin mx-auto"></div>
             <p className="text-xs text-slate-500 font-bold">Querying live database audit records...</p>
           </div>
         ) : error ? (
@@ -526,7 +529,7 @@ export default function AdminAuditPage() {
             <p className="text-xs text-rose-600 font-bold">{error}</p>
             <button
               onClick={fetchAuditLogs}
-              className="px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl"
+              className="px-4 py-2 bg-[#A71380] text-white text-xs font-bold rounded-[5px]"
             >
               Try Again
             </button>
@@ -557,7 +560,7 @@ export default function AdminAuditPage() {
                     onClick={() => setSelectedLog(log)}
                     className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
                   >
-                    <td className="py-4 px-5 font-mono font-bold text-blue-600">
+                    <td className="py-4 px-5 font-mono font-bold text-[#A71380]">
                       #{log.id}
                     </td>
 
@@ -577,7 +580,7 @@ export default function AdminAuditPage() {
                     </td>
 
                     <td className="py-4 px-5 max-w-md">
-                      <div className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                      <div className="font-bold text-slate-900 group-hover:text-[#A71380] transition-colors">
                         {log.action}
                       </div>
                       {log.details && (
@@ -590,7 +593,7 @@ export default function AdminAuditPage() {
                     <td className="py-4 px-5 text-slate-700 font-mono text-[11px] font-medium whitespace-nowrap">
                       <div className="flex items-center space-x-1.5">
                         <span>{formatAsiaTimestamp(log.timestamp)}</span>
-                        <span className="text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded">IST</span>
+                        <span className="text-[9px] font-bold bg-[#F8EAF4] text-[#A71380] border border-[#F3D0E9] px-1.5 py-0.5 rounded">IST</span>
                       </div>
                     </td>
 
@@ -622,7 +625,7 @@ export default function AdminAuditPage() {
                     setPageSize(Number(e.target.value));
                     setCurrentPage(1);
                   }}
-                  className="bg-white border border-slate-200 text-[#0b2341] text-xs font-bold rounded-lg px-2 py-1 focus:outline-none focus:border-blue-500 cursor-pointer"
+                  className="bg-white border border-slate-200 text-[#0b2341] text-xs font-bold rounded-[4px] px-2 py-1 focus:outline-none focus:border-[#A71380] cursor-pointer"
                 >
                   <option value={10}>10</option>
                   <option value={20}>20</option>
@@ -637,7 +640,7 @@ export default function AdminAuditPage() {
                 <button
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage(1)}
-                  className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px]"
+                  className="px-2.5 py-1.5 rounded-[4px] border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px]"
                   title="First Page"
                 >
                   «
@@ -645,7 +648,7 @@ export default function AdminAuditPage() {
                 <button
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px]"
+                  className="px-3 py-1.5 rounded-[4px] border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px]"
                 >
                   ‹ Prev
                 </button>
@@ -660,8 +663,8 @@ export default function AdminAuditPage() {
                       <button
                         key={pageNum}
                         onClick={() => setCurrentPage(pageNum)}
-                        className={`px-3 py-1.5 rounded-lg font-bold text-[11px] transition-all cursor-pointer ${currentPage === pageNum
-                          ? "bg-[#0b2341] text-white shadow-2xs"
+                        className={`px-3 py-1.5 rounded-[4px] font-bold text-[11px] transition-all cursor-pointer ${currentPage === pageNum
+                          ? "bg-[#A71380] text-white shadow-xs"
                           : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
                           }`}
                       >
@@ -682,14 +685,14 @@ export default function AdminAuditPage() {
                 <button
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                  className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px]"
+                  className="px-3 py-1.5 rounded-[4px] border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px]"
                 >
                   Next ›
                 </button>
                 <button
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage(totalPages)}
-                  className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px]"
+                  className="px-2.5 py-1.5 rounded-[4px] border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px]"
                   title="Last Page"
                 >
                   »
@@ -703,7 +706,7 @@ export default function AdminAuditPage() {
       {/* Detailed Modal to inspect single log entry */}
       {selectedLog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in duration-150">
-          <div className="bg-white rounded-3xl p-6 max-w-lg w-full space-y-5 shadow-2xl border border-slate-200 text-[#0b2341]">
+          <div className="bg-white rounded-[6px] p-6 max-w-lg w-full space-y-5 shadow-2xl border border-slate-200 text-[#0b2341]">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center space-x-2">
                 <span className="text-base font-black">Audit Record #{selectedLog.id}</span>
@@ -720,13 +723,13 @@ export default function AdminAuditPage() {
             </div>
 
             <div className="space-y-3 text-xs">
-              <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80 space-y-1">
+              <div className="bg-slate-50 p-3.5 rounded-[5px] border border-slate-200/80 space-y-1">
                 <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Action Executed</span>
                 <p className="text-sm font-black text-[#0b2341]">{selectedLog.action}</p>
               </div>
 
               {selectedLog.details && (
-                <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80 space-y-1">
+                <div className="bg-slate-50 p-3.5 rounded-[5px] border border-slate-200/80 space-y-1">
                   <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Payload / Change Details</span>
                   <p className="text-xs text-slate-700 font-mono break-all leading-relaxed whitespace-pre-wrap">
                     {selectedLog.details}
@@ -735,23 +738,23 @@ export default function AdminAuditPage() {
               )}
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <div className="p-3 bg-slate-50 rounded-[5px] border border-slate-200">
                   <span className="text-[10px] font-bold text-slate-400 uppercase block">Initiator</span>
                   <span className="font-bold text-[#0b2341] block truncate">{selectedLog.user_email || "System"}</span>
                 </div>
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <div className="p-3 bg-slate-50 rounded-[5px] border border-slate-200">
                   <span className="text-[10px] font-bold text-slate-400 uppercase block">IP Address</span>
                   <span className="font-bold font-mono text-slate-700">{selectedLog.ip_address || "127.0.0.1"}</span>
                 </div>
               </div>
 
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <div className="p-3 bg-slate-50 rounded-[5px] border border-slate-200">
                 <span className="text-[10px] font-bold text-slate-400 uppercase block">Recorded Timestamp (Asia / IST)</span>
                 <div className="flex items-center space-x-2 mt-0.5">
                   <span className="font-bold font-mono text-slate-800 text-xs">
                     {formatAsiaTimestamp(selectedLog.timestamp)}
                   </span>
-                  <span className="text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200 px-1.5 py-0.5 rounded">
+                  <span className="text-[10px] font-bold bg-[#F8EAF4] text-[#A71380] border border-[#F3D0E9] px-1.5 py-0.5 rounded">
                     Asia/Kolkata (IST)
                   </span>
                 </div>
@@ -761,7 +764,7 @@ export default function AdminAuditPage() {
             <div className="pt-2">
               <button
                 onClick={() => setSelectedLog(null)}
-                className="w-full bg-[#0b2341] hover:bg-[#12315a] text-white font-black py-2.5 rounded-xl text-xs transition-colors cursor-pointer"
+                className="w-full bg-[#A71380] hover:bg-[#8E0F6D] text-white font-extrabold py-2.5 rounded-[5px] text-xs shadow-md shadow-[#A71380]/20 transition-all cursor-pointer"
               >
                 Close Record Inspector
               </button>

@@ -8,7 +8,9 @@ from app.models.product import Category
 from app.schemas.product import CategoryOut, CategoryCreate, CategoryUpdate
 from app.services.audit_service import record_audit
 
+
 router = APIRouter()
+
 
 
 @router.get("", response_model=List[CategoryOut])

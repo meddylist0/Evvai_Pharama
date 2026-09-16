@@ -20,8 +20,15 @@ from app.services.notification_service import (
 
 router = APIRouter()
 
+"""
+DEVELOPER NOTE — NOTIFICATION SETTINGS & TEST GATEWAY ENDPOINTS:
+1. Access: Restricted to ADMIN role (require_admin).
+2. Security: SMTP & SMS API keys are automatically masked (mask_secret) before returning to UI.
+3. Test Gateway: Test email/SMS endpoints trigger dispatches and log activity in NotificationLog table.
+"""
 
 def mask_secret(secret_str: str) -> str:
+    """Masks sensitive credentials (SMTP passwords, SMS API keys) for safe Admin UI display."""
     if not secret_str:
         return "Not Configured"
     if len(secret_str) <= 6:
@@ -34,6 +41,13 @@ def get_notification_settings(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin),
 ):
+    """
+    Retrieve Notification Gateway Settings (Admin Only).
+    
+    DEVELOPER NOTES:
+    - Fetches or initializes default NotificationSetting singleton.
+    - Password & API key fields are masked for security.
+    """
     setting = get_or_create_settings(db)
     return NotificationSettingSchema(
         id=setting.id,
@@ -61,6 +75,13 @@ def update_notification_settings(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin),
 ):
+    """
+    Update Notification Gateway Credentials & Event Toggles (Admin Only).
+    
+    DEVELOPER NOTES:
+    - Only updates fields provided in request payload (partial update).
+    - Ignores blank password/API key fields to prevent overwriting existing keys.
+    """
     setting = get_or_create_settings(db)
 
     if payload.smtp_host is not None:
@@ -106,6 +127,13 @@ def send_test_email(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin),
 ):
+    """
+    Trigger Live SMTP Test Email Dispatch (Admin Only).
+    
+    DEVELOPER NOTES:
+    - Renders a rich HTML verification template preview.
+    - Logs dispatch attempt in NotificationLog table.
+    """
     setting = get_or_create_settings(db)
     subject = f"Order Confirmation #ORD-TEST-8892 - {setting.sender_name}"
     
@@ -258,6 +286,12 @@ def send_test_sms(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin),
 ):
+    """
+    Trigger Live SMS Test Gateway Dispatch (Admin Only).
+    
+    DEVELOPER NOTES:
+    - Dispatches SMS via configured provider (Fast2SMS / Twilio) or returns SIMULATED status.
+    """
     body = (
         f"PharmaLink Test SMS: Gateway check successful for {payload.target}. "
         f"Triggered by Admin {current_user.full_name}."
@@ -276,6 +310,12 @@ def get_notification_logs(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin),
 ):
+    """
+    Notification Dispatch Audit Log Viewer (Admin Only).
+    
+    DEVELOPER NOTES:
+    - Returns historical email & SMS dispatch logs ordered by sent_at DESC.
+    """
     logs = (
         db.query(NotificationLog)
         .order_by(NotificationLog.sent_at.desc())

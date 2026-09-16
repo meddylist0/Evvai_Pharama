@@ -43,8 +43,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (typeof window !== "undefined") {
       window.addEventListener("pharmalink_user_updated", handleUserUpdate);
+      window.addEventListener("storage", handleUserUpdate);
       return () => {
         window.removeEventListener("pharmalink_user_updated", handleUserUpdate);
+        window.removeEventListener("storage", handleUserUpdate);
       };
     }
   }, []);

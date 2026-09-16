@@ -121,7 +121,7 @@ export default function LocalBuyersPage() {
   const getTypeBadge = (t: LocalBuyer["type"]) => {
     switch (t) {
       case "RMP_DOCTOR":
-        return <span className="bg-blue-100 text-blue-800 border border-blue-200 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full">👨‍⚕️ RMP Doctor</span>;
+        return <span className="bg-[#F8EAF4] text-[#A71380] border border-[#F3D0E9] text-[10px] font-extrabold px-2.5 py-0.5 rounded-full">👨‍⚕️ RMP Doctor</span>;
       case "RETAIL_CHEMIST":
         return <span className="bg-emerald-100 text-emerald-800 border border-emerald-200 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full">💊 Retail Chemist</span>;
       case "RURAL_CLINIC":
@@ -136,10 +136,10 @@ export default function LocalBuyersPage() {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/90 shadow-2xs">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-[6px] border border-slate-200/90 shadow-2xs">
         <div>
           <div className="flex items-center space-x-2">
-            <span className="text-[11px] font-extrabold text-[#0b2341] uppercase tracking-wider bg-blue-100/60 px-3 py-1 rounded-full border border-blue-200">
+            <span className="text-[11px] font-extrabold text-[#0b2341] uppercase tracking-wider bg-[#F8EAF4] px-3 py-1 rounded-full border border-[#F3D0E9]">
               Admin Grade Console • Retail & RMP Buyers Network
             </span>
           </div>
@@ -153,7 +153,7 @@ export default function LocalBuyersPage() {
 
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="bg-[#0b2341] hover:bg-[#12315a] text-white font-bold px-5 py-3 rounded-2xl shadow-xs transition-all text-xs flex items-center space-x-2 shrink-0 cursor-pointer"
+          className="bg-[#0b2341] hover:bg-[#12315a] text-white font-bold px-5 py-3 rounded-[5px] shadow-xs transition-all text-xs flex items-center space-x-2 shrink-0 cursor-pointer"
         >
           <span>+ Add Local Buyer (RMP / Chemist)</span>
         </button>
@@ -161,22 +161,22 @@ export default function LocalBuyersPage() {
 
       {/* Metrics Banner */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-1">
+        <div className="bg-white p-5 rounded-[5px] border border-slate-200/90 shadow-2xs space-y-1">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Registered Buyers</span>
           <div className="text-2xl font-black text-[#0b2341]">{buyers.length} Network Partners</div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-1">
+        <div className="bg-white p-5 rounded-[5px] border border-slate-200/90 shadow-2xs space-y-1">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">RMP Medical Practitioners</span>
-          <div className="text-2xl font-black text-blue-600">{rmpCount} Doctors</div>
+          <div className="text-2xl font-black text-[#A71380]">{rmpCount} Doctors</div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-1">
+        <div className="bg-white p-5 rounded-[5px] border border-slate-200/90 shadow-2xs space-y-1">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Retail Chemist Counters</span>
           <div className="text-2xl font-black text-emerald-600">{chemistCount} Shops</div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-1">
+        <div className="bg-white p-5 rounded-[5px] border border-slate-200/90 shadow-2xs space-y-1">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Active Credit Collectibles</span>
           <div className="text-2xl font-black text-amber-600">₹{totalOutstanding.toLocaleString("en-IN")}</div>
         </div>
@@ -185,7 +185,7 @@ export default function LocalBuyersPage() {
       {/* Status Msg */}
       {statusMsg && (
         <div
-          className={`p-4 rounded-2xl text-xs font-bold border transition-all ${
+          className={`p-4 rounded-[5px] text-xs font-bold border transition-all ${
             statusMsg.type === "success" ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-rose-50 text-rose-800 border-rose-200"
           }`}
         >
@@ -194,13 +194,13 @@ export default function LocalBuyersPage() {
       )}
 
       {/* Admin Controls Bar: Search + Filter + View Toggle + Per Page */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs text-xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-[5px] border border-slate-200/90 shadow-2xs text-xs">
         <input
           type="text"
           placeholder="Search by buyer name, RMP license, mobile, village..."
           value={searchTerm}
           onChange={(e) => handleSearchChange(e.target.value)}
-          className="border border-slate-200 rounded-xl px-4 py-2 bg-slate-50 font-medium w-full sm:w-80 focus:bg-white focus:outline-none"
+          className="border border-slate-200 rounded-[5px] px-4 py-2 bg-slate-50 font-medium w-full sm:w-80 focus:bg-white focus:outline-none"
         />
 
         <div className="flex flex-wrap items-center gap-3">
@@ -209,7 +209,7 @@ export default function LocalBuyersPage() {
             <select
               value={typeFilter}
               onChange={(e) => handleTypeFilterChange(e.target.value)}
-              className="border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 font-bold text-[#0b2341] cursor-pointer"
+              className="border border-slate-200 rounded-[5px] px-3 py-2 bg-slate-50 font-bold text-[#0b2341] cursor-pointer"
             >
               <option value="ALL">All Buyer Types ({buyers.length})</option>
               <option value="RMP_DOCTOR">RMP Doctors ({rmpCount})</option>
@@ -219,10 +219,10 @@ export default function LocalBuyersPage() {
           </div>
 
           {/* View Mode Toggle */}
-          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+          <div className="flex items-center bg-slate-100 p-1 rounded-[5px] border border-slate-200">
             <button
               onClick={() => setViewMode("table")}
-              className={`px-3 py-1 rounded-lg font-extrabold text-[11px] transition-all cursor-pointer ${
+              className={`px-3 py-1 rounded-[4px] font-extrabold text-[11px] transition-all cursor-pointer ${
                 viewMode === "table" ? "bg-white text-[#0b2341] shadow-2xs" : "text-slate-500 hover:text-slate-800"
               }`}
             >
@@ -230,7 +230,7 @@ export default function LocalBuyersPage() {
             </button>
             <button
               onClick={() => setViewMode("grid")}
-              className={`px-3 py-1 rounded-lg font-extrabold text-[11px] transition-all cursor-pointer ${
+              className={`px-3 py-1 rounded-[4px] font-extrabold text-[11px] transition-all cursor-pointer ${
                 viewMode === "grid" ? "bg-white text-[#0b2341] shadow-2xs" : "text-slate-500 hover:text-slate-800"
               }`}
             >
@@ -251,7 +251,7 @@ export default function LocalBuyersPage() {
                 setPageSize(Number(e.target.value));
                 setCurrentPage(1);
               }}
-              className="border border-slate-200 rounded-lg px-2 py-1.5 bg-slate-50 font-bold text-[#0b2341] cursor-pointer"
+              className="border border-slate-200 rounded-[4px] px-2 py-1.5 bg-slate-50 font-bold text-[#0b2341] cursor-pointer"
             >
               <option value={5}>5</option>
               <option value={8}>8</option>
@@ -263,7 +263,7 @@ export default function LocalBuyersPage() {
       </div>
 
       {/* Main Content Container (Table View vs Grid View) */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 shadow-2xs overflow-hidden">
+      <div className="bg-white rounded-[6px] border border-slate-200/90 shadow-2xs overflow-hidden">
         {filteredBuyers.length === 0 ? (
           <div className="p-12 text-center text-slate-400 font-bold text-xs">
             No buyers found matching your search or filter criteria.
@@ -314,7 +314,7 @@ export default function LocalBuyersPage() {
                       <td className="px-6 py-4 text-right">
                         <a
                           href={`/distributor/sales/new?buyerId=${b.id}`}
-                          className="inline-flex items-center space-x-1.5 bg-[#0b2341] hover:bg-[#12315a] text-white font-bold px-3 py-2 rounded-xl text-xs transition-all shadow-2xs"
+                          className="inline-flex items-center space-x-1.5 bg-[#0b2341] hover:bg-[#12315a] text-white font-bold px-3 py-2 rounded-[5px] text-xs transition-all shadow-2xs"
                         >
                           <span>+ Issue Invoice</span>
                         </a>
@@ -340,7 +340,7 @@ export default function LocalBuyersPage() {
                   <button
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                    className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px] font-bold text-slate-700"
+                    className="px-3 py-1.5 rounded-[4px] border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px] font-bold text-slate-700"
                   >
                     ‹ Prev
                   </button>
@@ -349,7 +349,7 @@ export default function LocalBuyersPage() {
                     <button
                       key={pageNum}
                       onClick={() => setCurrentPage(pageNum)}
-                      className={`w-8 h-8 rounded-lg border text-xs font-black transition-all cursor-pointer flex items-center justify-center ${
+                      className={`w-8 h-8 rounded-[4px] border text-xs font-black transition-all cursor-pointer flex items-center justify-center ${
                         currentPage === pageNum
                           ? "bg-[#0b2341] text-white border-[#0b2341] shadow-xs"
                           : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
@@ -362,7 +362,7 @@ export default function LocalBuyersPage() {
                   <button
                     disabled={currentPage === totalPages}
                     onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                    className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px] font-bold text-slate-700"
+                    className="px-3 py-1.5 rounded-[4px] border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px] font-bold text-slate-700"
                   >
                     Next ›
                   </button>
@@ -375,7 +375,7 @@ export default function LocalBuyersPage() {
           <div className="p-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {paginatedBuyers.map((b) => (
-                <div key={b.id} className="border border-slate-200/90 rounded-2xl p-5 bg-white hover:shadow-md transition-all space-y-3">
+                <div key={b.id} className="border border-slate-200/90 rounded-[5px] p-5 bg-white hover:shadow-md transition-all space-y-3">
                   <div className="flex justify-between items-start">
                     <div>
                       <h4 className="font-bold text-[#0b2341] text-base">{b.name}</h4>
@@ -384,7 +384,7 @@ export default function LocalBuyersPage() {
                     {getTypeBadge(b.type)}
                   </div>
 
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80 space-y-1 text-xs font-mono">
+                  <div className="bg-slate-50 p-3 rounded-[5px] border border-slate-200/80 space-y-1 text-xs font-mono">
                     <div>DL / Reg No: <span className="font-bold text-slate-800">{b.licenseNo}</span></div>
                     <div>Location: <span className="font-bold text-slate-700">{b.villageTown}, {b.district}</span></div>
                     <div>Mobile: <span className="font-bold text-slate-700">{b.mobile}</span></div>
@@ -408,7 +408,7 @@ export default function LocalBuyersPage() {
                   <div className="pt-2 border-t border-slate-100">
                     <a
                       href={`/distributor/sales/new?buyerId=${b.id}`}
-                      className="w-full inline-flex items-center justify-center bg-[#0b2341] hover:bg-[#12315a] text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-2xs"
+                      className="w-full inline-flex items-center justify-center bg-[#0b2341] hover:bg-[#12315a] text-white font-bold py-2.5 rounded-[5px] text-xs transition-all shadow-2xs"
                     >
                       + Issue Invoice
                     </a>
@@ -418,7 +418,7 @@ export default function LocalBuyersPage() {
             </div>
 
             {/* Grid Pagination Bar */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 bg-slate-50/70 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-600">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 bg-slate-50/70 rounded-[5px] border border-slate-200 text-xs font-semibold text-slate-600">
               <div>
                 <span>
                   Showing <span className="font-bold text-[#0b2341]">{(currentPage - 1) * pageSize + 1}</span> to{" "}
@@ -432,7 +432,7 @@ export default function LocalBuyersPage() {
                   <button
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                    className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px] font-bold text-slate-700"
+                    className="px-3 py-1.5 rounded-[4px] border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px] font-bold text-slate-700"
                   >
                     ‹ Prev
                   </button>
@@ -441,7 +441,7 @@ export default function LocalBuyersPage() {
                     <button
                       key={pageNum}
                       onClick={() => setCurrentPage(pageNum)}
-                      className={`w-8 h-8 rounded-lg border text-xs font-black transition-all cursor-pointer flex items-center justify-center ${
+                      className={`w-8 h-8 rounded-[4px] border text-xs font-black transition-all cursor-pointer flex items-center justify-center ${
                         currentPage === pageNum
                           ? "bg-[#0b2341] text-white border-[#0b2341] shadow-xs"
                           : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
@@ -454,7 +454,7 @@ export default function LocalBuyersPage() {
                   <button
                     disabled={currentPage === totalPages}
                     onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                    className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px] font-bold text-slate-700"
+                    className="px-3 py-1.5 rounded-[4px] border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all text-[11px] font-bold text-slate-700"
                   >
                     Next ›
                   </button>
@@ -468,7 +468,7 @@ export default function LocalBuyersPage() {
       {/* Add Buyer Modal */}
       {isAddModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-150">
-          <div className="bg-white border border-slate-200 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+          <div className="bg-white border border-slate-200 rounded-[6px] max-w-lg w-full p-6 space-y-4 shadow-2xl">
             <div className="flex justify-between items-center border-b border-slate-100 pb-3">
               <div>
                 <h3 className="text-base font-bold text-[#0b2341]">Register Local Buyer / RMP Doctor</h3>
@@ -491,7 +491,7 @@ export default function LocalBuyersPage() {
                   placeholder="e.g. Dr. K. Srinivas Rao (RMP) / Laxmi Medical Counter"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600 font-medium"
+                  className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#A71380] font-medium"
                 />
               </div>
 
@@ -501,7 +501,7 @@ export default function LocalBuyersPage() {
                   <select
                     value={type}
                     onChange={(e) => setType(e.target.value as any)}
-                    className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600 font-bold text-[#0b2341]"
+                    className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#A71380] font-bold text-[#0b2341]"
                   >
                     <option value="RMP_DOCTOR">👨‍⚕️ RMP Doctor</option>
                     <option value="RETAIL_CHEMIST">💊 Retail Chemist Shop</option>
@@ -517,7 +517,7 @@ export default function LocalBuyersPage() {
                     placeholder="Doctor or Chemist Name"
                     value={ownerName}
                     onChange={(e) => setOwnerName(e.target.value)}
-                    className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600 font-medium"
+                    className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#A71380] font-medium"
                   />
                 </div>
               </div>
@@ -531,7 +531,7 @@ export default function LocalBuyersPage() {
                     placeholder="e.g. TS/RMP/2021/4892"
                     value={licenseNo}
                     onChange={(e) => setLicenseNo(e.target.value)}
-                    className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600 font-mono text-xs uppercase"
+                    className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#A71380] font-mono text-xs uppercase"
                   />
                 </div>
 
@@ -543,7 +543,7 @@ export default function LocalBuyersPage() {
                     placeholder="+91 98765 43210"
                     value={mobile}
                     onChange={(e) => setMobile(e.target.value)}
-                    className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600 font-mono text-xs"
+                    className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#A71380] font-mono text-xs"
                   />
                 </div>
               </div>
@@ -556,7 +556,7 @@ export default function LocalBuyersPage() {
                     placeholder="e.g. Chivvemla"
                     value={villageTown}
                     onChange={(e) => setVillageTown(e.target.value)}
-                    className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600 font-medium"
+                    className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#A71380] font-medium"
                   />
                 </div>
 
@@ -567,7 +567,7 @@ export default function LocalBuyersPage() {
                     placeholder="e.g. Suryapet"
                     value={district}
                     onChange={(e) => setDistrict(e.target.value)}
-                    className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600 font-medium"
+                    className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#A71380] font-medium"
                   />
                 </div>
 
@@ -577,14 +577,14 @@ export default function LocalBuyersPage() {
                     type="number"
                     value={creditLimit}
                     onChange={(e) => setCreditLimit(Number(e.target.value))}
-                    className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600 font-bold text-amber-700"
+                    className="w-full border border-slate-200 rounded-[5px] p-3 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#A71380] font-bold text-amber-700"
                   />
                 </div>
               </div>
 
               <button
                 type="submit"
-                className="w-full bg-[#0b2341] hover:bg-[#12315a] text-white font-bold py-3.5 rounded-xl mt-3 shadow-xs cursor-pointer text-xs"
+                className="w-full bg-[#0b2341] hover:bg-[#12315a] text-white font-bold py-3.5 rounded-[5px] mt-3 shadow-xs cursor-pointer text-xs"
               >
                 Save & Register Local Buyer
               </button>

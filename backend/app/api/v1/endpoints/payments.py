@@ -21,12 +21,24 @@ from app.services.audit_service import record_audit
 
 router = APIRouter()
 
+"""
+DEVELOPER NOTE — MULTI-GATEWAY PAYMENT ENDPOINTS:
+1. Signature Verification: verify_and_place_paid_order validates Razorpay HMAC-SHA256 signatures before stock allocation.
+2. Replay & Idempotency: Replays are blocked using razorpay_payment_id in DB to reject duplicate attempts.
+3. Security: Secret keys (Razorpay, Stripe, PayPal) are automatically masked in responses.
+"""
 
 @router.get("/config", response_model=PaymentPublicConfigOut)
 def get_public_payment_config(
     db: Session = Depends(get_db)
 ):
-    """Returns public keys and statuses for frontend payment checkout."""
+    """
+    Public Checkout Payment Gateway Config.
+    
+    DEVELOPER NOTES:
+    - Public unauthenticated endpoint providing Gateway key_id and active payment methods (COD, Wire, Online)
+      for frontend checkout initialization.
+    """
     config = get_or_create_payment_settings(db)
     return PaymentPublicConfigOut(
         key_id=config.key_id,
@@ -48,7 +60,13 @@ def create_razorpay_order(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Create a live/test order with Razorpay Gateway with authoritative price calculations."""
+    """
+    Initiate Razorpay Gateway Checkout Order.
+    
+    DEVELOPER NOTES:
+    - Authoritative amount calculation in paise (₹1 = 100 paise) executed on server side.
+    - Creates order on Razorpay API using configured Key ID / Key Secret.
+    """
     order_data = create_razorpay_order_api(
         db=db,
         current_user=current_user,
@@ -58,14 +76,20 @@ def create_razorpay_order(
     return RazorpayOrderOut(**order_data)
 
 
-
 @router.post("/verify-and-order", response_model=OrderOut, status_code=status.HTTP_201_CREATED)
 def verify_and_place_paid_order(
     verify_req: RazorpayVerifyAndOrderRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Verify Razorpay payment signature and persist confirmed, paid order."""
+    """
+    Verify Razorpay HMAC Signature & Create Paid Order.
+    
+    DEVELOPER NOTES:
+    - Verifies HMAC-SHA256 signature (razorpay_order_id|razorpay_payment_id).
+    - Checks for duplicate payment_id replay attack.
+    - On success: Executes FEFO stock deduction, persists Order, and logs audit trail in single transaction.
+    """
     return create_verified_paid_order(
         db=db,
         verify_req=verify_req,
